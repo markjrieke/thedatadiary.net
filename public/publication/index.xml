@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Publications on Academia</title>
-    <link>https://thedatadiary.net/publication/</link>
+    <link>https://www.thedatadiary.net/publication/</link>
     <description>Recent content in Publications on Academia</description>
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
     <lastBuildDate>Sun, 07 Apr 2019 00:00:00 +0000</lastBuildDate>
     
-	    <atom:link href="https://thedatadiary.net/publication/index.xml" rel="self" type="application/rss+xml" />
+	    <atom:link href="https://www.thedatadiary.net/publication/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>An example preprint / working paper</title>
-      <link>https://thedatadiary.net/publication/preprint/</link>
+      <link>https://www.thedatadiary.net/publication/preprint/</link>
       <pubDate>Sun, 07 Apr 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/publication/preprint/</guid>
+      <guid>https://www.thedatadiary.net/publication/preprint/</guid>
       <description>&lt;!-- raw HTML omitted --&gt;
 &lt;p&gt;Supplementary notes can be added here, including &lt;a href=&#34;https://sourcethemes.com/academic/docs/writing-markdown-latex/&#34;&gt;code and math&lt;/a&gt;.&lt;/p&gt;
 </description>
@@ -25,10 +25,10 @@
     
     <item>
       <title>An example journal article</title>
-      <link>https://thedatadiary.net/publication/journal-article/</link>
+      <link>https://www.thedatadiary.net/publication/journal-article/</link>
       <pubDate>Tue, 01 Sep 2015 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/publication/journal-article/</guid>
+      <guid>https://www.thedatadiary.net/publication/journal-article/</guid>
       <description>&lt;!-- raw HTML omitted --&gt;
 &lt;!-- raw HTML omitted --&gt;
 &lt;p&gt;Supplementary notes can be added here, including &lt;a href=&#34;https://sourcethemes.com/academic/docs/writing-markdown-latex/&#34;&gt;code and math&lt;/a&gt;.&lt;/p&gt;
@@ -37,10 +37,10 @@
     
     <item>
       <title>An example conference paper</title>
-      <link>https://thedatadiary.net/publication/conference-paper/</link>
+      <link>https://www.thedatadiary.net/publication/conference-paper/</link>
       <pubDate>Mon, 01 Jul 2013 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/publication/conference-paper/</guid>
+      <guid>https://www.thedatadiary.net/publication/conference-paper/</guid>
       <description>&lt;!-- raw HTML omitted --&gt;
 &lt;!-- raw HTML omitted --&gt;
 &lt;p&gt;Supplementary notes can be added here, including &lt;a href=&#34;https://sourcethemes.com/academic/docs/writing-markdown-latex/&#34;&gt;code and math&lt;/a&gt;.&lt;/p&gt;

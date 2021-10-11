@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Slides on Academia</title>
-    <link>https://thedatadiary.net/slides/</link>
+    <link>https://www.thedatadiary.net/slides/</link>
     <description>Recent content in Slides on Academia</description>
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
     <lastBuildDate>Tue, 05 Feb 2019 00:00:00 +0000</lastBuildDate>
     
-	    <atom:link href="https://thedatadiary.net/slides/index.xml" rel="self" type="application/rss+xml" />
+	    <atom:link href="https://www.thedatadiary.net/slides/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Slides</title>
-      <link>https://thedatadiary.net/slides/example/</link>
+      <link>https://www.thedatadiary.net/slides/example/</link>
       <pubDate>Tue, 05 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/slides/example/</guid>
+      <guid>https://www.thedatadiary.net/slides/example/</guid>
       <description>&lt;h1 id=&#34;welcome-to-slides&#34;&gt;Welcome to Slides&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://sourcethemes.com/academic/&#34;&gt;academia&lt;/a&gt;&lt;/p&gt;
 &lt;hr&gt;

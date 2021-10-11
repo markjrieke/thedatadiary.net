@@ -2,40 +2,40 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Demo on Academia</title>
-    <link>https://thedatadiary.net/tags/demo/</link>
+    <link>https://www.thedatadiary.net/tags/demo/</link>
     <description>Recent content in Demo on Academia</description>
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
     <lastBuildDate>Wed, 27 Apr 2016 00:00:00 +0000</lastBuildDate>
     
-	    <atom:link href="https://thedatadiary.net/tags/demo/index.xml" rel="self" type="application/rss+xml" />
+	    <atom:link href="https://www.thedatadiary.net/tags/demo/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Artificial Intelligence</title>
-      <link>https://thedatadiary.net/project/artificial-intelligence/</link>
+      <link>https://www.thedatadiary.net/project/artificial-intelligence/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/project/artificial-intelligence/</guid>
+      <guid>https://www.thedatadiary.net/project/artificial-intelligence/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Deep Learning</title>
-      <link>https://thedatadiary.net/project/deep-learning/</link>
+      <link>https://www.thedatadiary.net/project/deep-learning/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/project/deep-learning/</guid>
+      <guid>https://www.thedatadiary.net/project/deep-learning/</guid>
       <description></description>
     </item>
     
     <item>
       <title>External Project</title>
-      <link>https://thedatadiary.net/project/external-project/</link>
+      <link>https://www.thedatadiary.net/project/external-project/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://thedatadiary.net/project/external-project/</guid>
+      <guid>https://www.thedatadiary.net/project/external-project/</guid>
       <description></description>
     </item>
     
