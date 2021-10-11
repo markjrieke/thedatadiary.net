@@ -2,24 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on Academia</title>
-    <link>https://examplesite.org/post/</link>
+    <link>https://thedatadiary.net/post/</link>
     <description>Recent content in Posts on Academia</description>
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
-    <copyright>Copyright &amp;copy; {year}</copyright>
+    <copyright>&amp;copy; Mark Rieke {year}</copyright>
     <lastBuildDate>Tue, 01 Dec 2020 21:13:14 -0500</lastBuildDate>
     
-	    <atom:link href="https://examplesite.org/post/index.xml" rel="self" type="application/rss+xml" />
+	    <atom:link href="https://thedatadiary.net/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Hello R Markdown</title>
-      <link>https://examplesite.org/post/2020-12-01-r-rmarkdown/</link>
+      <link>https://thedatadiary.net/post/2020-12-01-r-rmarkdown/</link>
       <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
       
-      <guid>https://examplesite.org/post/2020-12-01-r-rmarkdown/</guid>
+      <guid>https://thedatadiary.net/post/2020-12-01-r-rmarkdown/</guid>
       <description>
-&lt;script src=&#34;https://examplesite.org/post/2020-12-01-r-rmarkdown/index.en_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://thedatadiary.net/post/2020-12-01-r-rmarkdown/index.en_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
 
 
 &lt;div id=&#34;r-markdown&#34; class=&#34;section level1&#34;&gt;
@@ -55,7 +55,7 @@ pie(
   init.angle = -50, border = NA
 )&lt;/code&gt;&lt;/pre&gt;
 &lt;div class=&#34;figure&#34;&gt;&lt;span style=&#34;display:block;&#34; id=&#34;fig:pie&#34;&gt;&lt;/span&gt;
-&lt;img src=&#34;https://examplesite.org/post/2020-12-01-r-rmarkdown/index.en_files/figure-html/pie-1.png&#34; alt=&#34;A fancy pie chart.&#34; width=&#34;672&#34; /&gt;
+&lt;img src=&#34;https://thedatadiary.net/post/2020-12-01-r-rmarkdown/index.en_files/figure-html/pie-1.png&#34; alt=&#34;A fancy pie chart.&#34; width=&#34;672&#34; /&gt;
 &lt;p class=&#34;caption&#34;&gt;
 Figure 1: A fancy pie chart.
 &lt;/p&gt;
@@ -66,10 +66,10 @@ Figure 1: A fancy pie chart.
     
     <item>
       <title>Display Jupyter Notebooks with academia</title>
-      <link>https://examplesite.org/post/jupyter/</link>
+      <link>https://thedatadiary.net/post/jupyter/</link>
       <pubDate>Tue, 05 Feb 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/post/jupyter/</guid>
+      <guid>https://thedatadiary.net/post/jupyter/</guid>
       <description>&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#f92672&#34;&gt;from&lt;/span&gt; IPython.core.display &lt;span style=&#34;color:#f92672&#34;&gt;import&lt;/span&gt; Image
 Image(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;https://www.python.org/static/community_logos/python-logo-master-v3-TM-flattened.png&amp;#39;&lt;/span&gt;)
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;./academia_0_0.png&#34; alt=&#34;png&#34;&gt;&lt;/p&gt;
@@ -104,10 +104,10 @@ rm Untitled.md
     
     <item>
       <title>A Study of Snail Behavior</title>
-      <link>https://examplesite.org/post/snail/</link>
+      <link>https://thedatadiary.net/post/snail/</link>
       <pubDate>Wed, 20 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/post/snail/</guid>
+      <guid>https://thedatadiary.net/post/snail/</guid>
       <description>&lt;p&gt;&lt;strong&gt;Create a free website with academia using Markdown, Jupyter, or RStudio. Choose a beautiful color theme and build anything with the Page Builder - over 40 &lt;em&gt;widgets&lt;/em&gt;, &lt;em&gt;themes&lt;/em&gt;, and &lt;em&gt;language packs&lt;/em&gt; included!&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://academia-demo.netlify.com/&#34;&gt;Check out the latest &lt;strong&gt;demo&lt;/strong&gt;&lt;/a&gt; of what you&amp;rsquo;ll get in less than 10 minutes, or &lt;a href=&#34;https://sourcethemes.com/academic/#expo&#34;&gt;view the &lt;strong&gt;showcase&lt;/strong&gt;&lt;/a&gt; of personal, project, and business sites.&lt;/p&gt;
 &lt;ul&gt;
@@ -175,8 +175,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-1950s.png&#34; data-caption=&#34;1950s&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-1950s_huaf5482f8cea0c5a703a328640e3b7509_21614_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-1950s.png&#34; data-caption=&#34;1950s&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-1950s_huaf5482f8cea0c5a703a328640e3b7509_21614_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -188,8 +188,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-apogee.png&#34; data-caption=&#34;Apogee&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-apogee_hu4b45d99db97150df01464c393bfd17d4_24119_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-apogee.png&#34; data-caption=&#34;Apogee&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-apogee_hu4b45d99db97150df01464c393bfd17d4_24119_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -201,8 +201,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-coffee-playfair.png&#34; data-caption=&#34;Coffee theme with Playfair font&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-coffee-playfair_hu446a8f670cc5622adcc77b97ba95f6c5_22462_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-coffee-playfair.png&#34; data-caption=&#34;Coffee theme with Playfair font&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-coffee-playfair_hu446a8f670cc5622adcc77b97ba95f6c5_22462_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -214,8 +214,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-dark.png&#34; data-caption=&#34;Dark&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-dark_hu1e8601ecc47f58eada7743fdcd709d3d_21456_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-dark.png&#34; data-caption=&#34;Dark&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-dark_hu1e8601ecc47f58eada7743fdcd709d3d_21456_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -227,8 +227,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-default.png&#34; data-caption=&#34;Default&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-default_huba6228b7bdf30e2f03f12ea91b2cba0d_21751_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-default.png&#34; data-caption=&#34;Default&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-default_huba6228b7bdf30e2f03f12ea91b2cba0d_21751_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -240,8 +240,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-forest.png&#34; data-caption=&#34;Forest&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-forest_hu4f093a1c683134431456584193ea41ee_21797_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-forest.png&#34; data-caption=&#34;Forest&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-forest_hu4f093a1c683134431456584193ea41ee_21797_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -253,8 +253,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-ocean.png&#34; data-caption=&#34;Ocean&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-ocean_hu14831ccafc2219f30a7a096fa7617e01_21760_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-ocean.png&#34; data-caption=&#34;Ocean&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-ocean_hu14831ccafc2219f30a7a096fa7617e01_21760_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -266,8 +266,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/snail/gallery/theme-strawberry.png&#34; data-caption=&#34;Strawberry&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/snail/gallery/theme-strawberry_hu36b0b347fcca08bd39e2df22dcedbdfb_39532_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/snail/gallery/theme-strawberry.png&#34; data-caption=&#34;Strawberry&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/snail/gallery/theme-strawberry_hu36b0b347fcca08bd39e2df22dcedbdfb_39532_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
 
@@ -298,10 +298,10 @@ rm Untitled.md
     
     <item>
       <title>academia: the website builder for Hugo</title>
-      <link>https://examplesite.org/post/getting-started/</link>
+      <link>https://thedatadiary.net/post/getting-started/</link>
       <pubDate>Wed, 20 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/post/getting-started/</guid>
+      <guid>https://thedatadiary.net/post/getting-started/</guid>
       <description>&lt;p&gt;&lt;strong&gt;Create a free website with academia using Markdown, Jupyter, or RStudio. Choose a beautiful color theme and build anything with the Page Builder - over 40 &lt;em&gt;widgets&lt;/em&gt;, &lt;em&gt;themes&lt;/em&gt;, and &lt;em&gt;language packs&lt;/em&gt; included!&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;a href=&#34;https://academia-demo.netlify.com/&#34;&gt;Check out the latest &lt;strong&gt;demo&lt;/strong&gt;&lt;/a&gt; of what you&amp;rsquo;ll get in less than 10 minutes, or &lt;a href=&#34;https://sourcethemes.com/academic/#expo&#34;&gt;view the &lt;strong&gt;showcase&lt;/strong&gt;&lt;/a&gt; of personal, project, and business sites.&lt;/p&gt;
 &lt;ul&gt;
@@ -369,8 +369,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-1950s.png&#34; data-caption=&#34;1950s&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-1950s_huaf5482f8cea0c5a703a328640e3b7509_21614_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-1950s.png&#34; data-caption=&#34;1950s&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-1950s_huaf5482f8cea0c5a703a328640e3b7509_21614_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -382,8 +382,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-apogee.png&#34; data-caption=&#34;Apogee&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-apogee_hu4b45d99db97150df01464c393bfd17d4_24119_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-apogee.png&#34; data-caption=&#34;Apogee&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-apogee_hu4b45d99db97150df01464c393bfd17d4_24119_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -395,8 +395,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-coffee-playfair.png&#34; data-caption=&#34;Coffee theme with Playfair font&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-coffee-playfair_hu446a8f670cc5622adcc77b97ba95f6c5_22462_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-coffee-playfair.png&#34; data-caption=&#34;Coffee theme with Playfair font&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-coffee-playfair_hu446a8f670cc5622adcc77b97ba95f6c5_22462_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -408,8 +408,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-dark.png&#34; data-caption=&#34;Dark&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-dark_hu1e8601ecc47f58eada7743fdcd709d3d_21456_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-dark.png&#34; data-caption=&#34;Dark&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-dark_hu1e8601ecc47f58eada7743fdcd709d3d_21456_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -421,8 +421,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-default.png&#34; data-caption=&#34;Default&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-default_huba6228b7bdf30e2f03f12ea91b2cba0d_21751_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-default.png&#34; data-caption=&#34;Default&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-default_huba6228b7bdf30e2f03f12ea91b2cba0d_21751_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -434,8 +434,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-forest.png&#34; data-caption=&#34;Forest&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-forest_hu4f093a1c683134431456584193ea41ee_21797_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-forest.png&#34; data-caption=&#34;Forest&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-forest_hu4f093a1c683134431456584193ea41ee_21797_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -447,8 +447,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-ocean.png&#34; data-caption=&#34;Ocean&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-ocean_hu14831ccafc2219f30a7a096fa7617e01_21760_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-ocean.png&#34; data-caption=&#34;Ocean&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-ocean_hu14831ccafc2219f30a7a096fa7617e01_21760_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
     
@@ -460,8 +460,8 @@ rm Untitled.md
         
       
     
-  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://examplesite.org/post/getting-started/gallery/theme-strawberry.png&#34; data-caption=&#34;Strawberry&#34;&gt;
-  &lt;img src=&#34;https://examplesite.org/post/getting-started/gallery/theme-strawberry_hu36b0b347fcca08bd39e2df22dcedbdfb_39532_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
+  &lt;a data-fancybox=&#34;gallery-gallery&#34; href=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-strawberry.png&#34; data-caption=&#34;Strawberry&#34;&gt;
+  &lt;img src=&#34;https://thedatadiary.net/post/getting-started/gallery/theme-strawberry_hu36b0b347fcca08bd39e2df22dcedbdfb_39532_0x190_resize_lanczos_3.png&#34; alt=&#34;&#34;&gt;
   &lt;/a&gt;
   
 

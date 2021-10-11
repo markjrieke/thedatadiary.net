@@ -2,94 +2,94 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Tags on Academia</title>
-    <link>https://examplesite.org/tags/</link>
+    <link>https://thedatadiary.net/tags/</link>
     <description>Recent content in Tags on Academia</description>
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
-    <copyright>Copyright &amp;copy; {year}</copyright>
+    <copyright>&amp;copy; Mark Rieke {year}</copyright>
     <lastBuildDate>Tue, 01 Dec 2020 21:13:14 -0500</lastBuildDate>
     
-	    <atom:link href="https://examplesite.org/tags/index.xml" rel="self" type="application/rss+xml" />
+	    <atom:link href="https://thedatadiary.net/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>plot</title>
-      <link>https://examplesite.org/tags/plot/</link>
+      <link>https://thedatadiary.net/tags/plot/</link>
       <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
       
-      <guid>https://examplesite.org/tags/plot/</guid>
+      <guid>https://thedatadiary.net/tags/plot/</guid>
       <description></description>
     </item>
     
     <item>
       <title>R Markdown</title>
-      <link>https://examplesite.org/tags/r-markdown/</link>
+      <link>https://thedatadiary.net/tags/r-markdown/</link>
       <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
       
-      <guid>https://examplesite.org/tags/r-markdown/</guid>
+      <guid>https://thedatadiary.net/tags/r-markdown/</guid>
       <description></description>
     </item>
     
     <item>
       <title>regression</title>
-      <link>https://examplesite.org/tags/regression/</link>
+      <link>https://thedatadiary.net/tags/regression/</link>
       <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
       
-      <guid>https://examplesite.org/tags/regression/</guid>
+      <guid>https://thedatadiary.net/tags/regression/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Source Themes</title>
-      <link>https://examplesite.org/tags/source-themes/</link>
+      <link>https://thedatadiary.net/tags/source-themes/</link>
       <pubDate>Sun, 07 Apr 2019 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/tags/source-themes/</guid>
+      <guid>https://thedatadiary.net/tags/source-themes/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Deep Learning</title>
-      <link>https://examplesite.org/tags/deep-learning/</link>
+      <link>https://thedatadiary.net/tags/deep-learning/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/tags/deep-learning/</guid>
+      <guid>https://thedatadiary.net/tags/deep-learning/</guid>
       <description></description>
     </item>
     
     <item>
       <title>Demo</title>
-      <link>https://examplesite.org/tags/demo/</link>
+      <link>https://thedatadiary.net/tags/demo/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/tags/demo/</guid>
+      <guid>https://thedatadiary.net/tags/demo/</guid>
       <description></description>
     </item>
     
     <item>
       <title>human</title>
-      <link>https://examplesite.org/tags/human/</link>
+      <link>https://thedatadiary.net/tags/human/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/tags/human/</guid>
+      <guid>https://thedatadiary.net/tags/human/</guid>
       <description></description>
     </item>
     
     <item>
       <title>robotics</title>
-      <link>https://examplesite.org/tags/robotics/</link>
+      <link>https://thedatadiary.net/tags/robotics/</link>
       <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/tags/robotics/</guid>
+      <guid>https://thedatadiary.net/tags/robotics/</guid>
       <description></description>
     </item>
     
     <item>
       <title>academia</title>
-      <link>https://examplesite.org/tags/academia/</link>
+      <link>https://thedatadiary.net/tags/academia/</link>
       <pubDate>Wed, 20 Apr 2016 00:00:00 +0000</pubDate>
       
-      <guid>https://examplesite.org/tags/academia/</guid>
+      <guid>https://thedatadiary.net/tags/academia/</guid>
       <description></description>
     </item>
     
