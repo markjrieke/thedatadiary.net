@@ -22,6 +22,15 @@
     </item>
     
     <item>
+      <title>Posts</title>
+      <link>https://examplesite.org/post/</link>
+      <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
+      
+      <guid>https://examplesite.org/post/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Courses</title>
       <link>https://examplesite.org/courses/</link>
       <pubDate>Sun, 05 May 2019 00:00:00 +0100</pubDate>
@@ -36,15 +45,6 @@
       <pubDate>Sun, 07 Apr 2019 00:00:00 +0000</pubDate>
       
       <guid>https://examplesite.org/publication/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Posts</title>
-      <link>https://examplesite.org/post/</link>
-      <pubDate>Tue, 05 Feb 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://examplesite.org/post/</guid>
       <description></description>
     </item>
     
