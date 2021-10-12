@@ -35,3 +35,16 @@ pie(
   init.angle = -50, border = NA
 )
 ```
+
+You can include more plots if you feel like it!
+
+```{r}
+library(tidyverse)
+mtcars %>%
+  ggplot(aes(x = wt,
+             y = qsec,
+             color = as.character(cyl))) +
+  geom_point()
+
+```
+
