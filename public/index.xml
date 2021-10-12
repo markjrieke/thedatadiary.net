@@ -7,62 +7,35 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Sat, 01 Jun 2030 13:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 01 Dec 2020 21:13:14 -0500</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Recent &amp; Upcoming Talks</title>
-      <link>https://www.thedatadiary.net/talk/</link>
-      <pubDate>Sat, 01 Jun 2030 13:00:00 +0000</pubDate>
-      
-      <guid>https://www.thedatadiary.net/talk/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>Posts</title>
-      <link>https://www.thedatadiary.net/post/</link>
+      <link>https://www.thedatadiary.net/blog/</link>
       <pubDate>Tue, 01 Dec 2020 21:13:14 -0500</pubDate>
       
-      <guid>https://www.thedatadiary.net/post/</guid>
+      <guid>https://www.thedatadiary.net/blog/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>Courses</title>
-      <link>https://www.thedatadiary.net/courses/</link>
-      <pubDate>Sun, 05 May 2019 00:00:00 +0100</pubDate>
+      <title>About</title>
+      <link>https://www.thedatadiary.net/about/</link>
+      <pubDate>Wed, 01 Jan 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://www.thedatadiary.net/courses/</guid>
+      <guid>https://www.thedatadiary.net/about/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>Publications</title>
-      <link>https://www.thedatadiary.net/publication/</link>
-      <pubDate>Sun, 07 Apr 2019 00:00:00 +0000</pubDate>
+      <title>Resume</title>
+      <link>https://www.thedatadiary.net/resume/</link>
+      <pubDate>Wed, 01 Jan 2020 00:00:00 +0000</pubDate>
       
-      <guid>https://www.thedatadiary.net/publication/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Slides</title>
-      <link>https://www.thedatadiary.net/slides/</link>
-      <pubDate>Tue, 05 Feb 2019 00:00:00 +0000</pubDate>
-      
-      <guid>https://www.thedatadiary.net/slides/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Projects</title>
-      <link>https://www.thedatadiary.net/project/</link>
-      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://www.thedatadiary.net/project/</guid>
+      <guid>https://www.thedatadiary.net/resume/</guid>
       <description></description>
     </item>
     
