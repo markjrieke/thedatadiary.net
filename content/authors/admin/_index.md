@@ -1,4 +1,6 @@
 ---
+avatar_image: "avatar.jpg"
+name: "Mark Rieke"
 authors:
 - admin
 bio: I'm a mechanical engineer by education, data analyst by practice. I love machine learning and communicating complex topics clearly with simple and beautiful charts. 
