@@ -22,7 +22,7 @@ font_size = "M"
 description = ""
 
 # Default image for social sharing and search engines. Place image in `static/img/` folder and specify image name here.
-sharing_image = ""
+sharing_image = "background.png"
 
 # Twitter username (without @). Used when a vistor shares your site on Twitter.
 twitter = "markjrieke"
@@ -71,10 +71,10 @@ appointment_url = "https://calendly.com"
 # Contact links
 #   Set to `[]` to disable, or comment out unwanted lines with a hash `#`.
 contact_links = [
-  {icon = "twitter", icon_pack = "fab", name = "DM Me", link = "https://twitter.com/Twitter"},
-  {icon = "skype", icon_pack = "fab", name = "Skype Me", link = "skype:echo123?call"},
-  {icon = "keybase", icon_pack = "fab", name = "Chat on Keybase", link = "https://keybase.io/"},
-  {icon = "comments", icon_pack = "fas", name = "Discuss on Forum", link = "https://discourse.gohugo.io"},
+  {icon = "twitter", icon_pack = "fab", name = "Follow me on twitter!", link = "https://twitter.com/markjrieke"},
+  {icon = "github", icon_pack = "fab", name = "Find my work on GitHub!", link = "https://github.com/markjrieke"},
+  {icon = "stack-overflow", icon_pack = "fab", name = "Help me out on Stack Overflow!", link = "https://stackoverflow.com/users/16307782/mark-rieke"},
+  {icon = "linkedin", icon_pack = "fab", name = "Connect with me on LinkedIn!", link = "https://www.linkedin.com/in/mark-rieke-ab4b0ab4/"},
   # {icon = "telegram", icon_pack = "fab", name = "Telegram Me", link = "https://telegram.me/@Telegram"},
   ]
 
