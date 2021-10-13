@@ -15,21 +15,27 @@ subtitle = ""
 # For available icons, see: https://sourcethemes.com/academic/docs/page-builder/#icons
 
 [[feature]]
+  icon = "r-project"
+  icon_pack = "fab"
+  name = "Machine learning, statistical programming, and parameterized reporting"
+  description = ""
+
+[[feature]]
   icon = "chart-bar"
   icon_pack = "fas"
-  name = "Machine learning, statistical modeling, natural language processing, text mining, data analysis"
+  name = "Data analysis and visualization for business objectives"
   description = ""
   
 [[feature]]
   icon = "tools"
   icon_pack = "fas"
-  name = "R, SQL, GitHub, Markdown, shell scripting"
+  name = "R, tidymodels, GitHub, Markdown"
   description = ""  
   
 [[feature]]
-  icon = "heart"
+  icon = "pencil-alt"
   icon_pack = "fas"
-  name = "Writing and speaking for technical and general audiences"
+  name = "Communicating technical topics with general audiences"
   description = ""
 
 +++
