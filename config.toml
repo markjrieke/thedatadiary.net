@@ -37,6 +37,15 @@ hasCJKLanguage = false  # Set `true` for Chinese/Japanese/Korean languages.
 defaultContentLanguageInSubdir = false
 removePathAccents = true  # Workaround for https://github.com/gohugoio/hugo/issues/5687
 
+# set width of page sections
+# maxWidthTitle = "max-w-2x1"
+# maxWidthFeature = "max-w-5xl"
+# max-width = "50%"
+
+# Max Width Template parts
+# maxWidthHeader = "max-w-6xl"
+# maxWidthFooter = "max-w-6xl"
+
 summaryLength = 30 # Listing summary length in words. Also, see `abstract_length` in `params.toml`
 paginate = 10  # Number of items per page in paginated lists.
 enableEmoji = true
