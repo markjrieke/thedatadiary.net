@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academia 4.3.1">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Mark Rieke">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on building out the demographic/economic database. I, did, however, sneak in some time to explore the 2020 Census Apportionment Results that were released yesterday.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/">
+
+  
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#fc6f5c">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Open+Sans|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academia.min.76e69f7370e1e1222344c0109d841c44.css">
+
+  
+
+  
+  
+  
+  
+
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/">
+
+  
+  
+  
+  
+    
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@markjrieke">
+  <meta property="twitter:creator" content="@markjrieke">
+  
+  <meta property="og:site_name" content="the data diary">
+  <meta property="og:url" content="https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/">
+  <meta property="og:title" content="A Lukewarm Case for DC Statehood | the data diary">
+  <meta property="og:description" content="Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on building out the demographic/economic database. I, did, however, sneak in some time to explore the 2020 Census Apportionment Results that were released yesterday."><meta property="og:image" content="https://www.thedatadiary.net/img/background.png">
+  <meta property="twitter:image" content="https://www.thedatadiary.net/img/background.png"><meta property="og:locale" content="en-us">
+  
+  <meta property="article:published_time" content="2021-04-27T00:00:00&#43;00:00">
+  
+  <meta property="article:modified_time" content="2021-10-13T21:50:21-05:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>A Lukewarm Case for DC Statehood | the data diary</title>
+
+</head>
+
+
+<body id="top" data-spy="scroll" data-target="#TableOfContents" data-offset="71" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">the data diary</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation"><span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+      
+      
+      <ul class="navbar-nav ml-auto">
+        
+
+        
+
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/about"><span>About</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/resume"><span>Resume</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article py-5" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    
+    
+    
+    <div class="article-container py-3">
+      <h1 itemprop="name">A Lukewarm Case for DC Statehood</h1>
+
+      
+
+      
+      
+
+
+
+<meta content="2021-04-27 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2021-10-13 21:50:21 -0500 CDT" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Last updated on
+      
+    
+    <time>Oct 13, 2021</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder"></i>
+    <a href="/categories/archive/">archive</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/&amp;text=A%20Lukewarm%20Case%20for%20DC%20Statehood" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/&amp;t=A%20Lukewarm%20Case%20for%20DC%20Statehood" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=A%20Lukewarm%20Case%20for%20DC%20Statehood&amp;body=https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/&amp;title=A%20Lukewarm%20Case%20for%20DC%20Statehood" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=A%20Lukewarm%20Case%20for%20DC%20Statehood%20https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/&amp;title=A%20Lukewarm%20Case%20for%20DC%20Statehood" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+      
+    </div>
+  </div>
+</div>
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+<script src="https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on <a href="https://github.com/markjrieke/electionsimulator/tree/main/notepad">building out the demographic/economic database</a>. I, did, however, sneak in some time to explore the <a href="https://www.census.gov/data/tables/2020/dec/2020-apportionment-data.html">2020 Census Apportionment Results</a> that were released yesterday. Some surprises came out of the release: Texas and Florida underperformed expectations, only gaining two and one seat, respectively; Arizona didn’t gain a seat; and New York lost a seat but was apparently <a href="https://www.nytimes.com/2021/04/26/nyregion/new-york-census-congress.html">89 people short of retaining its seats</a>. Given that Texas and Florida each gained one less seat than was generally expected, there’s been some speculation online that <a href="https://www.washingtonpost.com/business/are-you-a-citizen-the-trump-census-controversy-explained/2021/04/26/1cfe6ed8-a6e1-11eb-a8a7-5f45ddcdf364_story.html">Donald Trump’s attempt to undercount Hispanics</a> was successful, but backfired. I’ll hold my judgments on this theory until I can read some more in-depth opinions (if they get written).</p>
+<p>With the new apportionment and population data, each individual’s representative power in congress has shifted. Including both Senators and House Representatives, states with smaller populations continue to have outsized representation in congress: Wyoming and Vermont have significantly more representatives per million residents than California or Texas, for example. Residents of Washington D.C., however, receive no representation in congress.</p>
+<p><img src="plot.png" /></p>
+<p><em>As a side note, the reps-per-million will be greater than the total number of congressional representatives in states with less than one million residents. This chart is really meant to compare the uneven representative power of each state.</em></p>
+<p>If D.C. were to become a state, it would have outsized representative power, similar to Wyoming and Vermont, due to its size. That, however, isn’t really a justification to deny ~700,000 Americans national representation, and the arguments against D.C. statehood have been <a href="https://www.washingtonpost.com/opinions/treating-fellow-citizens-as-landfill/2021/03/24/f4c16d34-8c1a-11eb-a6bd-0eb91c03305a_story.html">weak at best</a> and <a href="https://www.cnn.com/2020/06/26/politics/tom-cotton-wyoming-dc-statehood/index.html">implicitly racist at worst</a>, given D.C.’s <a href="https://en.wikipedia.org/wiki/Washington,_D.C.#Demographics">majority-minority population</a>.</p>
+<p>Still, it’s virtually impossible that D.C. statehood receive the filibuster-proof 60 votes in the Senate (I’d doubt that even a compromise of <a href="https://www.forbes.com/sites/andrewsolender/2021/04/22/gop-senator-introduces-bill-to-give-dc-to-maryland-as-statehood-bill-heads-to-senate/?sh=c66ab4c2ca30">retrocession into Maryland</a> would pass). For the time being, residents of D.C. will have to wait for representation until polarized ideological walls come down and Republicans vote for D.C. statehood, Democrats gain enough seats for a supermajority, or the filibuster is abolished.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.04.27-bureau_results">Github</a>.</p>
+
+    </div>
+
+    
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu566f88036a32ad6519e34d2b60700d41_471828_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="https://www.thedatadiary.net/">Mark Rieke</a></h5>
+      <h6 class="card-subtitle">Senior CX Analyst</h6>
+      <p class="card-text" itemprop="description">I&rsquo;m a mechanical engineer by education, data analyst by practice. I love machine learning and communicating complex topics clearly with simple and beautiful charts.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://twitter.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+      
+
+      
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="/js/academia.min.e40e230d9b3dfeac86994156b6388764.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4 mb-md-0">
+        
+        <p class="mb-0">
+          © Mark Rieke 2021 &middot; 
+          Powered by
+          <a href="https://gethugothemes.com" target="_blank" rel="noopener">Gethugothemes</a>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <ul class="list-inline network-icon text-right mb-0">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://twitter.com/markjrieke" target="_blank" rel="noopener" title="Follow me on twitter!"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://github.com/markjrieke" target="_blank" rel="noopener" title="Find my work on GitHub!"><i class="fab fa-github" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener" title="Help me out on Stack Overflow!"><i class="fab fa-stack-overflow" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener" title="Connect with me on LinkedIn!"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

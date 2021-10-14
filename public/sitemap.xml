@@ -2,32 +2,86 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.thedatadiary.net/categories/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/blog/2020-12-01-r-rmarkdown/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/tags/plot/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
+    <loc>https://www.thedatadiary.net/categories/archive/</loc>
+    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
+    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
   </url><url>
-    <loc>https://www.thedatadiary.net/categories/r/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/tags/r-markdown/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/tags/regression/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/tags/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
+    <loc>https://www.thedatadiary.net/categories/</loc>
+    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/</loc>
-    <lastmod>2020-12-01T21:13:14-05:00</lastmod>
+    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/</loc>
+    <lastmod>2021-10-13T22:16:52-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-10-05-rstudio-s-call-for-documentation/</loc>
+    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-09-23-catching-up-again/</loc>
+    <lastmod>2021-10-13T22:35:28-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-08-08-tidymodels-and-the-titanic/</loc>
+    <lastmod>2021-10-13T22:23:02-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-07-11-blexas/</loc>
+    <lastmod>2021-10-13T22:06:54-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/</loc>
+    <lastmod>2021-10-13T22:01:21-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-05-05-president-of-the-polls/</loc>
+    <lastmod>2021-10-13T21:56:34-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-04-27-a-lukewarm-case-for-dc-statehood/</loc>
+    <lastmod>2021-10-13T21:50:21-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-04-20-catching-up/</loc>
+    <lastmod>2021-10-13T21:45:23-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/</loc>
+    <lastmod>2021-10-13T21:34:30-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-03-15-recent-works/</loc>
+    <lastmod>2021-10-13T21:27:19-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-03-07-artwork/</loc>
+    <lastmod>2021-10-13T21:24:52-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/</loc>
+    <lastmod>2021-10-13T21:04:15-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-02-21-kind-of-projecting-the-2020-election/</loc>
+    <lastmod>2021-10-13T20:54:37-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-02-14-scorecasting/</loc>
+    <lastmod>2021-10-13T20:47:34-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-02-08-some-worthwhile-links/</loc>
+    <lastmod>2021-10-13T20:37:13-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-01-31-the-min-wage-debate/</loc>
+    <lastmod>2021-10-13T20:19:10-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-01-24-your-doctor-probably-isn-t-an-idiot/</loc>
+    <lastmod>2021-10-13T20:04:51-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-01-17-r-ggplot2-plotly/</loc>
+    <lastmod>2021-10-13T19:49:59-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-01-10-baby-steps/</loc>
+    <lastmod>2021-10-13T19:43:34-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/tags/archive/</loc>
+    <lastmod>2021-10-13T19:39:53-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-01-09-hello-world/</loc>
+    <lastmod>2021-10-13T19:39:53-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/tags/</loc>
+    <lastmod>2021-10-13T19:39:53-05:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/about/</loc>
     <lastmod>2020-01-01T00:00:00+00:00</lastmod>
@@ -36,22 +90,8 @@
     <lastmod>2020-01-01T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/authors/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/blog/jupyter/</loc>
-    <lastmod>2019-02-05T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/authors/admin/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/blog/snail/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/tags/academia/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/blog/getting-started/</loc>
-    <lastmod>2019-04-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/publication_types/</loc>
   </url>
