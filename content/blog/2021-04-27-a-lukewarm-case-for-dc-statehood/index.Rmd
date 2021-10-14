@@ -1,0 +1,32 @@
+---
+title: A Lukewarm Case for DC Statehood
+author: ''
+date: '2021-04-27'
+slug: []
+categories: [archive]
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-10-13T21:50:21-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on [building out the demographic/economic database](https://github.com/markjrieke/electionsimulator/tree/main/notepad). I, did, however, sneak in some time to explore the [2020 Census Apportionment Results](https://www.census.gov/data/tables/2020/dec/2020-apportionment-data.html) that were released yesterday. Some surprises came out of the release: Texas and Florida underperformed expectations, only gaining two and one seat, respectively; Arizona didn’t gain a seat; and New York lost a seat but was apparently [89 people short of retaining its seats](https://www.nytimes.com/2021/04/26/nyregion/new-york-census-congress.html). Given that Texas and Florida each gained one less seat than was generally expected, there’s been some speculation online that [Donald Trump’s attempt to undercount Hispanics](https://www.washingtonpost.com/business/are-you-a-citizen-the-trump-census-controversy-explained/2021/04/26/1cfe6ed8-a6e1-11eb-a8a7-5f45ddcdf364_story.html) was successful, but backfired. I’ll hold my judgments on this theory until I can read some more in-depth opinions (if they get written).
+
+With the new apportionment and population data, each individual’s representative power in congress has shifted. Including both Senators and House Representatives, states with smaller populations continue to have outsized representation in congress: Wyoming and Vermont have significantly more representatives per million residents than California or Texas, for example. Residents of Washington D.C., however, receive no representation in congress.
+
+![](plot.png)
+
+*As a side note, the reps-per-million will be greater than the total number of congressional representatives in states with less than one million residents. This chart is really meant to compare the uneven representative power of each state.*
+
+If D.C. were to become a state, it would have outsized representative power, similar to Wyoming and Vermont, due to its size. That, however, isn’t really a justification to deny ~700,000 Americans national representation, and the arguments against D.C. statehood have been [weak at best](https://www.washingtonpost.com/opinions/treating-fellow-citizens-as-landfill/2021/03/24/f4c16d34-8c1a-11eb-a6bd-0eb91c03305a_story.html) and [implicitly racist at worst](https://www.cnn.com/2020/06/26/politics/tom-cotton-wyoming-dc-statehood/index.html), given D.C.’s [majority-minority population](https://en.wikipedia.org/wiki/Washington,_D.C.#Demographics).
+
+Still, it’s virtually impossible that D.C. statehood receive the filibuster-proof 60 votes in the Senate (I’d doubt that even a compromise of [retrocession into Maryland](https://www.forbes.com/sites/andrewsolender/2021/04/22/gop-senator-introduces-bill-to-give-dc-to-maryland-as-statehood-bill-heads-to-senate/?sh=c66ab4c2ca30) would pass). For the time being, residents of D.C. will have to wait for representation until polarized ideological walls come down and Republicans vote for D.C. statehood, Democrats gain enough seats for a supermajority, or the filibuster is abolished.   
+
+As always, you can find my work on [Github](https://github.com/markjrieke/thedatadiary/tree/main/2021.04.27-bureau_results).

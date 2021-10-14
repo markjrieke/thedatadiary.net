@@ -1,0 +1,71 @@
+---
+title: Tidymodels and the Titanic
+author: ''
+date: '2021-08-08'
+slug: []
+categories: [archive]
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-10-13T22:23:02-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>This week, I thought I’d do something a bit different. I’ve been working with &amp; getting used to <a href="https://www.tidymodels.org/">tidymodels</a>, a suite of R packages for building machine learning models with tidyverse principles (you can thank <a href="https://juliasilge.com/blog/">Julia Silge’s blog</a> for providing a whole host of examples and walkthroughs). Using tidymodels and <a href="https://www.kaggle.com/c/titanic">Kaggle’s Titanic dataset</a>, I created a few simple models to predict whether or not each passenger survived.</p>
+<div id="exploratory-data-analysis" class="section level3">
+<h3>Exploratory Data Analysis</h3>
+<p>First off, it’s important to get to know the dataset in a bit of detail before diving into model building. The Titanic dataset is relatively small, containing 12 columns of data on 891 passengers.</p>
+<ul>
+<li><strong>PassengerId</strong> : ordered number assigned to each passenger (1, 2, 3… etc.).</li>
+<li><strong>Survived</strong> : indicates whether the passenger survived or not (imported as numeric, where a 1 means that the passenger survived and a 0 means that the passenger died.</li>
+<li><strong>PClass</strong> : passenger class (1st, 2nd, or 3rd).</li>
+<li><strong>Name</strong> : passenger’s name.</li>
+<li><strong>Sex</strong> : passenger’s sex.</li>
+<li><strong>Age</strong> : passenger’s age.</li>
+<li><strong>SibSp</strong> : number of the passenger’s siblings and/or spouses aboard the ship.</li>
+<li><strong>Parch</strong> : number of the passenger’s parents and/or children aboard the ship.</li>
+<li><strong>Ticket</strong> : passenger’s ticket number.</li>
+<li><strong>Fare</strong> : price of the passenger’s ticket.</li>
+<li><strong>Cabin</strong> : passenger’s cabin number.</li>
+<li><strong>Embarked</strong> : port from which the passenger embarked.</li>
+</ul>
+<p>The passenger’s name and ticket number are unique, and don’t offer any much predictive power (at least, not for the type we’ll be deploying), so I’ve removed those columns from the selection. The majority of passengers are missing Cabin information, so I’ve similarly removed that column. Let’s take a look at the age distribution by gender. Density plots are good for this sort of objective, but a quick note - density plots don’t show the counts (like a histogram), just the relative distribution of each group.</p>
+<p><img src="pics/plot_01.png" /></p>
+<p>Both men and women have similar age distributions, with the majority being adults roughly in their twenties. It’d be interesting to look at which age groups survived.</p>
+<p><img src="pics/plot_02.png" /></p>
+<p>There’s a spike survivorship at a young age (as expected, due to the prioritization of children). Young adults make up the majority of both survivors and those who died, simply because young adults made up the majority of passengers. It may be more interesting to see which male/female age groups survived.</p>
+<p><img src="pics/plot_03.png" /></p>
+<p>Interestingly, there’s a large portion of the women who died were children. To gain some more insight, however, it may be beneficial to bin the results. As mentioned above, density plots don’t show a count of each age, but the relative amounts instead. We can use a histogram to get a better idea of the actual amount in each group.</p>
+<p><img src="pics/plot_04.png" /></p>
+<p>From the histogram, we can see that there were far more male passengers than female passengers. Let’s setup age brackets and see how many of each age group survived.</p>
+<p><img src="pics/plot_05.png" /></p>
+<p>Despite there being more male passengers, there were more female survivors in just about every age bracket. I had expected that women would have a greater percentage of survivorship, but was mildly surprised that the absolute number of female survivors was greater than the number of male survivors.</p>
+<p>Lets look at how survivorship is related to the number of family members each passenger was traveling with.</p>
+<p><img src="pics/plot_06.png" /></p>
+<p>While there’s not huge variation between survivorship percentages across each class, we can see that the majority of passengers were traveling alone.</p>
+<p>Finally, I looked at the distribution of the fare price by survivorship. As expected, passengers who didn’t survive skewed towards low cost fares while survivors were more evenly distributed across fare prices.</p>
+<p><img src="pics/plot_07.png" /></p>
+</div>
+<div id="model-fitting-and-evaluation" class="section level3">
+<h3>Model Fitting and Evaluation</h3>
+<p>Now that we’ve explored the data a bit, we can get started on some actual model fitting and evaluation. I split the dataset into a training set and test set, and built two simple models - a <a href="https://en.wikipedia.org/wiki/Logistic_regression">logistic regression</a> and a <a href="https://en.wikipedia.org/wiki/Random_forest">random forest model</a>. In very light detail, a logistic regression is the most basic classification model based on the generalized linear model and a random forest model is a decision tree-based algorithm. With no <a href="https://www.datarobot.com/wiki/tuning/">tuning</a> applied, neither model performed particularly well - the logistic regression and random forest models had accuracies of 85.5% and 83.8% on the test set, respectively. While the logistic regression had a slightly higher accuracy on the test set, the random forest performed better on the metric of <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">area under the ROC (receiver-operator characteristic)</a> curve - 0.899 compared to 0.888 (generally, binary classification systems with ROC AUC values close to 1 perform better). A comparison between the two ROC curves is shown below.</p>
+<p>It’s not perfect, but the purpose was to explore the tidymodels framework, and I’m pretty happy with the outcome/practice along the way.</p>
+<p><img src="pics/roc_auc.png" /></p>
+</div>
+<div id="some-things-to-readwatchlisten-to" class="section level3">
+<h3>Some Things to Read/Watch/Listen to</h3>
+<ul>
+<li>There’s been a concerted effort by prominent conservatives to <a href="https://twitter.com/gelliottmorris/status/1424524749875601408?s=21">promote vaccination</a> and <a href="https://www.reviewjournal.com/opinion/letters/letter-dont-blame-the-gop-for-vaccine-hesitancy-2413731/amp/">shift the blame for vaccine hesitancy to the Biden administration</a>, pointing in particular to one of Kamala Harris’ comments during the Vice Presidential debate. This criticism falls fairly short, given that commentators like <a href="https://www.youtube.com/watch?v=ocEFTIwnO6I">Tucker Carlson</a> and legislators like <a href="https://www.cnn.com/2021/08/10/tech/twitter-marjorie-taylor-greene/index.html">Marjorie Taylor Green</a> continue to spread vaccine conspiracy theories. Further, a <a href="https://www.economist.com/graphic-detail/2021/07/30/which-americans-are-against-the-jab">statistical model by the Economist</a> found that the strongest predictor of whether or not someone has been vaccinated is who they voted for in the 2020 presidential election.</li>
+<li>Julia Silge was recently featured as a guest on an excellent episode of the <a href="https://www.youtube.com/watch?v=p7z8yZucwlM">Not So Standard Podcast</a>. Well worth a listen for R dorks like myself.</li>
+<li>Perry Bacon Jr wrote an <a href="https://www.washingtonpost.com/opinions/2021/08/09/why-moderation-doesnt-guarantee-electoral-success-biden-democrats/">informative piece</a> on the misplaced importance on swing voters in election cycles.</li>
+</ul>
+</div>

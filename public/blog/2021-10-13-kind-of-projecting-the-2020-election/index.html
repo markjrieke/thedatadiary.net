@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academia 4.3.1">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Mark Rieke">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="I’m about 4 months too late, but to practice forecasting, I made a modest projection for the 2020 national popular vote using polling data from the two weeks leading up to election day.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/">
+
+  
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#fc6f5c">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Open+Sans|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academia.min.76e69f7370e1e1222344c0109d841c44.css">
+
+  
+
+  
+  
+  
+  
+
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/">
+
+  
+  
+  
+  
+    
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@markjrieke">
+  <meta property="twitter:creator" content="@markjrieke">
+  
+  <meta property="og:site_name" content="the data diary">
+  <meta property="og:url" content="https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/">
+  <meta property="og:title" content="(Kind of) Projecting the 2020 Election | the data diary">
+  <meta property="og:description" content="I’m about 4 months too late, but to practice forecasting, I made a modest projection for the 2020 national popular vote using polling data from the two weeks leading up to election day."><meta property="og:image" content="https://www.thedatadiary.net/img/background.png">
+  <meta property="twitter:image" content="https://www.thedatadiary.net/img/background.png"><meta property="og:locale" content="en-us">
+  
+  <meta property="article:published_time" content="2021-02-21T00:00:00&#43;00:00">
+  
+  <meta property="article:modified_time" content="2021-10-13T20:54:37-05:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>(Kind of) Projecting the 2020 Election | the data diary</title>
+
+</head>
+
+
+<body id="top" data-spy="scroll" data-target="#TableOfContents" data-offset="71" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">the data diary</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation"><span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+      
+      
+      <ul class="navbar-nav ml-auto">
+        
+
+        
+
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/about"><span>About</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/resume"><span>Resume</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article py-5" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    
+    
+    
+    <div class="article-container py-3">
+      <h1 itemprop="name">(Kind of) Projecting the 2020 Election</h1>
+
+      
+
+      
+      
+
+
+
+<meta content="2021-02-21 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2021-10-13 20:54:37 -0500 CDT" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Last updated on
+      
+    
+    <time>Oct 13, 2021</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder"></i>
+    <a href="/categories/archive/">archive</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/&amp;text=%28Kind%20of%29%20Projecting%20the%202020%20Election" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/&amp;t=%28Kind%20of%29%20Projecting%20the%202020%20Election" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=%28Kind%20of%29%20Projecting%20the%202020%20Election&amp;body=https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/&amp;title=%28Kind%20of%29%20Projecting%20the%202020%20Election" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=%28Kind%20of%29%20Projecting%20the%202020%20Election%20https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/&amp;title=%28Kind%20of%29%20Projecting%20the%202020%20Election" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+      
+    </div>
+  </div>
+</div>
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+<script src="https://www.thedatadiary.net/blog/2021-10-13-kind-of-projecting-the-2020-election/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>I’m about 4 months too late, but to practice forecasting, I made a modest projection for the 2020 national popular vote using <a href="https://projects.fivethirtyeight.com/2020-general-data/presidential_polls_2020.csv">polling data</a> from the two weeks leading up to election day. In the weeks leading up to the election, aggregated polling was fairly stable, and the model projection was within 1.5% of the <a href="https://en.wikipedia.org/wiki/2020_United_States_presidential_election">actual outcome</a> (both the model and actual outcome are adjusted to exclude third parties and instead show the two-party vote share).</p>
+<p><img src="pics/plot_01.png" /></p>
+<p>The projected outcome of Biden’s vote share, 53.6%, is only the most likely outcome in a <a href="https://en.wikipedia.org/wiki/Beta_distribution">distribution of possible outcomes</a> predicted by the model. Of the possible outcomes, Biden wins the popular vote about 70% of the time, according to the November 2nd projection.</p>
+<p><img src="pics/plot_03.png" /></p>
+<p>Like the projected vote share, the probability of Biden winning the popular vote remained fairly constant in the two weeks leading up to the election.</p>
+<p><img src="pics/plot_02.png" /></p>
+<p>If you were like me, obsessing over the prominent forecast models prior to election day, you may notice that this projection is substantially less confident in the outcome than the leading forecasters. <a href="https://projects.fivethirtyeight.com/2020-election-forecast/">FiveThirtyEight</a> and the <a href="https://projects.economist.com/us-2020-forecast/president">Economist</a>, for example, both projected similar popular vote outcomes (within a percentage point of this forecast), but gave Biden at least a 97% of winning the popular vote! There are a couple reasons for this difference:</p>
+<ul>
+<li><strong>This model is one-dimensional</strong> : this is a pretty simple model built just to get practice with forecasting and some of the tools in R, so it only uses polls (and, at that, only a small subset of polls), whereas other forecast models used a wide variety of variables to inform the model (economic indicators, demographics, partisanship, etc.).</li>
+<li><strong>This model doesn’t weight polls</strong> : aside from the sample size of the poll, this model doesn’t apply any weights or corrections to the polling data. The polling method, date the poll was taken, and pollster <a href="https://fivethirtyeight.com/features/calculating-house-effects-of-polling-firms/">house effect</a> (i.e., how partisan the pollster tends to be relative to the average) can be used to inflate or deflate the weight of each poll in the model. This simple model ignores all of that and treats every poll as equal.</li>
+<li><strong>This model forces an uncertainty range</strong> : unlike other models, which are a set of <a href="https://en.wikipedia.org/wiki/Regression_analysis">linear regressions</a>, this model is a relatively simple <a href="https://en.wikipedia.org/wiki/Beta_distribution">beta distribution</a> of the vote, with the sum of parameters manually set to 50. This is a bit of technical mumbo-jumbo, but the gist is that a beta distribution allows you to control its “peaky-ness,” and I did this manually, whereas other forecasters had the model do it for them. Increasing the sum of parameters increases how peaky the distribution looks, and a sum of 50 was used based on <a href="http://florianmuellerklein.github.io/election/">Florian Muellerklein’s Georgia runoff model</a>, which also used a sum of 50.</li>
+</ul>
+<div id="some-notes" class="section level3">
+<h3>Some Notes</h3>
+<p>As always, you can find source data and code on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.02.21-simple_projection">github</a>. I’m pretty happy with how this turned out - I’ve been getting a bit more comfortable with R, and the tools used for this post were pretty intuitive to implement. I’m also happy with the color palette I selected (<a href="https://htmlcolorcodes.com/color-picker/">HTML Color Picker</a> is a godsend). The only improvement is that I could/should have saved quite a bit of code by writing over one of the plot themes, rather than re-writing the theme for each plot. Something to remember going forward.</p>
+<p>Next week, I’ll dig into some of the county-level data from the election to see if there was any ticket splitting between the presidential election and the down-ballot races.</p>
+</div>
+
+    </div>
+
+    
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu566f88036a32ad6519e34d2b60700d41_471828_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="https://www.thedatadiary.net/">Mark Rieke</a></h5>
+      <h6 class="card-subtitle">Senior CX Analyst</h6>
+      <p class="card-text" itemprop="description">I&rsquo;m a mechanical engineer by education, data analyst by practice. I love machine learning and communicating complex topics clearly with simple and beautiful charts.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://twitter.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+      
+
+      
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="/js/academia.min.e40e230d9b3dfeac86994156b6388764.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4 mb-md-0">
+        
+        <p class="mb-0">
+          © Mark Rieke 2021 &middot; 
+          Powered by
+          <a href="https://gethugothemes.com" target="_blank" rel="noopener">Gethugothemes</a>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <ul class="list-inline network-icon text-right mb-0">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://twitter.com/markjrieke" target="_blank" rel="noopener" title="Follow me on twitter!"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://github.com/markjrieke" target="_blank" rel="noopener" title="Find my work on GitHub!"><i class="fab fa-github" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener" title="Help me out on Stack Overflow!"><i class="fab fa-stack-overflow" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener" title="Connect with me on LinkedIn!"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
