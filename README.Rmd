@@ -1,7 +1,6 @@
 ---
 title: "README"
 author: "Mark Rieke"
-date: "10/14/2021"
 output: rmarkdown::github_document
 ---
 
