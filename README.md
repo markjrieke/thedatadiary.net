@@ -1,7 +1,5 @@
 README
 ================
-Mark Rieke
-10/14/2021
 
 This is the home repository for
 [www.thedatadiary.net](https://www.thedatadiary.net), built with
