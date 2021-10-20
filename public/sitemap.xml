@@ -2,16 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.thedatadiary.net/categories/archive/</loc>
-    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
-  </url><url>
     <loc>https://www.thedatadiary.net/blog/</loc>
-    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
+    <lastmod>2021-10-19T13:33:10-05:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/categories/</loc>
-    <lastmod>2021-10-13T22:39:46-05:00</lastmod>
+    <lastmod>2021-10-19T13:33:10-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/categories/politics/</loc>
+    <lastmod>2021-10-19T13:33:10-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/</loc>
+    <lastmod>2021-10-19T13:33:10-05:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/</loc>
+    <lastmod>2021-10-19T13:33:10-05:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/categories/archive/</loc>
     <lastmod>2021-10-13T22:39:46-05:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/</loc>
