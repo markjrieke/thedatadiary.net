@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>politics on the data diary</title>
+    <link>https://www.thedatadiary.net/categories/politics/</link>
+    <description>Recent content in politics on the data diary</description>
+    <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; Mark Rieke {year}</copyright>
+    <lastBuildDate>Tue, 19 Oct 2021 00:00:00 +0000</lastBuildDate>
+    
+	    <atom:link href="https://www.thedatadiary.net/categories/politics/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Polling Average of the VA Governor&#39;s Race using purrr::map functions</title>
+      <link>https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/</link>
+      <pubDate>Tue, 19 Oct 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;Rolling poll averages can be misleading in the absence of errorbars or an expected distribution of outcomes. FiveThirtyEight is currently &lt;a href=&#34;https://projects.fivethirtyeight.com/polls/governor/virginia/&#34;&gt;tracking polls of Virginia’s Governor race&lt;/a&gt; slated for early November, and has kindly made their polls &lt;a href=&#34;https://projects.fivethirtyeight.com/polls-page/data/governor_polls.csv&#34;&gt;available to the public&lt;/a&gt;. Their current polling average, however, looks to be a simple rolling average and doesn’t include a confidence interval. I’ve attempted to improve upon their tracker here by providing a weighted polling average and a 95% confidence interval.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/race_results_2021-10-19.png&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;how-this-works&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;How this works&lt;/h3&gt;
+&lt;p&gt;Since we’re only considering the top candidates from each party, we’ll look at each candidate’s two-party voteshare of each poll. To get the two-party voteshare, third party or other minor candidates are removed from each poll and each candidate’s percentage is recalculated as if they were the only two options on the ballot (in practice, this only removes a tiny amount of undecideds and third party voters). Then, the daily polling average is calculated by weighting each poll by sample size and recency. Using &lt;a href=&#34;https://en.wikipedia.org/wiki/Bayes%27_theorem&#34;&gt;Bayes’ theorem&lt;/a&gt; and a weak &lt;a href=&#34;https://en.wikipedia.org/wiki/Continuous_uniform_distribution&#34;&gt;uniform prior&lt;/a&gt;, we can use the same method recalculate the polling average and confidence interval for each day between today and the election. Because polls are weighted by recency, as we look further and further into the future, our confidence in the polls decreases and the confidence interval around the polling average fans out. Each candidate’s probability of winning is the portion of the portion of the projected election-day polling distribution in their favor, based on that day’s polling average.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;some-caveats-worth-noting&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Some caveats worth noting&lt;/h3&gt;
+&lt;p&gt;This is an inherently flawed method, and it’s worth pointing out a few of the flaws and shortcuts I used:&lt;/p&gt;
+&lt;div id=&#34;the-functions-used-to-weight-polls-are-nowhere-near-perfect.&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;The functions used to weight polls are nowhere near perfect.&lt;/h4&gt;
+&lt;p&gt;The original weighting functions (which I haven’t changed) were chosen somewhat arbitrarily. In hindsight, they’re probably placing too much emphasis on recency and the error bars ought to be larger. While I have received some &lt;a href=&#34;https://community.rstudio.com/t/is-it-possible-to-tune-arbitrary-parameters-w-tidymodels/117998/2&#34;&gt;advice on tuning arbitrary functions&lt;/a&gt; as a part of a larger model, I haven’t implemented here. It’s more prudent to think of this as an over-confident polling aggregate, rather than any sort of model. For a true projection model, I’d recommend looking at &lt;a href=&#34;https://projects.jhkforecasts.com/2022-midterms/virginia-governor&#34;&gt;Jack Kersting’s website&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;the-weighting-method-ignores-important-weighting-factors&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;The weighting method ignores important weighting factors&lt;/h4&gt;
+&lt;p&gt;This weighting method is super simple and ignores common weighting factors, like pollster and survey methodology. Other less-common poll weighting methods, like accounting for partisan non-response bias and and how the pollster weights their results (notably, whether or not the pollster weights by education) were similarly ignored. There is definitely a &lt;a href=&#34;https://gelliottmorris.substack.com/p/what-people-are-missing-about-the?justPublished=true&#34;&gt;strong argument&lt;/a&gt; for including these weighting factors, but for me, this exercise was more about learning to use &lt;code&gt;purrr::map()&lt;/code&gt; and other related functions when &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/blob/main/2021.10.01-virginia_governors_race/scripts/va_poll_wrangle.R&#34;&gt;writing the script for this plot&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;some-pollsters-are-filtered-out-by-design&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Some pollsters are filtered out by design&lt;/h4&gt;
+&lt;p&gt;I debated this for quite some time, but decided to add a filter to remove polls conducted by &lt;a href=&#34;https://www.rasmussenreports.com/&#34;&gt;Rasmussen&lt;/a&gt; and &lt;a href=&#34;https://www.thetrafalgargroup.org/&#34;&gt;Trafalgar&lt;/a&gt;. Trafalgar is excluded from any of the &lt;a href=&#34;https://docs.google.com/spreadsheets/d/e/2PACX-1vQ56fySJKLL18Lipu1_i3ID9JE06voJEz2EXm6JW4Vh11zmndyTwejMavuNntzIWLY0RyhA1UsVEen0/pub?gid=0&amp;amp;single=true&amp;amp;output=csv&#34;&gt;Economist’s polling databases&lt;/a&gt; for opaque yet clearly shoddy methodology and Rasmussen is &lt;a href=&#34;https://twitter.com/Rasmussen_Poll/status/1448819612242616324?ref_src=twsrc%5Etfw%7Ctwcamp%5Eembeddedtimeline%7Ctwterm%5Eprofile%3ARasmussen_Poll%7Ctwgr%5EeyJ0ZndfZXhwZXJpbWVudHNfY29va2llX2V4cGlyYXRpb24iOnsiYnVja2V0IjoxMjA5NjAwLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X2hvcml6b25fdHdlZXRfZW1iZWRfOTU1NSI6eyJidWNrZXQiOiJodGUiLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X3NwYWNlX2NhcmQiOnsiYnVja2V0Ijoib2ZmIiwidmVyc2lvbiI6bnVsbH19%7Ctwcon%5Etimelinechrome&amp;amp;ref_url=https%3A%2F%2Fwww.rasmussenreports.com%2F&#34;&gt;clearly partisan&lt;/a&gt;. Removing these from the average follows the general consensus on ET (though, to be transparent, ET does tend to slant far to the left). In future polling projects, I’d hope to develop some more robust methodology to programatically downweight problematic pollsters (how’s &lt;em&gt;that&lt;/em&gt; for a tongue twister?), but for now I’m just going to exclude.&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;final-thoughts-on-polling&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Final thoughts on polling&lt;/h3&gt;
+&lt;p&gt;This methodology certainly has its flaws, but it &lt;em&gt;is&lt;/em&gt; &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/blob/main/2021.10.01-virginia_governors_race/scripts/va_poll_wrangle.R&#34;&gt;transparent&lt;/a&gt;. I’ll continuously update this plot up until election day on my &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;some-programming-notes&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Some programming notes&lt;/h3&gt;
+&lt;p&gt;I’ve finished migrating my site to Netlify! I had originally planned to make the switch from Squarespace sometime early in 2022, but motivation struck me during a relatively light work week and I was able to rebuild the site using &lt;a href=&#34;https://bookdown.org/yihui/blogdown/&#34;&gt;blogdown&lt;/a&gt;. This allows for a lot more customization and control than was available with Squarespace, but the biggest upside is &lt;em&gt;definitely&lt;/em&gt; the ease of sharing in-line code, here’s a quick example:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+
+# let&amp;#39;s put together a plot from the diamonds dataset
+diamonds %&amp;gt;%
+  ggplot(aes(x = carat,
+             y = price,
+             color = cut)) +
+  geom_point(alpha = 0.1) +
+  theme_minimal() +
+  viridis::scale_color_viridis(discrete = TRUE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;2400&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This ease of use and visibility will make things more seamless for me and allow me to dig into more technical content in more detail in the future!&lt;/p&gt;
+&lt;p&gt;I’ll be taking a (much needed) vacation next week, spending some time off the grid in the Grand Canyon and surrounding area with my family. I’ve got a short post lined up for early November when I return - see you then!&lt;/p&gt;
+&lt;p&gt;As always, you can find the source files for &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race&#34;&gt;the script to generate the polling average&lt;/a&gt; and for &lt;a href=&#34;https://github.com/markjrieke/thedatadiary.net&#34;&gt;this site&lt;/a&gt; on my github.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

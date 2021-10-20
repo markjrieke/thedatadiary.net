@@ -1,0 +1,66 @@
+---
+title: Polling Average of the VA Governor's Race using purrr::map functions
+author: ''
+date: '2021-10-19'
+slug: []
+categories: [politics]
+tags: []
+subtitle: ''
+summary: ''
+authors: []
+lastmod: '2021-10-19T13:33:10-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Rolling poll averages can be misleading in the absence of errorbars or an expected distribution of outcomes. FiveThirtyEight is currently <a href="https://projects.fivethirtyeight.com/polls/governor/virginia/">tracking polls of Virginia’s Governor race</a> slated for early November, and has kindly made their polls <a href="https://projects.fivethirtyeight.com/polls-page/data/governor_polls.csv">available to the public</a>. Their current polling average, however, looks to be a simple rolling average and doesn’t include a confidence interval. I’ve attempted to improve upon their tracker here by providing a weighted polling average and a 95% confidence interval.</p>
+<p><img src="pics/race_results_2021-10-19.png" /></p>
+<div id="how-this-works" class="section level3">
+<h3>How this works</h3>
+<p>Since we’re only considering the top candidates from each party, we’ll look at each candidate’s two-party voteshare of each poll. To get the two-party voteshare, third party or other minor candidates are removed from each poll and each candidate’s percentage is recalculated as if they were the only two options on the ballot (in practice, this only removes a tiny amount of undecideds and third party voters). Then, the daily polling average is calculated by weighting each poll by sample size and recency. Using <a href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Bayes’ theorem</a> and a weak <a href="https://en.wikipedia.org/wiki/Continuous_uniform_distribution">uniform prior</a>, we can use the same method recalculate the polling average and confidence interval for each day between today and the election. Because polls are weighted by recency, as we look further and further into the future, our confidence in the polls decreases and the confidence interval around the polling average fans out. Each candidate’s probability of winning is the portion of the portion of the projected election-day polling distribution in their favor, based on that day’s polling average.</p>
+</div>
+<div id="some-caveats-worth-noting" class="section level3">
+<h3>Some caveats worth noting</h3>
+<p>This is an inherently flawed method, and it’s worth pointing out a few of the flaws and shortcuts I used:</p>
+<div id="the-functions-used-to-weight-polls-are-nowhere-near-perfect." class="section level4">
+<h4>The functions used to weight polls are nowhere near perfect.</h4>
+<p>The original weighting functions (which I haven’t changed) were chosen somewhat arbitrarily. In hindsight, they’re probably placing too much emphasis on recency and the error bars ought to be larger. While I have received some <a href="https://community.rstudio.com/t/is-it-possible-to-tune-arbitrary-parameters-w-tidymodels/117998/2">advice on tuning arbitrary functions</a> as a part of a larger model, I haven’t implemented here. It’s more prudent to think of this as an over-confident polling aggregate, rather than any sort of model. For a true projection model, I’d recommend looking at <a href="https://projects.jhkforecasts.com/2022-midterms/virginia-governor">Jack Kersting’s website</a>.</p>
+</div>
+<div id="the-weighting-method-ignores-important-weighting-factors" class="section level4">
+<h4>The weighting method ignores important weighting factors</h4>
+<p>This weighting method is super simple and ignores common weighting factors, like pollster and survey methodology. Other less-common poll weighting methods, like accounting for partisan non-response bias and and how the pollster weights their results (notably, whether or not the pollster weights by education) were similarly ignored. There is definitely a <a href="https://gelliottmorris.substack.com/p/what-people-are-missing-about-the?justPublished=true">strong argument</a> for including these weighting factors, but for me, this exercise was more about learning to use <code>purrr::map()</code> and other related functions when <a href="https://github.com/markjrieke/thedatadiary/blob/main/2021.10.01-virginia_governors_race/scripts/va_poll_wrangle.R">writing the script for this plot</a>.</p>
+</div>
+<div id="some-pollsters-are-filtered-out-by-design" class="section level4">
+<h4>Some pollsters are filtered out by design</h4>
+<p>I debated this for quite some time, but decided to add a filter to remove polls conducted by <a href="https://www.rasmussenreports.com/">Rasmussen</a> and <a href="https://www.thetrafalgargroup.org/">Trafalgar</a>. Trafalgar is excluded from any of the <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ56fySJKLL18Lipu1_i3ID9JE06voJEz2EXm6JW4Vh11zmndyTwejMavuNntzIWLY0RyhA1UsVEen0/pub?gid=0&amp;single=true&amp;output=csv">Economist’s polling databases</a> for opaque yet clearly shoddy methodology and Rasmussen is <a href="https://twitter.com/Rasmussen_Poll/status/1448819612242616324?ref_src=twsrc%5Etfw%7Ctwcamp%5Eembeddedtimeline%7Ctwterm%5Eprofile%3ARasmussen_Poll%7Ctwgr%5EeyJ0ZndfZXhwZXJpbWVudHNfY29va2llX2V4cGlyYXRpb24iOnsiYnVja2V0IjoxMjA5NjAwLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X2hvcml6b25fdHdlZXRfZW1iZWRfOTU1NSI6eyJidWNrZXQiOiJodGUiLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X3NwYWNlX2NhcmQiOnsiYnVja2V0Ijoib2ZmIiwidmVyc2lvbiI6bnVsbH19%7Ctwcon%5Etimelinechrome&amp;ref_url=https%3A%2F%2Fwww.rasmussenreports.com%2F">clearly partisan</a>. Removing these from the average follows the general consensus on ET (though, to be transparent, ET does tend to slant far to the left). In future polling projects, I’d hope to develop some more robust methodology to programatically downweight problematic pollsters (how’s <em>that</em> for a tongue twister?), but for now I’m just going to exclude.</p>
+</div>
+</div>
+<div id="final-thoughts-on-polling" class="section level3">
+<h3>Final thoughts on polling</h3>
+<p>This methodology certainly has its flaws, but it <em>is</em> <a href="https://github.com/markjrieke/thedatadiary/blob/main/2021.10.01-virginia_governors_race/scripts/va_poll_wrangle.R">transparent</a>. I’ll continuously update this plot up until election day on my <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race">github</a>.</p>
+</div>
+<div id="some-programming-notes" class="section level3">
+<h3>Some programming notes</h3>
+<p>I’ve finished migrating my site to Netlify! I had originally planned to make the switch from Squarespace sometime early in 2022, but motivation struck me during a relatively light work week and I was able to rebuild the site using <a href="https://bookdown.org/yihui/blogdown/">blogdown</a>. This allows for a lot more customization and control than was available with Squarespace, but the biggest upside is <em>definitely</em> the ease of sharing in-line code, here’s a quick example:</p>
+<pre class="r"><code>library(tidyverse)
+
+# let&#39;s put together a plot from the diamonds dataset
+diamonds %&gt;%
+  ggplot(aes(x = carat,
+             y = price,
+             color = cut)) +
+  geom_point(alpha = 0.1) +
+  theme_minimal() +
+  viridis::scale_color_viridis(discrete = TRUE)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="2400" /></p>
+<p>This ease of use and visibility will make things more seamless for me and allow me to dig into more technical content in more detail in the future!</p>
+<p>I’ll be taking a (much needed) vacation next week, spending some time off the grid in the Grand Canyon and surrounding area with my family. I’ve got a short post lined up for early November when I return - see you then!</p>
+<p>As always, you can find the source files for <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race">the script to generate the polling average</a> and for <a href="https://github.com/markjrieke/thedatadiary.net">this site</a> on my github.</p>
+</div>
