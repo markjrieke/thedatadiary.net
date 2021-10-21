@@ -16,7 +16,7 @@ baseURL = "https://www.thedatadiary.net/"
 copyright = "&copy; Mark Rieke {year}"
 
 # Enable analytics by entering your Google Analytics tracking ID
-googleAnalytics = ""
+googleAnalytics = "G-QM3KW2TS7Q"
 
 # Enable comments by entering your Disqus shortname
 disqusShortname = ""
