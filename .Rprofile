@@ -10,7 +10,7 @@ if (file.exists("~/.Rprofile")) {
 options(
   # blogdown.serve_site.startup = FALSE,
   # blogdown.knit.on_save = TRUE,
-  # blogdown.method = 'html'
+  blogdown.method = 'markdown'
   blogdown.ext = ".Rmd",
   blogdown.subdir = "blog"
 )
