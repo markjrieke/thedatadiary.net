@@ -7,10 +7,54 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Tue, 19 Oct 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 02 Nov 2021 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Election Night: Some Closing Thoughts on the VA Governor Race</title>
+      <link>https://www.thedatadiary.net/blog/2021-11-02-election-night-some-closing-thoughts-on-the-va-governor-race/</link>
+      <pubDate>Tue, 02 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2021-11-02-election-night-some-closing-thoughts-on-the-va-governor-race/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2021-11-02-election-night-some-closing-thoughts-on-the-va-governor-race/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;A few weeks ago I had &lt;a href=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/&#34;&gt;written about the VA Governor’s race&lt;/a&gt; before going on vacation - in that time it seems as though Terry McAuliffe’s campaign had lost a lot of steam and Youngkin made up a lot of ground in the final weeks of the campaign. At the time of this writing, it seems overwhelmingly likely that Glenn Youngkin will become the next governor of Virginia. To avoid some of the &lt;a href=&#34;https://twitter.com/rp_griffin/status/1455696452915802122&#34;&gt;galaxy-brain takes that will inevitabely wind up twitter&lt;/a&gt;, I thought I’d distract myself by following up on my previous post.&lt;/p&gt;
+&lt;p&gt;Firstly, I should share the updated polling average. A few weeks ago, McAullife appeared to have a sizeable lead in the polls:&lt;/p&gt;
+&lt;p&gt;&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;FiveThirtyEight&amp;#39;s poll tracker for the VA governor race (&lt;a href=&#34;https://t.co/HKVw7RcsJN&#34;&gt;https://t.co/HKVw7RcsJN&lt;/a&gt;) shows the moving averages - as a weekend coding project, I revamped with a weighted avg., 95% CI, and win probability based on an election day distribution📈 &lt;a href=&#34;https://t.co/hM6vzLUZnM&#34;&gt;pic.twitter.com/hM6vzLUZnM&lt;/a&gt;&lt;/p&gt;&amp;mdash; Mark Rieke (@markjrieke) &lt;a href=&#34;https://twitter.com/markjrieke/status/1444454926399254535?ref_src=twsrc%5Etfw&#34;&gt;October 3, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;/p&gt;
+&lt;p&gt;However, as of election day, the race had significantly tightened to effectively a coin-toss:&lt;/p&gt;
+&lt;p&gt;&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Final update - p_win ~ 55% McAuliffe; again, the win probability is just the portion of the polling avg. distribution above 50% for each candidate. For *actual* models, go check out the work by &lt;a href=&#34;https://twitter.com/lxeagle17?ref_src=twsrc%5Etfw&#34;&gt;@lxeagle17&lt;/a&gt;/&lt;a href=&#34;https://twitter.com/Thorongil16?ref_src=twsrc%5Etfw&#34;&gt;@Thorongil16&lt;/a&gt; or &lt;a href=&#34;https://twitter.com/jhkersting?ref_src=twsrc%5Etfw&#34;&gt;@jhkersting&lt;/a&gt;, among others &lt;a href=&#34;https://t.co/W9bDf1OumZ&#34;&gt;pic.twitter.com/W9bDf1OumZ&lt;/a&gt;&lt;/p&gt;&amp;mdash; Mark Rieke (@markjrieke) &lt;a href=&#34;https://twitter.com/markjrieke/status/1455164731749175304?ref_src=twsrc%5Etfw&#34;&gt;November 1, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;/p&gt;
+&lt;p&gt;As I mention in the above tweet, the win probability isn’t a true forecast, just the portion of each candidate’s election day distribution &lt;em&gt;above 50%&lt;/em&gt;. That being said, actual forecasts similarly had the race down to a near 50-50 split as of this morning:&lt;/p&gt;
+&lt;p&gt;&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Special for Twitter: Updated VA polling trends with the new Fox and Post/GMU polls &lt;a href=&#34;https://t.co/hLNa3pFCpR&#34;&gt;https://t.co/hLNa3pFCpR&lt;/a&gt; &lt;a href=&#34;https://t.co/6cz0JXa0xm&#34;&gt;pic.twitter.com/6cz0JXa0xm&lt;/a&gt;&lt;/p&gt;&amp;mdash; G. Elliott Morris (@gelliottmorris) &lt;a href=&#34;https://twitter.com/gelliottmorris/status/1454130028149620737?ref_src=twsrc%5Etfw&#34;&gt;October 29, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;&lt;a href=&#34;https://twitter.com/hashtag/FINAL?src=hash&amp;amp;ref_src=twsrc%5Etfw&#34;&gt;#FINAL&lt;/a&gt; Virginia Gov. Projection.&lt;a href=&#34;https://twitter.com/GlennYoungkin?ref_src=twsrc%5Etfw&#34;&gt;@GlennYoungkin&lt;/a&gt; is ever so slightly favored in this tossup for the governorship.&lt;br&gt;&lt;br&gt;Full Projection&amp;gt;&amp;gt;&lt;a href=&#34;https://t.co/PcM2qSjUYK&#34;&gt;https://t.co/PcM2qSjUYK&lt;/a&gt; &lt;a href=&#34;https://t.co/NGCirjkkG4&#34;&gt;pic.twitter.com/NGCirjkkG4&lt;/a&gt;&lt;/p&gt;&amp;mdash; Jack Kersting (@jhkersting) &lt;a href=&#34;https://twitter.com/jhkersting/status/1455545666999042056?ref_src=twsrc%5Etfw&#34;&gt;November 2, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;/p&gt;
+&lt;p&gt;Even the model most confident in McAuliffe built by &lt;a href=&#34;https://twitter.com/lxeagle17&#34;&gt;Lakshya Jain&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/Thorongil16&#34;&gt;Thorongil&lt;/a&gt; had dropped McAuliffe’s win probability from ~85% to 67% over the course of a few weeks:&lt;/p&gt;
+&lt;p&gt;&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;🚨FINAL &lt;a href=&#34;https://twitter.com/hashtag/VAGov?src=hash&amp;amp;ref_src=twsrc%5Etfw&#34;&gt;#VAGov&lt;/a&gt; FORECAST🚨&lt;br&gt;&lt;br&gt;At the end of a long campaign, here&amp;#39;s where the model made by me and &lt;a href=&#34;https://twitter.com/Thorongil16?ref_src=twsrc%5Etfw&#34;&gt;@Thorongil16&lt;/a&gt; stands. The race is rated as Lean Democratic, with a forecasted margin of D+3.6 and a win probability of 67%. An interactive map is over at &lt;a href=&#34;https://t.co/Kmvj6sRElC&#34;&gt;https://t.co/Kmvj6sRElC&lt;/a&gt;. &lt;a href=&#34;https://t.co/kuaJc82HML&#34;&gt;pic.twitter.com/kuaJc82HML&lt;/a&gt;&lt;/p&gt;&amp;mdash; Lakshya Jain (@lxeagle17) &lt;a href=&#34;https://twitter.com/lxeagle17/status/1455544487149592576?ref_src=twsrc%5Etfw&#34;&gt;November 2, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;/p&gt;
+&lt;p&gt;While I definitely plan on utilizing a more scientific poll-weighting methodology in the future, I do find it interesting that even a simple averaging method can produce relatively accurate results in line with the majority of other forecasters.&lt;/p&gt;
+&lt;p&gt;Regarding post-hoc analysis of &lt;em&gt;why&lt;/em&gt; McAuliffe lost, I won’t dredge up any of my own (partially because it’d be irresponsible &amp;amp; pundit-y to do so without referencing any data and partially because it’s getting late &amp;amp; I’m a bit tired), but I’ll point out a few tweets from &lt;a href=&#34;https://twitter.com/Nate_Cohn&#34;&gt;Nate Cohn&lt;/a&gt; that show that the results appear to show a near uniform shift across precincts and different voting groups. This would suggest that McAuliffe’s loss is tied more closely to the national environment, rather than shifts amongst specific groups/counties.&lt;/p&gt;
+&lt;p&gt;&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Update at nearly 1500 precincts: Youngkin is still on track for victory, running a ahead of what he needs across basically every dimension worth looking at.&lt;br&gt;But it&amp;#39;s worth noting just how close things are to &amp;#39;expectations,&amp;#39; which is simply shifting the 2020 result to the right &lt;a href=&#34;https://t.co/Mbe3pg7NFB&#34;&gt;pic.twitter.com/Mbe3pg7NFB&lt;/a&gt;&lt;/p&gt;&amp;mdash; Nate Cohn (@Nate_Cohn) &lt;a href=&#34;https://twitter.com/Nate_Cohn/status/1455693099062153217?ref_src=twsrc%5Etfw&#34;&gt;November 3, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;And btw, if you&amp;#39;re doing pundit things I&amp;#39;d look at that red column. McAuliffe fell short of expectations--a more-or-less uniform shift--by basically the same amount, just about everywhere&lt;/p&gt;&amp;mdash; Nate Cohn (@Nate_Cohn) &lt;a href=&#34;https://twitter.com/Nate_Cohn/status/1455717564772986884?ref_src=twsrc%5Etfw&#34;&gt;November 3, 2021&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;/p&gt;
+&lt;p&gt;This won’t stop the networks from ascribing the win/loss to very specific campaign issues (I’ve already seen quite a few folks ascribe Youngkin’s win to education, race, suburban-reversion, etc., without any evidence to back up such claims). Until there are deep dives into data regarding the election, I’d treat any comments rom pundits with a hefty grain of salt.&lt;/p&gt;
+&lt;div id=&#34;some-closing-thoughts&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Some closing thoughts&lt;/h3&gt;
+&lt;p&gt;That’s all for me today! I’ll be back in a few weeks with some non-political content, looking at a machine learning model predicting the price of a diamond in the &lt;a href=&#34;https://ggplot2.tidyverse.org/reference/diamonds.html&#34;&gt;diamonds dataset&lt;/a&gt;.&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Polling Average of the VA Governor&#39;s Race using purrr::map functions</title>
