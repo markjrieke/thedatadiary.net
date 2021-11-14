@@ -505,6 +505,69 @@ diamonds %&gt;%
   geom_histogram()</code></pre>
 <p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-2-1.png" width="2400" /></p>
 <p>We’re definitely gonna want to apply a transformation to the price when modeling - let’s look at the distribution on a log-10 scale.</p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = price)) +
+  geom_histogram() +
+  scale_x_log10()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-3-1.png" width="2400" /></p>
+<p>That’s a lot more evenly distributed, if not perfect. That’s a fine starting point, so now we’ll look through the rest of the data.</p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = carat)) +
+  geom_histogram()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-1.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = cut,
+             y = price)) +
+  geom_boxplot()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-2.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  count(cut) %&gt;%
+  ggplot(aes(x = cut,
+             y = n)) +
+  geom_col()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-3.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = color,
+             y = price)) +
+  geom_boxplot()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-4.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  count(color) %&gt;%
+  ggplot(aes(x = color,
+             y = n)) +
+  geom_col()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-5.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = clarity,
+             y = price)) +
+  geom_boxplot()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-6.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  count(clarity) %&gt;%
+  ggplot(aes(x = clarity,
+             y = n)) +
+  geom_col()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-7.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = depth)) +
+  geom_histogram()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-8.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = table)) +
+  geom_histogram() </code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-9.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = x)) +
+  geom_histogram()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-10.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;%
+  ggplot(aes(x = y)) +
+  geom_histogram() </code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-11.png" width="2400" /></p>
+<pre class="r"><code>diamonds %&gt;% 
+  ggplot(aes(x = z)) +
+  geom_histogram()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-4-12.png" width="2400" /></p>
 
     </div>
 
