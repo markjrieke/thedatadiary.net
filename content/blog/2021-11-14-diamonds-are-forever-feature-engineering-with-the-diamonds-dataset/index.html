@@ -20,4 +20,10 @@ projects: []
 <script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
 
 
-<p>This is a test to make sure that I can build the site…</p>
+<p>Are y’all ready for some charts?? This week, I did a bit of machine learning practice with the <a href="https://ggplot2.tidyverse.org/reference/diamonds.html"><code>diamonds dataset</code></a>. This dataset is interesting and good for practice for a few reasons:</p>
+<ul>
+<li>there are lots of observations (50,000+);</li>
+<li>it includes a mix of numeric and categorical variables;</li>
+<li>there are some data oddities to deal with (log scales, interactions, non-linear relations)</li>
+</ul>
+<p>I’ll be doing a bit of feature engineering prior to fitting an tuning a linear model that predicts the each diamond’s <code>price</code> with the <a href="https://glmnet.stanford.edu/index.html"><code>glmnet</code></a> package. This will give a good end-to-end glimpse into the data exploration and model fitting process! Before we get into that, let’s load some packages and get a preview of the dataset.</p>
