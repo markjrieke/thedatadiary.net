@@ -51,3 +51,71 @@ diamonds %>%
 
 We're definitely gonna want to apply a transformation to the price when modeling - let's look at the distribution on a log-10 scale.
 
+```{r}
+diamonds %>%
+  ggplot(aes(x = price)) +
+  geom_histogram() +
+  scale_x_log10()
+```
+
+That's a lot more evenly distributed, if not perfect. That's a fine starting point, so now we'll look through the rest of the data.
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = carat)) +
+  geom_histogram()
+
+diamonds %>%
+  ggplot(aes(x = cut,
+             y = price)) +
+  geom_boxplot()
+
+diamonds %>%
+  count(cut) %>%
+  ggplot(aes(x = cut,
+             y = n)) +
+  geom_col()
+
+diamonds %>%
+  ggplot(aes(x = color,
+             y = price)) +
+  geom_boxplot()
+
+diamonds %>%
+  count(color) %>%
+  ggplot(aes(x = color,
+             y = n)) +
+  geom_col()
+
+diamonds %>%
+  ggplot(aes(x = clarity,
+             y = price)) +
+  geom_boxplot()
+
+diamonds %>%
+  count(clarity) %>%
+  ggplot(aes(x = clarity,
+             y = n)) +
+  geom_col()
+
+diamonds %>%
+  ggplot(aes(x = depth)) +
+  geom_histogram()
+
+diamonds %>%
+  ggplot(aes(x = table)) +
+  geom_histogram() 
+
+diamonds %>%
+  ggplot(aes(x = x)) +
+  geom_histogram()
+
+diamonds %>%
+  ggplot(aes(x = y)) +
+  geom_histogram() 
+
+diamonds %>% 
+  ggplot(aes(x = z)) +
+  geom_histogram()
+```
+
