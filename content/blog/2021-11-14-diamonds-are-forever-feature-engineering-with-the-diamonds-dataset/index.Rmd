@@ -30,4 +30,24 @@ Are y'all ready for some charts?? This week, I did a bit of machine learning pra
 
 I'll be doing a bit of feature engineering prior to fitting an tuning a linear model that predicts the each diamond's `price` with the [`glmnet`](https://glmnet.stanford.edu/index.html) package. This will give a good end-to-end glimpse into the data exploration and model fitting process! Before we get into that, let's load some packages and get a preview of the dataset.
 
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(vip)
+
+theme_set(theme_minimal())
+
+diamonds %>%
+  slice_head(n = 10)
+```
+
+Since we're predicting price, let's look at its distribution first.
+
+```{r}
+diamonds %>%
+  ggplot(aes(x = price)) +
+  geom_histogram()
+```
+
+We're definitely gonna want to apply a transformation to the price when modeling - let's look at the distribution on a log-10 scale.
 
