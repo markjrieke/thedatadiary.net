@@ -26,7 +26,7 @@ superuser: true
 title: Mark Rieke
 ---
 
-My name is Mark Rieke and I am a senior consumer experience (CX) analyst at Memorial Hermann Health System where I use survey data to improve patient satisfaction. I love making beautiful charts, working on home improvement projects, and playing jazzy piano. 
+My name is Mark Rieke and I am a senior consumer experience (CX) analyst at [Memorial Hermann Health System](https://www.memorialhermann.org/) where I use survey data to improve patient satisfaction. I love making beautiful charts, working on home improvement projects, and playing jazzy piano. 
 
 I earned my bachelor's degree in Mechanical Engineering from the [University of Tulsa](https://utulsa.edu/) in 2018. I worked with [Siemens Energy](https://www.siemens-energy.com/global/en.html?stc=wwse100871&ef_id=Cj0KCQjwwY-LBhD6ARIsACvT72NfSUbr36ZMnmmEE-XTSEqcdiyCgkUgqj7l5Iz4Y7zguse4WFS4dQ8aAow-EALw_wcB:G:s&s_kwcid=AL!11761!3!454444191598!e!!g!!siemens%20energy&gclid=Cj0KCQjwwY-LBhD6ARIsACvT72NfSUbr36ZMnmmEE-XTSEqcdiyCgkUgqj7l5Iz4Y7zguse4WFS4dQ8aAow-EALw_wcB) for three years designing mobile gas-turbine power plants before moving into a more data-centric role. I currently use R and [tidymodels](https://www.tidymodels.org/) to provide actionable insights from [Qualtrics](https://www.qualtrics.com/) survey data. In my spare time, I love analyzing public political datasets. You can find my work on [GitHub](https://github.com/markjrieke) and my unedited stream of consciousness on [Twitter](https://twitter.com/markjrieke). 
 
