@@ -17,5 +17,17 @@ image:
 projects: []
 ---
 
-This is a test to make sure that I can build the site...
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE, warning = FALSE,
+                      message = FALSE, dpi = 300, fig.width = 8, fig.height = 5)
+```
+
+Are y'all ready for some charts?? This week, I did a bit of machine learning practice with the [`diamonds dataset`](https://ggplot2.tidyverse.org/reference/diamonds.html). This dataset is interesting and good for practice for a few reasons:
+
+* there are lots of observations (50,000+);
+* it includes a mix of numeric and categorical variables;
+* there are some data oddities to deal with (log scales, interactions, non-linear relations)
+
+I'll be doing a bit of feature engineering prior to fitting an tuning a linear model that predicts the each diamond's `price` with the [`glmnet`](https://glmnet.stanford.edu/index.html) package. This will give a good end-to-end glimpse into the data exploration and model fitting process! Before we get into that, let's load some packages and get a preview of the dataset.
+
 
