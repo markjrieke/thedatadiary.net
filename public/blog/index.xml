@@ -7,10 +7,34 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Sun, 14 Nov 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 28 Nov 2021 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Technical Books!</title>
+      <link>https://www.thedatadiary.net/blog/2021-11-28-technical-books/</link>
+      <pubDate>Sun, 28 Nov 2021 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2021-11-28-technical-books/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2021-11-28-technical-books/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;Happy (belated) Thanksgiving! This year, my family drove down to Houston for the holiday &amp;amp; I hosted Thanksgiving for the first time. We played lots of games and ate well - my fridge is &lt;em&gt;still&lt;/em&gt; stocked full of leftovers. Knowing we’d be busy with hosting, I planned ahead and scheduled a lighter post - this week, I thought I’d highlight some technical books that I’ve either referenced for modeling work, have been recommended to me, or I’ve heard about and would like to read:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12_toc.pdf&#34;&gt;The Elements of Statistical Learning&lt;/a&gt;&lt;/strong&gt; is referenced as the Bible of Machine Learning by &lt;a href=&#34;https://www.youtube.com/channel/UCtYLUTtgS3k1Fg4y5tAhLbw&#34;&gt;Josh Starmer&lt;/a&gt; and provides a robust and deeply technical foundation for a wide array of machine learning models. It’s considered a must-have among both machine learning theorists, who look for new model structures, and practitioners (like myself!).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://web.stanford.edu/~hastie/ISLR2/ISLRv2_website.pdf&#34;&gt;An Introduction to Statistical Learning with Applications in R&lt;/a&gt;&lt;/strong&gt; is a companion to &lt;em&gt;The Elements of Statistical Learning&lt;/em&gt;. &lt;em&gt;An Introduction to Statistical Learning&lt;/em&gt; arose as a broader and less technical treatment of the key topics discussed in &lt;em&gt;The Elements of Statistical Learning&lt;/em&gt;. Each section also includes learning-lab lessons walking through the implementation of the statistical learning method from that chapter (&lt;a href=&#34;https://www.emilhvitfeldt.com/&#34;&gt;Emil Hvitfeldt&lt;/a&gt; is also working on a &lt;a href=&#34;https://emilhvitfeldt.github.io/ISLR-tidymodels-labs/&#34;&gt;companion site&lt;/a&gt; for completing the labs with tidymodels).&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.tmwr.org/index.html&#34;&gt;Tidy Modeling with R&lt;/a&gt;&lt;/strong&gt; is a guide to using the tidymodel framework and has been an excellent reference in both personal and professional projects.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.tidytextmining.com/&#34;&gt;Text Mining with R, a Tidy Approach&lt;/a&gt;&lt;/strong&gt; serves as an introduction to text mining and other methods for dealing with unstructured, non-rectangular data. In my current role as a Consumer Experience Analyst, I have to interact with unstructured data (in the form of patient comments) daily - this book, along with the &lt;a href=&#34;https://juliasilge.github.io/tidytext/&#34;&gt;tidytext&lt;/a&gt; package, have been incredibly useful for analyzing and visualizing text data.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://smltar.com/preface.html&#34;&gt;Supervised Machine Learning for Text Analysis in R&lt;/a&gt;&lt;/strong&gt; picks up where &lt;em&gt;Text Mining with R&lt;/em&gt; left off by exploring (as the title suggests) supervised machine learning methods with text data. While I haven’t done extensive text modeling, this is one area that I’d like to explore further in 2022.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;http://www.feat.engineering/&#34;&gt;Feature Engineering and Selection: A Practical Approach for Predictive Models&lt;/a&gt;&lt;/strong&gt; is a guidebook offering methods for feature engineering (transforming and creating new predictor variables to improve predictive model performance). While I’ve utilized some basic feature engineering in some of my work, I’m interested in adding more robust tools to my feature-engineering toolkit!&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://drob.gumroad.com/l/empirical-bayes&#34;&gt;Introduction to Empirical Bayes&lt;/a&gt;&lt;/strong&gt; is &lt;a href=&#34;http://varianceexplained.org/about/&#34;&gt;David Robinson’s&lt;/a&gt; book coalescing a series of blog posts on Bayesian estimation, credible intervals, A/B testing, mixed models, and a host of other methods, all through the example of baseball batting averages.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://jnolis.com/book/&#34;&gt;Build a Career in Data Science&lt;/a&gt;&lt;/strong&gt; is, as the name suggests, a book about building a career in data science. I generally feel that most career-help books are too broad to be useful or offer non-novel information for those in the industry the book is written for. Given, however, that I don’t have an academic or professional background in the field and that I’d like to eventually move from analytics to data science, I’d like to add this to the collection to pick up on some best practices.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+    </item>
     
     <item>
       <title>Diamonds are Forever: Feature Engineering with the Diamonds Dataset</title>

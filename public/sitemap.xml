@@ -3,15 +3,21 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.thedatadiary.net/blog/</loc>
-    <lastmod>2021-11-14T14:50:06-06:00</lastmod>
+    <lastmod>2021-11-28T10:41:01-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/categories/</loc>
-    <lastmod>2021-11-14T14:50:06-06:00</lastmod>
+    <lastmod>2021-11-28T10:41:01-06:00</lastmod>
   </url><url>
-    <loc>https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/</loc>
-    <lastmod>2021-11-14T14:50:06-06:00</lastmod>
+    <loc>https://www.thedatadiary.net/categories/rstats/</loc>
+    <lastmod>2021-11-28T10:41:01-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-11-28-technical-books/</loc>
+    <lastmod>2021-11-28T10:41:01-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/</loc>
+    <lastmod>2021-11-28T10:41:01-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/</loc>
     <lastmod>2021-11-14T14:50:06-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/categories/tidymodels/</loc>
