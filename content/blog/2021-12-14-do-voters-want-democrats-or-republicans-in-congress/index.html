@@ -1,0 +1,305 @@
+---
+title: Do Voters Want Democrats or Republicans in Congress?
+author: ''
+date: '2021-12-14'
+slug: []
+categories: [politics]
+tags: []
+subtitle: 'Building a Generic Ballot Poll Aggregator'
+summary: ''
+authors: []
+lastmod: '2021-12-14T21:21:02-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>The 2022 midterms are still quite a ways away, however, in order to have a forecast ready in time, I need to start working on the model well in advance! One of the features I plan on using in the House Forecast is the <a href="https://www.pewresearch.org/politics/2002/10/01/why-the-generic-ballot-test/">generic congressional ballot</a> average. Generic ballot polls ask respondents whether they intend to vote for either the Republican or Democratic candidate for the U.S. House of Representatives in their district. FiveThirtyEight provides a <a href="https://projects.fivethirtyeight.com/congress-generic-ballot-polls/">daily updating polling average</a>, but in order to project beyond their current day’s average, I needed to build my own poll aggregator! Thankfully, they also are kind enough to provide the <a href="https://github.com/fivethirtyeight/data/tree/master/polls">underlying polling data</a> as well.</p>
+<p>In this post, I’ll walk through the steps taken to build the generic ballot aggregator and explore the results.</p>
+<div id="the-gameplan" class="section level3">
+<h3>The Gameplan</h3>
+<p>FiveThirtyEight’s data only goes back for two election cycles, which doesn’t provide enough data to build a poll aggregator from scratch. However, because they also provide their <a href="https://projects.fivethirtyeight.com/generic-ballot-data/generic_ballot.csv">historical trendline</a>, I can build a poll aggregator that fits the polling results to their historical trend.</p>
+<p>In addition to the topline result, each poll in FiveThirtyEight’s repository includes quite a bit of additional meta-information about the poll: the pollster, sample size, survey methodology, and recipient population. Some pollsters, methodologies, and populations tend to be more accurate than others, so I’d be remiss to not include these features in the polling model. To incorporate all of this information, each feature will be weighted according to how well it fits FiveThirtyEight’s historical average. I’m sweeping a lot of programmatic detail under the rug here, but in general, features that fit FiveThirtyEight’s trendline well will have a higher weight and features that don’t fit the trendline so well will have a lower weight. Finally, since we know that some pollsters tend to favor one party, we’ll also create a “pollster offset” feature to shift each poll slightly and account for this partisan lean.</p>
+<p>Before digging any further, it may be beneficial to explore the polling repository a bit. Here’s a sample of the polling data used for the aggregator:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="right">cycle</th>
+<th align="left">pollster</th>
+<th align="right">sample_size</th>
+<th align="left">population</th>
+<th align="left">methodology</th>
+<th align="left">end_date</th>
+<th align="right">dem</th>
+<th align="right">rep</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="left">HarrisX</td>
+<td align="right">3861</td>
+<td align="left">lv</td>
+<td align="left">Online</td>
+<td align="left">2011-02-18</td>
+<td align="right">48.0</td>
+<td align="right">42.0</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">SurveyMonkey</td>
+<td align="right">9532</td>
+<td align="left">a</td>
+<td align="left">Online</td>
+<td align="left">2010-07-18</td>
+<td align="right">43.0</td>
+<td align="right">42.0</td>
+</tr>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="left">YouGov</td>
+<td align="right">1200</td>
+<td align="left">rv</td>
+<td align="left">Online</td>
+<td align="left">2012-03-19</td>
+<td align="right">47.0</td>
+<td align="right">41.0</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">Ipsos</td>
+<td align="right">731</td>
+<td align="left">lv</td>
+<td align="left">Online</td>
+<td align="left">2009-06-18</td>
+<td align="right">49.9</td>
+<td align="right">38.6</td>
+</tr>
+<tr class="odd">
+<td align="right">2020</td>
+<td align="left">HarrisX</td>
+<td align="right">3000</td>
+<td align="left">rv</td>
+<td align="left">Online</td>
+<td align="left">2010-07-19</td>
+<td align="right">43.0</td>
+<td align="right">36.0</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">Ipsos</td>
+<td align="right">2383</td>
+<td align="left">a</td>
+<td align="left">Online</td>
+<td align="left">2009-01-17</td>
+<td align="right">36.8</td>
+<td align="right">31.3</td>
+</tr>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="left">Ipsos</td>
+<td align="right">663</td>
+<td align="left">lv</td>
+<td align="left">Online</td>
+<td align="left">2006-05-17</td>
+<td align="right">38.7</td>
+<td align="right">32.6</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">Morning Consult</td>
+<td align="right">1992</td>
+<td align="left">rv</td>
+<td align="left">Online</td>
+<td align="left">2005-05-18</td>
+<td align="right">42.0</td>
+<td align="right">35.0</td>
+</tr>
+<tr class="odd">
+<td align="right">2018</td>
+<td align="left">Ipsos</td>
+<td align="right">1689</td>
+<td align="left">rv</td>
+<td align="left">Online</td>
+<td align="left">2007-03-18</td>
+<td align="right">41.4</td>
+<td align="right">36.5</td>
+</tr>
+<tr class="even">
+<td align="right">2018</td>
+<td align="left">Ipsos</td>
+<td align="right">1907</td>
+<td align="left">a</td>
+<td align="left">Online</td>
+<td align="left">2004-02-18</td>
+<td align="right">38.0</td>
+<td align="right">30.3</td>
+</tr>
+</tbody>
+</table>
+<p>The following pollsters conducted enough polls to warrant their own category - all other pollsters will be lumped together under the banner of “Other Pollster:”</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">pollster</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Ipsos</td>
+<td align="right">1239</td>
+</tr>
+<tr class="even">
+<td align="left">HarrisX</td>
+<td align="right">426</td>
+</tr>
+<tr class="odd">
+<td align="left">Morning Consult</td>
+<td align="right">305</td>
+</tr>
+<tr class="even">
+<td align="left">YouGov</td>
+<td align="right">195</td>
+</tr>
+<tr class="odd">
+<td align="left">USC Dornsife</td>
+<td align="right">71</td>
+</tr>
+<tr class="even">
+<td align="left">The Winston Group</td>
+<td align="right">44</td>
+</tr>
+<tr class="odd">
+<td align="left">McLaughlin &amp; Associates</td>
+<td align="right">34</td>
+</tr>
+<tr class="even">
+<td align="left">Firehouse Strategies/Øptimus</td>
+<td align="right">32</td>
+</tr>
+<tr class="odd">
+<td align="left">Rasmussen Reports/Pulse Opinion Research</td>
+<td align="right">30</td>
+</tr>
+<tr class="even">
+<td align="left">Quinnipiac University</td>
+<td align="right">28</td>
+</tr>
+</tbody>
+</table>
+<p>Here is a bit of expanded detail on the survey population categories:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">population</th>
+<th align="left">population_full</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">rv</td>
+<td align="left">Registered Voters</td>
+<td align="right">1510</td>
+</tr>
+<tr class="even">
+<td align="left">lv</td>
+<td align="left">Likely Voters</td>
+<td align="right">619</td>
+</tr>
+<tr class="odd">
+<td align="left">a</td>
+<td align="left">Adults</td>
+<td align="right">602</td>
+</tr>
+<tr class="even">
+<td align="left">v</td>
+<td align="left">Voters</td>
+<td align="right">2</td>
+</tr>
+</tbody>
+</table>
+<p>Finally, the top survey methodologies considered are shown below. Similar to pollsters, methodologies that are not used enough are lumped into an “Other Methodology” category:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">methodology</th>
+<th align="right">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Online</td>
+<td align="right">2425</td>
+</tr>
+<tr class="even">
+<td align="left">Live Phone</td>
+<td align="right">194</td>
+</tr>
+<tr class="odd">
+<td align="left">Unknown</td>
+<td align="right">62</td>
+</tr>
+<tr class="even">
+<td align="left">IVR/Online</td>
+<td align="right">44</td>
+</tr>
+</tbody>
+</table>
+<p>The general plan of attack was to fit the polls to the trendline, measure the error, update the weights and offsets slightly, and repeat until the error is below an acceptable threshold. As time progresses, we make smaller and smaller updates to the weights and offsets we hone in on optimal values for minimizing error.</p>
+</div>
+<div id="exploring-the-results" class="section level3">
+<h3>Exploring the Results</h3>
+<p>First and foremost, I’m pleased to report that the model fit the historical data fairly well. The model’s trendline (in blue) reasonably matches FiveThirtyEight’s historical trendline (in red):</p>
+<p><img src="pics/final_fit.png" /></p>
+<p>As expected, as the model trains the weights and offsets, the <code>rmse</code> continues to shrink, and levels off just after 150 training rounds:</p>
+<p><img src="pics/rmse_tracker.png" /></p>
+<p>Some pollsters are better at fitting the trendline: YouGov polls end up with the highest weight in the model whereas Morning Consult polls are downweighted.</p>
+<p><img src="pics/pollster_weights.png" /></p>
+<p>What are the partisan leanings of each pollster? Each pollster offset is shown below - pollsters at the top are <em>generally</em> more conservative leaning pollsters near the bottom are <em>generally</em> more liberal leaning. Or rather, pollsters near the top fit the trend better when we adjust their results to favor democrats, and pollsters near the bottom fit better when adjusted in favor of republicans.</p>
+<p><img src="pics/pollster_offsets.png" /></p>
+<p>Some pollsters have fairly significant offsets! It’s reassuring to note, however, that these pollsters are downweighted and don’t make up the majority of polls recorded. The five pollsters with the most number of generic ballot polls conducted tend to fall fairly close to 0-offset.</p>
+<p><img src="pics/pollster_weights_summary_size.png" /></p>
+<p>Although <a href="https://www.nytimes.com/2019/07/02/upshot/online-polls-analyzing-reliability.html">live phone polling has become more and more difficult</a> in recent years, it still ended up being the top-weighted method for the generic ballot poll.</p>
+<p><img src="pics/methodology_weights.png" /></p>
+<p>Finally, surveying a population of registered voters turned out to be best for matching polls to the trendline, whereas the “voters” population was filtered away entirely (though that may be because there were only two polls conducted with this population).</p>
+<p><img src="pics/population_weights.png" /></p>
+</div>
+<div id="fitting-to-new-2022-data" class="section level3">
+<h3>Fitting to New 2022 Data</h3>
+<p>This exploration of how the model fits to the training data is useful, but how well does this model fit to new data? As it turns out, fairly well! When fit to data it wasn’t trained on, the model’s trendline (in blue) closely follows the target trendline (in red).</p>
+<p><img src="pics/fit_2022_comparison.png" /></p>
+<p>This also gives us the ability to project <em>beyond</em> the current average! As we get further and further away from the current day, our confidence interval around the current average widens out.</p>
+<p><img src="pics/fit_2022_ed.png" /></p>
+<p>This behavior looks great! One area of concern, however, is the area on the left - on days where we already have data, we’re <em>way</em> too confident in our estimate! On some days, the confidence interval only spans 0.5%, which simply isn’t realistic.</p>
+<p>To deal with this, we’ll create a new feature, <code>downweight</code>, that we can train to widen our confidence interval to something more credible.</p>
+</div>
+<div id="one-more-round-of-training" class="section level3">
+<h3>One More Round of Training</h3>
+<p>Similar to training the generic ballot average, we can train the <code>downweight</code> feature to match the model’s confidence interval to FiveThirtyEight’s confidence interval. The trained result isn’t a perfect fit, but this does give us a mathematically sound, consistent way to construct a more realistic confidence interval. Here’s how the model’s confidence interval compares to the training set:</p>
+<p><img src="pics/ci_fit_historical.png" /></p>
+<p>On new data, the model similarly provides an okay-enough fit for our purposes. The model may find it difficult to recreate FiveThirtyEight’s confidence interval due to differences in model construction. <a href="https://fivethirtyeight.com/features/how-were-tracking-joe-bidens-approval-rating/">According to FiveThirtyEight’s documentation</a> on other polling averages, it looks like they use an ensemble of <a href="https://en.wikipedia.org/wiki/Local_regression">LOESS models</a>, whereas I generate a single <a href="https://en.wikipedia.org/wiki/Beta_distribution">beta distribution</a>. Without getting too far into the weeds, the stack of LOESS models results in a confidence interval that is less prone to quick growth.</p>
+<p><img src="pics/ci_fit_current.png" /></p>
+</div>
+<div id="wrapping-it-all-up" class="section level3">
+<h3>Wrapping It All Up</h3>
+<p>Now that we’ve defined a model, we can finally answer the question in the title: do voters want Democrats or Republicans in congress? According to this model, voters are as even split as you can get!</p>
+<p><img src="pics/generic_ballot_current.png" /></p>
+<p>Even if there was a leader in the polls, the generic ballot’s predictive power this far out from the house elections is, to a first approximation, effectively useless. As we get closer to the election day, however, the polling model will become more and more useful. Additionally, the methods I used to generate the polling average can be replicated (with slight modifications) for other polling averages that will feed into the model, so stay tuned for more!</p>
+</div>
+<div id="some-programming-notes" class="section level3">
+<h3>Some Programming Notes</h3>
+<p>I’ve skipped over quite a bit of programming detail. If you’re so inclined, you can read through the <a href="https://github.com/markjrieke/electiondata/blob/main/scripts/generic_ballot_weighting.R">script to build the model and generate plots</a>. There’s a <em>lot</em> going on there, but I’d like to highlight a few packages that were instrumental for putting this together:</p>
+<ul>
+<li><a href="https://cran.r-project.org/web/packages/doParallel/index.html"><code>doParallel</code></a>: I frequently use <code>doParallel</code>, which uses multiple cores running in parallel to speed up processes. Most of the time, loading <code>doParallel</code> is just done for convenience’s sake, but it was absolutely necessary for this project — even with parallel processing, each round of model training was lengthy.</li>
+<li><a href="https://furrr.futureverse.org/"><code>furrr</code></a>: the goal of <code>furrr</code> is to combine <code>purrr</code>’s family of mapping functions with <code>future</code>’s parallel processing capabilities. Replacing my <code>purrr::map()</code> functions with <code>furrr::future_map()</code> functions literally cut training time in half.</li>
+<li><a href="https://github.com/GuangchuangYu/shadowtext"><code>shadowtext</code></a>: <code>shadowtext</code> is a small, niche package that allows you to add colored borders to <code>geom_text()</code> objects in a ggplot. It’s not visible in today’s chart because there’s 100% overlap between democrats &amp; republicans, but there’s a white border around the text in front of the trendline that just looks nice.</li>
+</ul>
+</div>
