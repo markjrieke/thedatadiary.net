@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>personal on the data diary</title>
+    <link>https://www.thedatadiary.net/categories/personal/</link>
+    <description>Recent content in personal on the data diary</description>
+    <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; Mark Rieke {year}</copyright>
+    <lastBuildDate>Wed, 12 Jan 2022 00:00:00 +0000</lastBuildDate>
+    
+	    <atom:link href="https://www.thedatadiary.net/categories/personal/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>The Data Diary: Year in Review</title>
+      <link>https://www.thedatadiary.net/blog/2022-01-12-the-data-diary-year-in-review/</link>
+      <pubDate>Wed, 12 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-01-12-the-data-diary-year-in-review/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-01-12-the-data-diary-year-in-review/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;In the year since I started this blog, there’s been a lot that’s happened: I learned to use R, picked up the basics of machine learning, and moved into a new job/industry. I spend a lot of time thinking about what’s coming down the pipeline and how much further I have to go on projects that I have planned, but it’s worthwhile every now and then to take a look back and see just how far I’ve come.&lt;/p&gt;
+&lt;div id=&#34;some-accomplishments-im-proud-of&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Some accomplishments I’m proud of&lt;/h2&gt;
+&lt;div id=&#34;learning-r&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Learning R&lt;/h3&gt;
+&lt;p&gt;A year ago, I couldn’t write a lick of R code — I lived and breathed Excel, and was a bit afraid of the transition from a GUI to an IDE. Now, I’d consider myself pretty well-versed in the language and am &lt;em&gt;so glad&lt;/em&gt; I made the switch. Having moved to R, I realized how restrictive Excel was — R (or any other analytics-focused programming language) allows for the freedom of expression needed for any sort of serious analysis. &lt;a href=&#34;https://www.youtube.com/watch?v=PURtmHwk_-0&#34;&gt;This talk by Hadley Wickham&lt;/a&gt; was instrumental in pushing me to pick up R and is well worth a watch if you have the time.&lt;/p&gt;
+&lt;p&gt;
+&lt;div style=&#34;position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;&#34;&gt;
+  &lt;iframe src=&#34;https://www.youtube.com/embed/PURtmHwk_-0&#34; style=&#34;position: absolute; top: 0; left: 0; width: 100%; height: 100%; border:0;&#34; allowfullscreen title=&#34;YouTube Video&#34;&gt;&lt;/iframe&gt;
+&lt;/div&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;completing-stanfords-machine-learning-course&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Completing Stanford’s Machine Learning course&lt;/h3&gt;
+&lt;p&gt;When I started learning R, I was most interested in getting to the point where I’d be able to implement machine learning models (this specifically came from reading &lt;a href=&#34;https://projects.economist.com/us-2020-forecast/president/how-this-works&#34;&gt;the documentation&lt;/a&gt; for &lt;a href=&#34;https://github.com/TheEconomist/us-potus-model&#34;&gt;The Economist’s POTUS model&lt;/a&gt; and wanting to understand what was going on under-the-hood). &lt;a href=&#34;https://www.coursera.org/learn/machine-learning?&#34;&gt;Stanford’s online Machine Learning course&lt;/a&gt; was a thorough, technical introduction to the basics of machine learning. It doesn’t cover every model type, but gives a great foundation for &lt;em&gt;how to understand&lt;/em&gt; new models by requiring that you write the models yourself (this was very useful and practical, but you won’t catch me using MATLAB anytime soon!).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/coursera_ml_cert.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;committing-to-ropensci&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Committing to rOpenSci&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://ropensci.org/&#34;&gt;rOpenSci&lt;/a&gt; is a non-profit initiative committed to creating and maintaining a variety of open-source R packages. For work, I use one of their packages, &lt;a href=&#34;https://docs.ropensci.org/qualtRics/&#34;&gt;the qualtRics package&lt;/a&gt;, almost daily for extracting survey responses from Qualtrics’ API. I added a small function, &lt;a href=&#34;https://docs.ropensci.org/qualtRics/reference/fetch_id.html&#34;&gt;&lt;code&gt;fetch_id()&lt;/code&gt;&lt;/a&gt;, that allows you to pull in survey responses based on the survey’s name, rather than looking up the miscellaneous string of numbers that constitute the &lt;code&gt;survey_id&lt;/code&gt;. It’s a small helper function, but working on it taught me a lot about documentation, testing, package development, and contributing to open-source software.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(dplyr)
+library(qualtRics)
+
+all_surveys() %&amp;gt;% 
+  fetch_id(&amp;quot;Mark&amp;#39;s Example Survey&amp;quot;) %&amp;gt;%
+  fetch_survey() %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%&lt;/code&gt;&lt;/pre&gt;
+&lt;table style=&#34;width:100%;&#34;&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;5%&#34; /&gt;
+&lt;col width=&#34;3%&#34; /&gt;
+&lt;col width=&#34;3%&#34; /&gt;
+&lt;col width=&#34;7%&#34; /&gt;
+&lt;col width=&#34;3%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;5%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;5%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;4%&#34; /&gt;
+&lt;col width=&#34;5%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;StartDate&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;EndDate&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Status&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;IPAddress&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Progress&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;Duration (in seconds)&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Finished&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;RecordedDate&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;ResponseId&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;RecipientLastName&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;RecipientFirstName&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;RecipientEmail&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;ExternalReference&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;LocationLatitude&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;LocationLongitude&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;DistributionChannel&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;UserLanguage&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;Q1&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2022-01-12 15:20:31&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2022-01-12 15:20:38&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Survey Preview&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;100&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;7&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;TRUE&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;2022-01-12 15:20:40&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;R_XFVjzAh4MalrLmF&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;NA&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;29.73351&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;-95.5564&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;preview&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;EN&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Strongly agree&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div id=&#34;putting-together-a-developer-package&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Putting together a developer package&lt;/h3&gt;
+&lt;p&gt;At some point this past year, I found myself either re-writing the same chunks of code repeatedly or re-defining functions across every project. After a lengthy period of hesitation, I finally picked up the &lt;a href=&#34;https://r-pkgs.org/&#34;&gt;R Packages&lt;/a&gt; book by Hadley Wickham and Jenny Bryan and put together my own personal package, &lt;a href=&#34;https://github.com/markjrieke/riekelib&#34;&gt;&lt;code&gt;{riekelib}&lt;/code&gt;&lt;/a&gt;. It’s just a collection of small helper functions that I use regularly for both personal and professional projects, but it’s really helped speed up workflows, since I can just load the library rather than re-write code or functions! Here are a few examples:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(riekelib)
+
+# beta_interval() gives lower &amp;amp; upper bounds of a beta distribution&amp;#39;s confidence interval 
+tibble::tibble(alpha = c(85, 100),
+               beta = c(15, 500)) %&amp;gt;%
+  beta_interval(alpha, beta) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;right&#34;&gt;alpha&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;beta&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;ci_lower&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;ci_upper&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;85&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;15&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.7741265&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.9126452&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;100&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;500&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.1379480&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.1974895&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# percent() returns the percentage each value or combination of values appear in a tibble
+iris %&amp;gt;%
+  tibble::as_tibble() %&amp;gt;%
+  percent(Species) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;Species&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;pct&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;setosa&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.3333333&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;versicolor&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.3333333&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;virginica&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.3333333&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;plots-across-the-year&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Plots across the year&lt;/h2&gt;
+&lt;p&gt;Possibly the most visually-engaging way to track growth throughout the past year is to look back on how different plots have evolved. Here’s a walkthrough of some choice plots that I’ve made throughout the year.&lt;/p&gt;
+&lt;div id=&#34;baby-steps&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-01-10-baby-steps/&#34;&gt;Baby Steps&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;The first plot I ever created in R, made with base R’s &lt;code&gt;plot()&lt;/code&gt; function, compares speed &amp;amp; distance from the &lt;code&gt;cars&lt;/code&gt; dataset. There’s not really anything visually compelling here, but it gives the starting point.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/baby_steps.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;r-ggplot2-and-plotly&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-01-17-r-ggplot2-plotly/&#34;&gt;R, ggplot2, and plotly&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;This next plot shows my first attempt at creating a &lt;code&gt;ggplot&lt;/code&gt;. I remember struggling &lt;em&gt;a lot&lt;/em&gt; with this when trying to learn the ins and outs of putting together and formatting the plot, but that struggle was well worth it. I learned not only the basics of how to put together a plot with &lt;code&gt;ggplot&lt;/code&gt;, but also, more importantly, how to search and troubleshoot issues. I also like that I was able to explore a topic visually with this plot: while the winner of the presidential election overperforms in the electoral college relative to the popular vote, republican candidates consistently have a slightly stronger electoral college overperformance due to small-state bias.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/r_ggplot2_plotly.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;kind-of-projecting-the-2020-election&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-02-21-kind-of-projecting-the-2020-election/&#34;&gt;(Kind of) Projecting the 2020 Election&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;I started playing around with custom themes, and even setup my own &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/blob/main/dd_theme_elements/dd_theme_elements.R&#34;&gt;theme elements&lt;/a&gt; so that I could reference them easily. This was the first time I broke away from the default theme for &lt;code&gt;ggplot&lt;/code&gt;. Additionally, this was the first time I used any sort of statistical methods to make a projection. The projection itself is pretty bad/underconfident, but the methodology was sound.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/projecting_2020_election.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;doug-collins-saved-raphael-warnocks-senate-bid&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/&#34;&gt;Doug Collins Saved Raphael Warnock’s Senate Bid&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Of all the posts I wrote in 2021, this may be the one I’m most proud of. Firstly, I learned a lot of new techniques needed to create maps and animations in R, but I also made a data-backed point: Raphael Warnock, one of the current Democratic senators from Georgia, likely would not have won his election because Republican voters split their ticket between Kelly Loeffler and Doug Collins.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/ga_sen_01.png&#34; /&gt;
+&lt;img src=&#34;pics/ga_sen_02.png&#34; /&gt;
+&lt;img src=&#34;pics/ga_sen_03.gif&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;artwork&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-03-07-artwork/&#34;&gt;aRtwork!&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;This next one is just fun, but I used R to make some artwork! I liked it so much, that I ended up making this my site header.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/artwork.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;tidymodels-and-the-titanic&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-08-08-tidymodels-and-the-titanic/&#34;&gt;Tidymodels and the Titanic&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;I spent a lot of time this past year learning how to implement machine learning methods, but eventually got to the point where I feel confident building and troubleshooting models with the tidymodel framework. I had an “aha” moment when working on a classifier for everyone’s favorite dataset, the &lt;a href=&#34;https://www.kaggle.com/c/titanic&#34;&gt;Titanic survival dataset&lt;/a&gt;, and everything &lt;em&gt;finally&lt;/em&gt; clicked. The model wasn’t great, but being able to quickly build and iterate was game-changing.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/titanic.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;diamonds-are-forever-feature-engineering-with-the-diamonds-dataset&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/&#34;&gt;Diamonds are Forever: Feature Engineering with the Diamonds Dataset&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;With some machine learning under my belt, I spent some time practicing feature engineering with the &lt;a href=&#34;https://ggplot2.tidyverse.org/reference/diamonds.html&#34;&gt;diamonds dataset&lt;/a&gt;. From the variable importance plot, I found that some of the engineered features were among the most important for predicting a diamond’s price!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/diamonds_01.png&#34; /&gt;
+&lt;img src=&#34;pics/diamonds_02.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;do-voters-want-democrats-or-republicans-in-congress&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/&#34;&gt;Do Voters Want Democrats or Republicans in Congress?&lt;/a&gt;&lt;/h3&gt;
+&lt;p&gt;Most recently, I created a &lt;a href=&#34;https://github.com/markjrieke/2022-midterm-forecasts/blob/main/scripts/generic_ballot_weighting.R&#34;&gt;congressional ballot aggregator&lt;/a&gt; that weights polls by pollster, recency, sample size, and methodology. This was a huge effort to create a custom regression methodology, and I’m very happy with how it turned out! As of today, voters are just about even-split between Democrats and Republicans in the upcoming 2022 midterms.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/generic_ballot.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&#34;plans-for-2022&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Plans for 2022&lt;/h2&gt;
+&lt;p&gt;I think I’ve come a long way in 2021 and I hope that in 2023, I can look back on 2022 and see a similar level of growth throughout the year. Here are a few things I plan on working on this year:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Writing&lt;/strong&gt;: I’ve spent a lot of time in 2021 working on technical skills, but haven’t really taken time to work on my writing. This will be an important focus for me in 2022, since technical information is useless if I’m not able to communicate it well.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Bringing ML projects to the office&lt;/strong&gt;: In my current job, we’ve been spending the majority of the last six months focusing on troubleshooting the errors and getting over the speed-bumps involved with changing our primary survey vendor. We haven’t had the bandwidth to work on higher level/higher value projects, but should be able to do so in the upcoming year. Some projects I’m excited to work on this year include:
+&lt;ul&gt;
+&lt;li&gt;Variable importance in predicting positive sentiment in surveys;&lt;/li&gt;
+&lt;li&gt;Patient segmentation with k-means clustering;&lt;/li&gt;
+&lt;li&gt;Shiny App - “How confident am I?” - for educating our non-technical counterparts on confidence intervals vs. point estimates;&lt;/li&gt;
+&lt;li&gt;Using NLP for predicting positive sentiment from patient comments;&lt;/li&gt;
+&lt;li&gt;Topic modeling from comments for easier comment segmentation.&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Natural Language Processing&lt;/strong&gt;: As alluded to above, I’d like to work with text data for predictive analysis this year — there’s a lot of valuable insight that can be drawn from text data once I understand how to extract it!&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Enrolling in a Master’s of D.S. program&lt;/strong&gt;: While I’ve been able to pick up a lot of knowledge from free/low-cost resources online (as well as spending countless hours on StackOverflow), I believe it’s time to further my formal education by pursuing a Master’s of Data Science part-time. Enrolling in a master’s program should help improve both my technical and non-technical skills, as well as formalize my transition from engineering to data science with a degree.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Forecasting the 2022 Midterms&lt;/strong&gt;: A long-term goal since starting this blog was to learn how to and ultimately deploy a forecast model for the 2022 midterms. I believe I’m well on my way, and hope to be able to publish midterm forecast models for the House, Senate, and Gubernatorial races sometime in the summer this year.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;All-in-all, I’ve got a lot on my plate for 2022, but I’m confident that I’ll be able to tackle the challenges that come my way this year! My schedule is in a good place — full but manageable. As a preview of the next post I have scheduled, here’s a model I built to estimate Biden’s approval:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/biden_01.png&#34; /&gt;
+&lt;img src=&#34;pics/biden_02.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
