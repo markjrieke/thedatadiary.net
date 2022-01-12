@@ -3,18 +3,24 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.thedatadiary.net/blog/</loc>
-    <lastmod>2021-12-14T21:21:02-06:00</lastmod>
+    <lastmod>2022-01-12T08:16:35-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/categories/</loc>
-    <lastmod>2021-12-14T21:21:02-06:00</lastmod>
+    <lastmod>2022-01-12T08:16:35-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/categories/personal/</loc>
+    <lastmod>2022-01-12T08:16:35-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/</loc>
+    <lastmod>2022-01-12T08:16:35-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2022-01-12-the-data-diary-year-in-review/</loc>
+    <lastmod>2022-01-12T08:16:35-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/</loc>
     <lastmod>2021-12-14T21:21:02-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/categories/politics/</loc>
-    <lastmod>2021-12-14T21:21:02-06:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/</loc>
     <lastmod>2021-12-14T21:21:02-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/categories/rstats/</loc>

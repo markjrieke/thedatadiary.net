@@ -49,7 +49,7 @@ This methodology certainly has its flaws, but it *is* [transparent](https://gith
 
 I've finished migrating my site to Netlify! I had originally planned to make the switch from Squarespace sometime early in 2022, but motivation struck me during a relatively light work week and I was able to rebuild the site using [blogdown](https://bookdown.org/yihui/blogdown/). This allows for a lot more customization and control than was available with Squarespace, but the biggest upside is *definitely* the ease of sharing in-line code, here's a quick example:
 
-```{r, message=FALSE, warning=FALSE, echo=TRUE, dpi = 300, fig.width=8, fig.height=5}
+```{r, message=FALSE, warning=FALSE, echo=TRUE, dpi = 500, fig.width=9, fig.height=6}
 library(tidyverse)
 
 # let's put together a plot from the diamonds dataset
