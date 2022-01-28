@@ -7,10 +7,30 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Tue, 14 Dec 2021 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 26 Jan 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/politics/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>How Popular is Joe Biden?</title>
+      <link>https://www.thedatadiary.net/blog/2022-01-26-how-popular-is-joe-biden/</link>
+      <pubDate>Wed, 26 Jan 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-01-26-how-popular-is-joe-biden/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-01-26-how-popular-is-joe-biden/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;While the sitting president’s party tends to House lose seats in the midterm elections, the president’s approval rating can help inform us of the &lt;a href=&#34;https://fivethirtyeight.com/features/some-early-clues-about-how-the-midterms-will-go/&#34;&gt;magnitude of that loss&lt;/a&gt;. In general, the more unpopular the president, the more seats his party tends to lose. As a part of my long-term goal of &lt;a href=&#34;https://www.thedatadiary.net/blog/2022-01-12-the-data-diary-year-in-review/&#34;&gt;building a midterm election model&lt;/a&gt;, I put together a model for estimating Biden’s approval, disapproval, and net approval based on &lt;a href=&#34;https://projects.fivethirtyeight.com/biden-approval-rating/&#34;&gt;polls collected by FiveThirtyEight&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;The methodology to build the approval model is &lt;em&gt;very similar&lt;/em&gt; to the &lt;a href=&#34;https://www.thedatadiary.net/blog/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/&#34;&gt;Generic Congressional Ballot&lt;/a&gt; model — both weight polls by recency, sample size, methodology, pollster, and survey population — so I won’t rehash the details again. If you’re so inclined, you can &lt;a href=&#34;https://www.thedatadiary.net/blog/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/&#34;&gt;read the methodology&lt;/a&gt; from the previous post or &lt;a href=&#34;https://github.com/markjrieke/2022-midterm-forecasts/blob/main/scripts/approval_trends_weighting.R&#34;&gt;explore the script&lt;/a&gt;, but we’ll keep this short and sweet and just explore the results!&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/approval_disapproval_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/net_approval_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;As of today, Joe Biden’s job approval is fairly underwater — and &lt;a href=&#34;https://www.cnn.com/2021/11/13/politics/midterms-democrats-biden-analysis/index.html&#34;&gt;history says it’s unlikely to improve as the midterms approach&lt;/a&gt;. Interestingly, the generic congressional ballot still shows that the country is about even-split on who they’d like to see in congress. As with the president’s approval, however, &lt;a href=&#34;https://twitter.com/geoffreyvs/status/1438509217107701768&#34;&gt;historical precedent implies a continuous slide away from the president’s party&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/generic_ballot_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Despite this precedent, politics today are far more polarized than previous midterm cycles, and &lt;a href=&#34;https://gelliottmorris.substack.com/p/is-joe-biden-actually-that-unpopular&#34;&gt;modeling that adjusts for this partisanship may imply a lesser midterm shellacking than history would otherwise suggest&lt;/a&gt;. While Biden would certainly prefer for his approval to be higher, it may not necessarily spell doom for democrats in the midterms (though, to be sure, the strong prior still that they will lose ground this cycle — the question now is how much).&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Do Voters Want Democrats or Republicans in Congress?</title>
