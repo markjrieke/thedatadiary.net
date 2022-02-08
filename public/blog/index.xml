@@ -7,10 +7,454 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Wed, 26 Jan 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 08 Feb 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Pull Yourself Up by Your Bootstraps</title>
+      <link>https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/</link>
+      <pubDate>Tue, 08 Feb 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;Statistical modeling sometimes presents conflicting goals. Oftentimes, building a model involves a mix of objectives that don’t necessarily mesh well together: super-accurate point predictions, explainability, fast performance, or an expression of confidence in the prediction. In my work as an analyst, I generally am focused on how explainable the model is while being able to express a confidence interval around each prediction. For that, simple linear models do the trick. If, however, I want to regularize via &lt;code&gt;{glmnet}&lt;/code&gt; (which — with good reason — &lt;a href=&#34;https://stats.stackexchange.com/questions/224796/why-are-confidence-intervals-and-p-values-not-reported-as-default-for-penalized&#34;&gt;doesn’t provide confidence intervals&lt;/a&gt;) or use a non-linear model like &lt;code&gt;{xgboost}&lt;/code&gt;, I have to drop the confidence interval around predictions. Or so I had previously thought! As it turns out, building a series of models from bootstrap resamples provides an alternative method of generating a confidence interval around a prediction.&lt;/p&gt;
+&lt;div id=&#34;setting-a-baseline-with-penguins&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Setting a baseline with penguins&lt;/h3&gt;
+&lt;p&gt;First, let’s build out a baseline linear model with the Palmer Penguins dataset. This dataset contains information on 344 penguins across three species types and three islands. For this example, we’ll use the penguin information to predict &lt;code&gt;body_mass_g&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# load the data in from the tidytuesdayR package
+penguins_src &amp;lt;- tidytuesdayR::tt_load(2020, week = 31)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## 
+##  Downloading file 1 of 2: `penguins.csv`
+##  Downloading file 2 of 2: `penguins_raw.csv`&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# extract out the penguins dataset
+penguins &amp;lt;- penguins_src$penguins
+rm(penguins_src)
+
+penguins&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 344 x 8
+##    species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+##    &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;              &amp;lt;dbl&amp;gt;         &amp;lt;dbl&amp;gt;             &amp;lt;dbl&amp;gt;       &amp;lt;dbl&amp;gt;
+##  1 Adelie  Torgersen           39.1          18.7               181        3750
+##  2 Adelie  Torgersen           39.5          17.4               186        3800
+##  3 Adelie  Torgersen           40.3          18                 195        3250
+##  4 Adelie  Torgersen           NA            NA                  NA          NA
+##  5 Adelie  Torgersen           36.7          19.3               193        3450
+##  6 Adelie  Torgersen           39.3          20.6               190        3650
+##  7 Adelie  Torgersen           38.9          17.8               181        3625
+##  8 Adelie  Torgersen           39.2          19.6               195        4675
+##  9 Adelie  Torgersen           34.1          18.1               193        3475
+## 10 Adelie  Torgersen           42            20.2               190        4250
+## # ... with 334 more rows, and 2 more variables: sex &amp;lt;chr&amp;gt;, year &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We’ll need to do some lite preprocessing before we start modeling — it looks like there are some &lt;code&gt;NAs&lt;/code&gt; in &lt;code&gt;body_mass_g&lt;/code&gt; and in &lt;code&gt;sex&lt;/code&gt;. If I were creating a more serious model, I might keep the rows with &lt;code&gt;NAs&lt;/code&gt; for &lt;code&gt;sex&lt;/code&gt;, but since there are so few and this is an explainer, I’ll just filter them out.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# remove NA from body_mass_g and sex
+penguins &amp;lt;- 
+  penguins %&amp;gt;%
+  filter(!is.na(body_mass_g),
+         !is.na(sex))
+
+penguins&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 333 x 8
+##    species island    bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+##    &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;              &amp;lt;dbl&amp;gt;         &amp;lt;dbl&amp;gt;             &amp;lt;dbl&amp;gt;       &amp;lt;dbl&amp;gt;
+##  1 Adelie  Torgersen           39.1          18.7               181        3750
+##  2 Adelie  Torgersen           39.5          17.4               186        3800
+##  3 Adelie  Torgersen           40.3          18                 195        3250
+##  4 Adelie  Torgersen           36.7          19.3               193        3450
+##  5 Adelie  Torgersen           39.3          20.6               190        3650
+##  6 Adelie  Torgersen           38.9          17.8               181        3625
+##  7 Adelie  Torgersen           39.2          19.6               195        4675
+##  8 Adelie  Torgersen           41.1          17.6               182        3200
+##  9 Adelie  Torgersen           38.6          21.2               191        3800
+## 10 Adelie  Torgersen           34.6          21.1               198        4400
+## # ... with 323 more rows, and 2 more variables: sex &amp;lt;chr&amp;gt;, year &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It’s always good practice to explore the dataset prior to fitting a model, so let’s jump into some good ol’ fashioned EDA.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# how are species/island related to body mass?
+penguins %&amp;gt;%
+  ggplot(aes(x = species,
+             y = body_mass_g,
+             color = species)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.25,
+             position = position_jitter()) +
+  facet_wrap(~island)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Interesting! It looks like the Gentoo and Chinstrap species are only found on the Biscoe and Dream islands, respectively, whereas the Adelie species can be found on all three islands. At first glance, there’s not a meaningful difference that Island has on the weight of the Adelie penguins, so I think we’re safe to toss out the &lt;code&gt;island&lt;/code&gt; feature and just keep &lt;code&gt;species&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# how does sex relate to body mass?
+penguins %&amp;gt;%
+  ggplot(aes(x = sex,
+             y = body_mass_g,
+             color = sex)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.25,
+             position = position_jitter())&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Unsurprisingly, male penguins are typically heavier than female penguins.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# are penguins getting heavier or lighter as years progress?
+penguins %&amp;gt;%
+  mutate(year = as.character(year)) %&amp;gt;%
+  ggplot(aes(x = year,
+             y = body_mass_g)) +
+  geom_boxplot() +
+  geom_point(alpha = 0.25,
+             position = position_jitter())&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;It doesn’t look like there is significant signal being drawn from &lt;code&gt;year&lt;/code&gt;, so we’ll toss that out as well.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# how do other body measurements compare with the total body mass?
+penguins %&amp;gt;%
+  select(bill_length_mm:body_mass_g) %&amp;gt;%
+  pivot_longer(ends_with(&amp;quot;mm&amp;quot;),
+               names_to = &amp;quot;measurement&amp;quot;,
+               values_to = &amp;quot;value&amp;quot;) %&amp;gt;%
+  ggplot(aes(x = value,
+             y = body_mass_g,
+             color = measurement)) +
+  geom_point(alpha = 0.5) + 
+  facet_wrap(~measurement, scales = &amp;quot;free_x&amp;quot;) +
+  geom_smooth(method = &amp;quot;lm&amp;quot;,
+              se = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;For bill and flipper length, there’s a pretty clear relationship, but it looks like bill depth has a &lt;em&gt;classic&lt;/em&gt; case of &lt;a href=&#34;https://en.wikipedia.org/wiki/Simpson%27s_paradox&#34;&gt;Simpson’s paradox&lt;/a&gt;. Let’s explore that further to find a meaningful interaction to apply.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# which feature interacts with bill depth to produce simpson&amp;#39;s pardox?
+penguins %&amp;gt;%
+  ggplot(aes(x = bill_depth_mm,
+             y = body_mass_g,
+             color = species)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = &amp;quot;lm&amp;quot;,
+              se = FALSE)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-7-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;So, very clearly, the Gentoo species has a very different relationship between bill depth and body mass than the Adelie/Chinstrap species. We’ll add this as an interactive feature to the model.&lt;/p&gt;
+&lt;p&gt;With all that completed, let’s (finally) setup and build the baseline linear model with confidence intervals around the prediction!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# remove features
+penguins &amp;lt;- 
+  penguins %&amp;gt;%
+  select(-island, -year)
+
+# split into testing and training datasets
+set.seed(123)
+penguins_split &amp;lt;- initial_split(penguins)
+penguins_test &amp;lt;- testing(penguins_split)
+penguins_train &amp;lt;- training(penguins_split)
+
+# setup a pre-processing recipe
+penguins_rec &amp;lt;- 
+  recipe(body_mass_g ~ ., data = penguins_train) %&amp;gt;%
+  step_dummy(all_nominal()) %&amp;gt;% 
+  step_interact(~starts_with(&amp;quot;species&amp;quot;):bill_depth_mm)
+
+# fit a workflow
+penguins_lm &amp;lt;- 
+  workflow() %&amp;gt;%
+  add_recipe(penguins_rec) %&amp;gt;%
+  add_model(linear_reg() %&amp;gt;% set_engine(&amp;quot;lm&amp;quot;)) %&amp;gt;%
+  fit(penguins_train)
+
+# predict on training data with confidence intervals
+bind_cols(penguins_lm %&amp;gt;% predict(penguins_train),
+          penguins_lm %&amp;gt;% predict(penguins_train, type = &amp;quot;conf_int&amp;quot;, level = 0.95),
+          penguins_train) %&amp;gt;%
+  ggplot(aes(x = body_mass_g,
+             y = .pred)) +
+  geom_point(alpha = 0.5) +
+  geom_segment(aes(x = body_mass_g,
+                   xend = body_mass_g,
+                   y = .pred_lower,
+                   yend = .pred_upper),
+               alpha = 0.25) +
+  labs(title = &amp;quot;Predicting the Palmer Penguins - Training&amp;quot;,
+       subtitle = &amp;quot;Linear model predicting a penguin&amp;#39;s weight in grams&amp;quot;,
+       x = &amp;quot;Actual weight (g)&amp;quot;,
+       y = &amp;quot;Predicted weight (g)&amp;quot;,
+       caption = &amp;quot;Errorbars represent the a 95% confidence interval&amp;quot;) +
+  theme(plot.title.position = &amp;quot;plot&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-8-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This model does generally okay, but the confidence interval around each prediction is pretty &lt;a href=&#34;https://mc-stan.org/rstanarm/articles/rstanarm.html&#34;&gt;clearly too confident&lt;/a&gt;! Let’s solve this with bootstrapping.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;whats-a-bootstrap&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;What’s a bootstrap?&lt;/h3&gt;
+&lt;p&gt;Before progressing any further, it’s probably important to define what exactly a bootstrap is/what bootstrapping is. Bootstrapping is a resampling method that lets us take one dataset and turn it into many datasets. Bootstrapping accomplishes this by repeatedly pulling a random row from the source dataset and, importantly, bootstrapping allows for rows to be repeated! Let’s look at an example for a bit more clarity.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;right&#34;&gt;rowid&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;x1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;x2&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;104&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;102&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.9&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;88&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;124&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;79&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Let’s say we want to make bootstrap resamples of this dataset. We’ll draw five random rows from the dataset and, sometimes, we’ll have the same row show up in our new bootstrapped dataset multiple times:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;right&#34;&gt;rowid&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;x1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;x2&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.8&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;104&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.9&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;88&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;124&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.4&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;124&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;102&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Another bootstrap dataset might look like this:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;right&#34;&gt;rowid&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;x1&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;x2&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.7&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;102&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.9&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;88&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;79&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.9&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;88&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;right&#34;&gt;5&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;79&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Bootstrap datasets allow us to create many datasets from the original dataset and evaluate models across these bootstraps. Models that are well informed will give similar outputs across each dataset, despite of the randomness within each dataset, whereas less confident models will have a wider variation across the bootstrapped datasets.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;generating-some-confident-penguins&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Generating some confident penguins&lt;/h3&gt;
+&lt;p&gt;Let’s say we want to use &lt;code&gt;{xgboost}&lt;/code&gt; to predict penguin weight and we’ll use bootstrapping to generate a confidence interval. Firstly, we’ll create the bootstrap datasets from our training set.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;penguins_boot &amp;lt;- penguins_train %&amp;gt;% bootstraps()
+
+penguins_boot&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # Bootstrap sampling 
+## # A tibble: 25 x 2
+##    splits           id         
+##    &amp;lt;list&amp;gt;           &amp;lt;chr&amp;gt;      
+##  1 &amp;lt;split [249/92]&amp;gt; Bootstrap01
+##  2 &amp;lt;split [249/90]&amp;gt; Bootstrap02
+##  3 &amp;lt;split [249/91]&amp;gt; Bootstrap03
+##  4 &amp;lt;split [249/87]&amp;gt; Bootstrap04
+##  5 &amp;lt;split [249/98]&amp;gt; Bootstrap05
+##  6 &amp;lt;split [249/84]&amp;gt; Bootstrap06
+##  7 &amp;lt;split [249/91]&amp;gt; Bootstrap07
+##  8 &amp;lt;split [249/95]&amp;gt; Bootstrap08
+##  9 &amp;lt;split [249/94]&amp;gt; Bootstrap09
+## 10 &amp;lt;split [249/86]&amp;gt; Bootstrap10
+## # ... with 15 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;By default, the &lt;code&gt;bootstraps()&lt;/code&gt; function will create 25 bootstrap datasets, but we could theoretically create as many as we want. Now that we have our bootstraps, let’s create a function that will fit a model to each of the bootstraps and save to disk. We’ll use the default parameters for our &lt;code&gt;{xgboost}&lt;/code&gt; model.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# define a basic xgboost model
+penguins_xgb &amp;lt;-
+  boost_tree() %&amp;gt;%
+  set_mode(&amp;quot;regression&amp;quot;) %&amp;gt;%
+  set_engine(&amp;quot;xgboost&amp;quot;)
+
+# function that will fit a model and save to a folder
+fit_bootstrap &amp;lt;- function(index) {
+  
+  # pull out individual bootstrap to fit
+  xgb_boot &amp;lt;- penguins_boot$splits[[index]] %&amp;gt;% training()
+  
+  # fit to a workflow
+  workflow() %&amp;gt;%
+    add_recipe(penguins_rec) %&amp;gt;%
+    add_model(penguins_xgb) %&amp;gt;%
+    fit(xgb_boot) %&amp;gt;%
+    write_rds(paste0(&amp;quot;models/model_&amp;quot;, index, &amp;quot;.rds&amp;quot;))
+  
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This function will create a new model for each bootstrap, so we’ll end up with 25 separate models. Let’s fit!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# fit to 25 bootstrapped datasets
+for (i in 1:25) {
+  
+  fit_bootstrap(i)
+  
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now let’s define a function that will predict based on these 25 bootstrapped models, then predict on our training data.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;predict_bootstrap &amp;lt;- function(new_data, index){
+  
+  read_rds(paste0(&amp;quot;models/model_&amp;quot;, index, &amp;quot;.rds&amp;quot;)) %&amp;gt;%
+    predict(new_data) %&amp;gt;%
+    rename(!!sym(paste0(&amp;quot;pred_&amp;quot;, index)) := .pred)
+  
+}
+
+# predict!
+training_preds &amp;lt;- 
+  seq(1, 25) %&amp;gt;%
+  map_dfc(~predict_bootstrap(penguins_train, .x))
+
+training_preds&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 249 x 25
+##    pred_1 pred_2 pred_3 pred_4 pred_5 pred_6 pred_7 pred_8 pred_9 pred_10
+##     &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;  &amp;lt;dbl&amp;gt;   &amp;lt;dbl&amp;gt;
+##  1  5552.  5638.  5555.  5703.  5726.  5783.  5404.  5566.  5493.   5547.
+##  2  3470.  3340.  3334.  3350.  3311.  3303.  3315.  3421.  3692.   3436.
+##  3  5309.  5274.  5241.  5286.  5206.  5084.  5506.  5531.  5274.   5309.
+##  4  4160.  4013.  3988.  4111.  4075.  4073.  4284.  4050.  4033.   4033.
+##  5  4003.  3931.  4096.  3968.  4008.  3918.  3941.  4093.  3941.   3880.
+##  6  3967.  4039.  4095.  4047.  4021.  4055.  3980.  4115.  4067.   4084.
+##  7  4647.  4551.  4750.  4555.  4690.  4396.  4235.  4686.  4764.   4659.
+##  8  5240.  5288.  5291.  5276.  5308.  5508.  5570.  5375.  5340.   5268.
+##  9  4138.  4111.  4106.  4236.  4135.  4219.  4218.  4211.  4160.   4071.
+## 10  4728.  4723.  4715.  4823.  4765.  4727.  4836.  4777.  4765.   4633.
+## # ... with 239 more rows, and 15 more variables: pred_11 &amp;lt;dbl&amp;gt;, pred_12 &amp;lt;dbl&amp;gt;,
+## #   pred_13 &amp;lt;dbl&amp;gt;, pred_14 &amp;lt;dbl&amp;gt;, pred_15 &amp;lt;dbl&amp;gt;, pred_16 &amp;lt;dbl&amp;gt;, pred_17 &amp;lt;dbl&amp;gt;,
+## #   pred_18 &amp;lt;dbl&amp;gt;, pred_19 &amp;lt;dbl&amp;gt;, pred_20 &amp;lt;dbl&amp;gt;, pred_21 &amp;lt;dbl&amp;gt;, pred_22 &amp;lt;dbl&amp;gt;,
+## #   pred_23 &amp;lt;dbl&amp;gt;, pred_24 &amp;lt;dbl&amp;gt;, pred_25 &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Now we have a column of predictions for each model — we can summarise our point prediction for each row with the average across all models and set the confidence interval based on the standard deviation of the predictions.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;training_preds %&amp;gt;%
+  bind_cols(penguins_train) %&amp;gt;%
+  rowid_to_column() %&amp;gt;%
+  pivot_longer(starts_with(&amp;quot;pred_&amp;quot;),
+               names_to = &amp;quot;model&amp;quot;,
+               values_to = &amp;quot;.pred&amp;quot;) %&amp;gt;%
+  group_by(rowid) %&amp;gt;%
+  summarise(body_mass_g = max(body_mass_g),
+            .pred_mean = mean(.pred),
+            std_dev = sd(.pred)) %&amp;gt;%
+  riekelib::normal_interval(.pred_mean, std_dev) %&amp;gt;%
+  ggplot(aes(x = body_mass_g,
+             y = .pred_mean)) +
+  geom_point(alpha = 0.5) +
+  geom_segment(aes(x = body_mass_g, 
+                   xend = body_mass_g,
+                   y = ci_lower,
+                   yend = ci_upper),
+               alpha = 0.25) +
+  labs(title = &amp;quot;Predicting the Palmer Penguins - Training&amp;quot;,
+       subtitle = &amp;quot;XGBoost model predicting a penguin&amp;#39;s weight in grams&amp;quot;,
+       x = &amp;quot;Actual weight (g)&amp;quot;,
+       y = &amp;quot;Predicted weight (g)&amp;quot;,
+       caption = &amp;quot;Errorbars represent the a 95% confidence interval&amp;quot;) +
+  theme(plot.title.position = &amp;quot;plot&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-16-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;And just like that, we’ve trained a series of models with &lt;code&gt;{xgboost}&lt;/code&gt; that let us apply a confidence interval around a point prediction! Now that we’ve done so on the training set, let’s look at performance on the test set.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;seq(1, 25) %&amp;gt;%
+  map_dfc(~predict_bootstrap(penguins_test, .x)) %&amp;gt;%
+  bind_cols(penguins_test) %&amp;gt;%
+  rowid_to_column() %&amp;gt;%
+  pivot_longer(starts_with(&amp;quot;pred_&amp;quot;),
+               names_to = &amp;quot;model&amp;quot;,
+               values_to = &amp;quot;.pred&amp;quot;) %&amp;gt;%
+  group_by(rowid) %&amp;gt;%
+  summarise(body_mass_g = max(body_mass_g),
+            .pred_mean = mean(.pred),
+            std_dev = sd(.pred)) %&amp;gt;%
+  riekelib::normal_interval(.pred_mean, std_dev) %&amp;gt;%
+  ggplot(aes(x = body_mass_g,
+             y = .pred_mean)) +
+  geom_point(alpha = 0.5) +
+  geom_segment(aes(x = body_mass_g, 
+                   xend = body_mass_g,
+                   y = ci_lower,
+                   yend = ci_upper),
+               alpha = 0.25) +
+  labs(title = &amp;quot;Predicting the Palmer Penguins - Testing&amp;quot;,
+       subtitle = &amp;quot;XGBoost model predicting a penguin&amp;#39;s weight in grams&amp;quot;,
+       x = &amp;quot;Actual weight (g)&amp;quot;,
+       y = &amp;quot;Predicted weight (g)&amp;quot;,
+       caption = &amp;quot;Errorbars represent the a 95% confidence interval&amp;quot;) +
+  theme(plot.title.position = &amp;quot;plot&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-17-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The performance on the test data is slightly less accurate than on the training data, but that is to be expected. Importantly, we’ve used bootstrap resampling to generate a confidence interval from a model that otherwise normally returns a simple point prediction.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;some-noteworthy-caveats&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Some noteworthy caveats&lt;/h3&gt;
+&lt;p&gt;The prediction interval above is all well and good, but it comes with some &lt;em&gt;hefty&lt;/em&gt; caveats. Firstly, the confidence interval in the Testing plot is generated from the mean and standard deviation from each prediction. This assumes that the predictions are distributed normally, which may not necessarily be the case.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;training_preds %&amp;gt;%
+  slice_head(n = 1) %&amp;gt;%
+  pivot_longer(starts_with(&amp;quot;pred&amp;quot;)) %&amp;gt;%
+  ggplot(aes(x = value)) +
+  geom_density()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/figure-html/unnamed-chunk-18-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This density plot for one of the predictions shows that there’s definitely some non-normal behavior! There’s a few ways of addressing this.&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Create many, many, more bootstraps and models so that the prediction distribution approaches normality (with only 25 points, we really shouldn’t even expect normality from this example).&lt;/li&gt;
+&lt;li&gt;Report out the actual values of the percentiles in the distribution (e.g., the 2.5% percentile is below X, 97.5% is above Y, and the mean is at Z).&lt;/li&gt;
+&lt;li&gt;Report out the actual distribution as the result.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Ideally, you should do all three.&lt;/p&gt;
+&lt;p&gt;The second major caveat is that this is not one model, but a whole host of models and these take up a large amount of disk space. In this example, our 25 models take up 25 times more space than our original model and it takes some time to read in, fit, and wrangle the results. We can trade disk space for computation time by writing a function that fits and predicts without saving a model, but again, that’s a tradeoff between speed and space. For linear models, it may be a better route to have STAN simulate thousands of results via &lt;code&gt;{rstanarm}&lt;/code&gt; or &lt;code&gt;{brms}&lt;/code&gt;, but for non-linear models, boostrapping is the best way to go for now!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;polling-bites&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Polling Bites&lt;/h3&gt;
+&lt;p&gt;Currently, the Generic Ballot is holding steady with a slight sliver more Americans wanting Republicans in Congress than Democrats (&lt;strong&gt;50.7%&lt;/strong&gt; to &lt;strong&gt;49.3%&lt;/strong&gt;, respectively). Joe Biden’s net approval continues to slide, currently sitting at &lt;strong&gt;-11.4%&lt;/strong&gt; (&lt;strong&gt;41.8%&lt;/strong&gt; approve, &lt;strong&gt;53.1%&lt;/strong&gt; disapprove).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/generic_ballot_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/approval_disapproval_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/net_approval_current.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>How Popular is Joe Biden?</title>
