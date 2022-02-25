@@ -1,0 +1,63 @@
+---
+title: The Data Science Hierarchy of Needs
+author: ''
+date: '2022-02-22'
+slug: []
+categories: []
+tags: []
+subtitle: 'Why you should put a roof on your house before hiring an interior decorator'
+summary: ''
+authors: []
+lastmod: '2022-02-22T20:56:27-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>I’ve never built a house (shocking, I know), but from far too much time spent watching HGTV, I understand the basic gist of it. You lay a foundation, setup framing and walls, route mechanical and electrical, then work on final touches like painting and decorating (to be sure, I’m hand-waiving a lot of detail away here). There’s a bit of wiggle room in the order you go about things — you can paint the living room walls before the ones in the bathroom or vice versa — but some steps definitely need to happen before others — you can’t paint either rooms until the walls themselves are actually up!</p>
+<p>The same logic applies for data science — there are certain activities that are exceptionally hard to do without the proper infrastructure in place. Sometimes, we’re asked to chase after ~shiny objects~ without the support system to do so, when doing so may actually make our job more difficult in the future!</p>
+<p>I recently stumbled across <a href="https://towardsdatascience.com/the-data-science-pyramid-8a018013c490">an article</a> that summarized this really succinctly with the following graphic: <strong>The Data Science Hierarchy of Needs</strong>.</p>
+<p><img src="pics/ds_hierarchy.png" /></p>
+<div id="collect" class="section level4">
+<h4>Collect</h4>
+<p>At a baseline, to do any sort of data work you need to actually have data on hand to work with! Whether there’s a formal process for collecting data or you need to gather data from disparate public sources, getting raw data out of the wild and into your system is the first step to being able to do any sort of analysis. In my case, as an analyst with a hospital’s patient satisfaction group, we need to actually send patients surveys.</p>
+</div>
+<div id="movestore" class="section level4">
+<h4>Move/Store</h4>
+<p>Once you know where your data is coming from, setting up a reliable data flow from the source to your environment is needed. This is where a lot of headache can come from. Gathering data can be difficult but if the data is going to be used once for a one-off analysis, you don’t need to worry too much about repeatability, edge cases, or computing speed. Once you need to gather new data, thinking about infrastructure around new data gathering becomes much more important. A good chunk of the last eight months of my job has been working with our new survey vendor on this piece of the puzzle: standardizing data layouts, catching bugs in the pipeline, and setting up standards for access.</p>
+</div>
+<div id="exploretransform" class="section level4">
+<h4>Explore/Transform</h4>
+<p>With a reliable flow of new/updated data streaming in, you now need to make sure the data is appropriate for general use. Automated anomaly/fraud/bot detection, light wrangling, and removing errant responses can all be considered a part of this single stage. This is necessary to ensure that any analyses you do or models you build are based on what you expect from the underlying data.</p>
+</div>
+<div id="aggregatelabel" class="section level4">
+<h4>Aggregate/Label</h4>
+<p>I can’t recall the source, but the following quote about data science has stuck with me: “99% of data science work is counting — sometimes dividing.” A significant portion of my day-to-day work involves the tried-and-trusted <code>group_by() %&gt;% summarise()</code> pipeline. Making counts, percentages, running totals, etc. accessible to stakeholders via a dashboard can likely answer ~80% of the questions an analyst would have to field otherwise. It’s <em>so, so</em> important, however, to have the collection, storage, and preparation stages setup prior to ensure that stakeholders can <em>trust</em> that the data they’re seeing is accurate.</p>
+</div>
+<div id="learnoptimize" class="section level4">
+<h4>Learn/Optimize</h4>
+<p>If 80% of questions asked can be solved with grouped summaries and 20% require a model, it’s likely that 80% of that remaining 20% can be solved by a simple linear model. For example, “What effect does patient age have on their overall satisfaction?” can be answered with <code>lm(satisfaction_score ~ age)</code>. As relationships become more complex, you can add more terms to the model, or switch model architectures, but — in my own experience — the majority of modeling in practice can be represented by linear models (and, by extension, regularized models via <code>{glmnet}</code>).</p>
+</div>
+<div id="complex-models" class="section level4">
+<h4>Complex Models</h4>
+<p>Finally, a small subset of problems may require a more complex or powerful model type. But before you spin your wheels building a neural net or some other wacky architecture, you should first check if something simpler gets you what you need.</p>
+</div>
+<div id="some-closing-thoughts" class="section level4">
+<h4>Some Closing Thoughts</h4>
+<p>This post is partially meant to be able to share some useful info and partially a reminder to me to look for the simple solution! I have a tendency to start off with something complex then realize that I could save a lot of work if I just switch to something simpler. The three baseline layers upstream of my domain are <em>super important</em> and definitely need oversight from someone with an eye for data engineering.</p>
+</div>
+<div id="polling-bites" class="section level3">
+<h3>Polling Bites</h3>
+<p>The generic congressional ballot is starting to show some movement away from even split as Republicans have slowly climbed to <strong>51.2%</strong> in the polls and Democrats have fallen to <strong>48.8%</strong>.</p>
+<p><img src="pics/generic_ballot_current.png" /></p>
+<p>Biden’s net approval hasn’t shifted significantly since the last post — currently sitting at <strong>10.9%</strong> underwater with <strong>41.8%</strong> approval and <strong>52.7%</strong> disapproval.</p>
+<p><img src="pics/approval_disapproval_current.png" /></p>
+<p><img src="pics/net_approval_current.png" /></p>
+<p>(p.s., I’ve updated the color palettes here with the <a href="https://github.com/BlakeRMills/MetBrewer"><code>{MetBrewer}</code></a> package, which provides colorblind friendly palettes based on artwork in hte Metropolitan Museum of Art in New York)</p>
+</div>

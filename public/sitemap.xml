@@ -3,16 +3,25 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://www.thedatadiary.net/blog/</loc>
+    <lastmod>2022-02-22T20:56:27-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/</loc>
+    <lastmod>2022-02-22T20:56:27-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/blog/2022-02-22-the-data-science-hierarchy-of-needs/</loc>
+    <lastmod>2022-02-22T20:56:27-06:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/categories/</loc>
     <lastmod>2022-02-08T08:15:27-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/</loc>
     <lastmod>2022-02-08T08:15:27-06:00</lastmod>
   </url><url>
-    <loc>https://www.thedatadiary.net/</loc>
+    <loc>https://www.thedatadiary.net/categories/rstats/</loc>
     <lastmod>2022-02-08T08:15:27-06:00</lastmod>
   </url><url>
-    <loc>https://www.thedatadiary.net/categories/</loc>
-    <lastmod>2022-01-26T11:51:22-06:00</lastmod>
+    <loc>https://www.thedatadiary.net/categories/tidymodels/</loc>
+    <lastmod>2022-02-08T08:15:27-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/2022-01-26-how-popular-is-joe-biden/</loc>
     <lastmod>2022-01-26T11:51:22-06:00</lastmod>
@@ -29,16 +38,10 @@
     <loc>https://www.thedatadiary.net/blog/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/</loc>
     <lastmod>2021-12-14T21:21:02-06:00</lastmod>
   </url><url>
-    <loc>https://www.thedatadiary.net/categories/rstats/</loc>
-    <lastmod>2021-11-28T10:41:01-06:00</lastmod>
-  </url><url>
     <loc>https://www.thedatadiary.net/blog/2021-11-28-technical-books/</loc>
     <lastmod>2021-11-28T10:41:01-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/</loc>
-    <lastmod>2021-11-14T14:50:06-06:00</lastmod>
-  </url><url>
-    <loc>https://www.thedatadiary.net/categories/tidymodels/</loc>
     <lastmod>2021-11-14T14:50:06-06:00</lastmod>
   </url><url>
     <loc>https://www.thedatadiary.net/blog/2021-11-02-election-night-some-closing-thoughts-on-the-va-governor-race/</loc>

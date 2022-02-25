@@ -7,10 +7,28 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Wed, 26 Jan 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 08 Feb 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>rstats</title>
+      <link>https://www.thedatadiary.net/categories/rstats/</link>
+      <pubDate>Tue, 08 Feb 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/categories/rstats/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tidymodels</title>
+      <link>https://www.thedatadiary.net/categories/tidymodels/</link>
+      <pubDate>Tue, 08 Feb 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/categories/tidymodels/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>politics</title>
@@ -27,24 +45,6 @@
       <pubDate>Wed, 12 Jan 2022 00:00:00 +0000</pubDate>
       
       <guid>https://www.thedatadiary.net/categories/personal/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>rstats</title>
-      <link>https://www.thedatadiary.net/categories/rstats/</link>
-      <pubDate>Sun, 28 Nov 2021 00:00:00 +0000</pubDate>
-      
-      <guid>https://www.thedatadiary.net/categories/rstats/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>tidymodels</title>
-      <link>https://www.thedatadiary.net/categories/tidymodels/</link>
-      <pubDate>Sun, 14 Nov 2021 00:00:00 +0000</pubDate>
-      
-      <guid>https://www.thedatadiary.net/categories/tidymodels/</guid>
       <description></description>
     </item>
     
