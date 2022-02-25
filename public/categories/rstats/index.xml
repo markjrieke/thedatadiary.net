@@ -7,10 +7,64 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Tue, 08 Feb 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 22 Feb 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/rstats/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The Data Science Hierarchy of Needs</title>
+      <link>https://www.thedatadiary.net/blog/2022-02-22-the-data-science-hierarchy-of-needs/</link>
+      <pubDate>Tue, 22 Feb 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-02-22-the-data-science-hierarchy-of-needs/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-02-22-the-data-science-hierarchy-of-needs/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;I’ve never built a house (shocking, I know), but from far too much time spent watching HGTV, I understand the basic gist of it. You lay a foundation, setup framing and walls, route mechanical and electrical, then work on final touches like painting and decorating (to be sure, I’m hand-waiving a lot of detail away here). There’s a bit of wiggle room in the order you go about things — you can paint the living room walls before the ones in the bathroom or vice versa — but some steps definitely need to happen before others — you can’t paint either rooms until the walls themselves are actually up!&lt;/p&gt;
+&lt;p&gt;The same logic applies for data science — there are certain activities that are exceptionally hard to do without the proper infrastructure in place. Sometimes, we’re asked to chase after ~shiny objects~ without the support system to do so, when doing so may actually make our job more difficult in the future!&lt;/p&gt;
+&lt;p&gt;I recently stumbled across &lt;a href=&#34;https://towardsdatascience.com/the-data-science-pyramid-8a018013c490&#34;&gt;an article&lt;/a&gt; that summarized this really succinctly with the following graphic: &lt;strong&gt;The Data Science Hierarchy of Needs&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/ds_hierarchy.png&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;collect&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Collect&lt;/h4&gt;
+&lt;p&gt;At a baseline, to do any sort of data work you need to actually have data on hand to work with! Whether there’s a formal process for collecting data or you need to gather data from disparate public sources, getting raw data out of the wild and into your system is the first step to being able to do any sort of analysis. In my case, as an analyst with a hospital’s patient satisfaction group, we need to actually send patients surveys.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;movestore&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Move/Store&lt;/h4&gt;
+&lt;p&gt;Once you know where your data is coming from, setting up a reliable data flow from the source to your environment is needed. This is where a lot of headache can come from. Gathering data can be difficult but if the data is going to be used once for a one-off analysis, you don’t need to worry too much about repeatability, edge cases, or computing speed. Once you need to gather new data, thinking about infrastructure around new data gathering becomes much more important. A good chunk of the last eight months of my job has been working with our new survey vendor on this piece of the puzzle: standardizing data layouts, catching bugs in the pipeline, and setting up standards for access.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;exploretransform&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Explore/Transform&lt;/h4&gt;
+&lt;p&gt;With a reliable flow of new/updated data streaming in, you now need to make sure the data is appropriate for general use. Automated anomaly/fraud/bot detection, light wrangling, and removing errant responses can all be considered a part of this single stage. This is necessary to ensure that any analyses you do or models you build are based on what you expect from the underlying data.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;aggregatelabel&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Aggregate/Label&lt;/h4&gt;
+&lt;p&gt;I can’t recall the source, but the following quote about data science has stuck with me: “99% of data science work is counting — sometimes dividing.” A significant portion of my day-to-day work involves the tried-and-trusted &lt;code&gt;group_by() %&amp;gt;% summarise()&lt;/code&gt; pipeline. Making counts, percentages, running totals, etc. accessible to stakeholders via a dashboard can likely answer ~80% of the questions an analyst would have to field otherwise. It’s &lt;em&gt;so, so&lt;/em&gt; important, however, to have the collection, storage, and preparation stages setup prior to ensure that stakeholders can &lt;em&gt;trust&lt;/em&gt; that the data they’re seeing is accurate.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;learnoptimize&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Learn/Optimize&lt;/h4&gt;
+&lt;p&gt;If 80% of questions asked can be solved with grouped summaries and 20% require a model, it’s likely that 80% of that remaining 20% can be solved by a simple linear model. For example, “What effect does patient age have on their overall satisfaction?” can be answered with &lt;code&gt;lm(satisfaction_score ~ age)&lt;/code&gt;. As relationships become more complex, you can add more terms to the model, or switch model architectures, but — in my own experience — the majority of modeling in practice can be represented by linear models (and, by extension, regularized models via &lt;code&gt;{glmnet}&lt;/code&gt;).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;complex-models&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Complex Models&lt;/h4&gt;
+&lt;p&gt;Finally, a small subset of problems may require a more complex or powerful model type. But before you spin your wheels building a neural net or some other wacky architecture, you should first check if something simpler gets you what you need.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;some-closing-thoughts&#34; class=&#34;section level4&#34;&gt;
+&lt;h4&gt;Some Closing Thoughts&lt;/h4&gt;
+&lt;p&gt;This post is partially meant to be able to share some useful info and partially a reminder to me to look for the simple solution! I have a tendency to start off with something complex then realize that I could save a lot of work if I just switch to something simpler. The three baseline layers upstream of my domain are &lt;em&gt;super important&lt;/em&gt; and definitely need oversight from someone with an eye for data engineering.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;polling-bites&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Polling Bites&lt;/h3&gt;
+&lt;p&gt;The generic congressional ballot is starting to show some movement away from even split as Republicans have slowly climbed to &lt;strong&gt;51.2%&lt;/strong&gt; in the polls and Democrats have fallen to &lt;strong&gt;48.8%&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/generic_ballot_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Biden’s net approval hasn’t shifted significantly since the last post — currently sitting at &lt;strong&gt;10.9%&lt;/strong&gt; underwater with &lt;strong&gt;41.8%&lt;/strong&gt; approval and &lt;strong&gt;52.7%&lt;/strong&gt; disapproval.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/approval_disapproval_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/net_approval_current.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;(p.s., I’ve updated the color palettes here with the &lt;a href=&#34;https://github.com/BlakeRMills/MetBrewer&#34;&gt;&lt;code&gt;{MetBrewer}&lt;/code&gt;&lt;/a&gt; package, which provides colorblind friendly palettes based on artwork in hte Metropolitan Museum of Art in New York).&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Pull Yourself Up by Your Bootstraps</title>

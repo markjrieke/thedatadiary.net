@@ -65,6 +65,6 @@ Biden's net approval hasn't shifted significantly since the last post --- curren
 
 ![](pics/net_approval_current.png)
 
-(p.s., I've updated the color palettes here with the [`{MetBrewer}`](https://github.com/BlakeRMills/MetBrewer) package, which provides colorblind friendly palettes based on artwork in hte Metropolitan Museum of Art in New York)
+(p.s., I've updated the color palettes here with the [`{MetBrewer}`](https://github.com/BlakeRMills/MetBrewer) package, which provides colorblind friendly palettes based on artwork in hte Metropolitan Museum of Art in New York).
 
 
