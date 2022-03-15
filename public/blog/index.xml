@@ -376,6 +376,7 @@ penguins_preds_boot %&amp;gt;%
 &lt;script src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
 
 
+&lt;p&gt;&lt;strong&gt;Note (3/14/22): This article was written prior to the release of the &lt;a href=&#34;https://github.com/markjrieke/workboots&#34;&gt;{workboots}&lt;/a&gt; package. Since the release of that package, I’ve discovered some errors with the methodology described here and would recommend instead referencing the &lt;a href=&#34;https://thedatadiary.net/blog/2022-03-14-introducing-workboots&#34;&gt;post associated with the release&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Statistical modeling sometimes presents conflicting goals. Oftentimes, building a model involves a mix of objectives that don’t necessarily mesh well together: super-accurate point predictions, explainability, fast performance, or an expression of confidence in the prediction. In my work as an analyst, I generally am focused on how explainable the model is while being able to express a confidence interval around each prediction. For that, simple linear models do the trick. If, however, I want to regularize via &lt;code&gt;{glmnet}&lt;/code&gt; (which — with good reason — &lt;a href=&#34;https://stats.stackexchange.com/questions/224796/why-are-confidence-intervals-and-p-values-not-reported-as-default-for-penalized&#34;&gt;doesn’t provide confidence intervals&lt;/a&gt;) or use a non-linear model like &lt;code&gt;{xgboost}&lt;/code&gt;, I have to drop the confidence interval around predictions. Or so I had previously thought! As it turns out, building a series of models from bootstrap resamples provides an alternative method of generating a confidence interval around a prediction.&lt;/p&gt;
 &lt;div id=&#34;setting-a-baseline-with-penguins&#34; class=&#34;section level3&#34;&gt;
 &lt;h3&gt;Setting a baseline with penguins&lt;/h3&gt;
@@ -1022,7 +1023,7 @@ iris %&amp;gt;%
 &lt;/div&gt;
 &lt;div id=&#34;doug-collins-saved-raphael-warnocks-senate-bid&#34; class=&#34;section level3&#34;&gt;
 &lt;h3&gt;&lt;a href=&#34;https://www.thedatadiary.net/blog/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/&#34;&gt;Doug Collins Saved Raphael Warnock’s Senate Bid&lt;/a&gt;&lt;/h3&gt;
-&lt;p&gt;Of all the posts I wrote in 2021, this may be the one I’m most proud of. Firstly, I learned a lot of new techniques needed to create maps and animations in R, but I also made a data-backed point: Raphael Warnock, one of the current Democratic senators from Georgia, likely would not have won his election because Republican voters split their ticket between Kelly Loeffler and Doug Collins.&lt;/p&gt;
+&lt;p&gt;Of all the posts I wrote in 2021, this may be the one I’m most proud of. Firstly, I learned a lot of new techniques needed to create maps and animations in R, but I also made a data-backed point: Raphael Warnock, one of the current Democratic senators from Georgia, likely won his election because Republican voters split their ticket between Kelly Loeffler and Doug Collins.&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;pics/ga_sen_01.png&#34; /&gt;
 &lt;img src=&#34;pics/ga_sen_02.png&#34; /&gt;
 &lt;img src=&#34;pics/ga_sen_03.gif&#34; /&gt;&lt;/p&gt;
@@ -1384,7 +1385,7 @@ iris %&amp;gt;%
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://web.stanford.edu/~hastie/ElemStatLearn/printings/ESLII_print12_toc.pdf&#34;&gt;The Elements of Statistical Learning&lt;/a&gt;&lt;/strong&gt; is referenced as the Bible of Machine Learning by &lt;a href=&#34;https://www.youtube.com/channel/UCtYLUTtgS3k1Fg4y5tAhLbw&#34;&gt;Josh Starmer&lt;/a&gt; and provides a robust and deeply technical foundation for a wide array of machine learning models. It’s considered a must-have among both machine learning theorists, who look for new model structures, and practitioners (like myself!).&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://web.stanford.edu/~hastie/ISLR2/ISLRv2_website.pdf&#34;&gt;An Introduction to Statistical Learning with Applications in R&lt;/a&gt;&lt;/strong&gt; is a companion to &lt;em&gt;The Elements of Statistical Learning&lt;/em&gt;. &lt;em&gt;An Introduction to Statistical Learning&lt;/em&gt; arose as a broader and less technical treatment of the key topics discussed in &lt;em&gt;The Elements of Statistical Learning&lt;/em&gt;. Each section also includes learning-lab lessons walking through the implementation of the statistical learning method from that chapter (&lt;a href=&#34;https://www.emilhvitfeldt.com/&#34;&gt;Emil Hvitfeldt&lt;/a&gt; is also working on a &lt;a href=&#34;https://emilhvitfeldt.github.io/ISLR-tidymodels-labs/&#34;&gt;companion site&lt;/a&gt; for completing the labs with tidymodels).&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.tmwr.org/index.html&#34;&gt;Tidy Modeling with R&lt;/a&gt;&lt;/strong&gt; is a guide to using the tidymodel framework and has been an excellent reference in both personal and professional projects.&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.tidytextmining.com/&#34;&gt;Text Mining with R, a Tidy Approach&lt;/a&gt;&lt;/strong&gt; serves as an introduction to text mining and other methods for dealing with unstructured, non-rectangular data. In my current role as a Consumer Experience Analyst, I have to interact with unstructured data (in the form of patient comments) daily - this book, along with the &lt;a href=&#34;https://juliasilge.github.io/tidytext/&#34;&gt;tidytext&lt;/a&gt; package, have been incredibly useful for analyzing and visualizing text data.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://www.tidytextmining.com/&#34;&gt;Text Mining with R: a Tidy Approach&lt;/a&gt;&lt;/strong&gt; serves as an introduction to text mining and other methods for dealing with unstructured, non-rectangular data. In my current role as a Consumer Experience Analyst, I have to interact with unstructured data (in the form of patient comments) daily - this book, along with the &lt;a href=&#34;https://juliasilge.github.io/tidytext/&#34;&gt;tidytext&lt;/a&gt; package, have been incredibly useful for analyzing and visualizing text data.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://smltar.com/preface.html&#34;&gt;Supervised Machine Learning for Text Analysis in R&lt;/a&gt;&lt;/strong&gt; picks up where &lt;em&gt;Text Mining with R&lt;/em&gt; left off by exploring (as the title suggests) supervised machine learning methods with text data. While I haven’t done extensive text modeling, this is one area that I’d like to explore further in 2022.&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;http://www.feat.engineering/&#34;&gt;Feature Engineering and Selection: A Practical Approach for Predictive Models&lt;/a&gt;&lt;/strong&gt; is a guidebook offering methods for feature engineering (transforming and creating new predictor variables to improve predictive model performance). While I’ve utilized some basic feature engineering in some of my work, I’m interested in adding more robust tools to my feature-engineering toolkit!&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;&lt;a href=&#34;https://drob.gumroad.com/l/empirical-bayes&#34;&gt;Introduction to Empirical Bayes&lt;/a&gt;&lt;/strong&gt; is &lt;a href=&#34;http://varianceexplained.org/about/&#34;&gt;David Robinson’s&lt;/a&gt; book coalescing a series of blog posts on Bayesian estimation, credible intervals, A/B testing, mixed models, and a host of other methods, all through the example of baseball batting averages.&lt;/li&gt;
@@ -1545,8 +1546,8 @@ collect_metrics(rs01)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator     mean     n  std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;         &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;    &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   1120.       10 12.0     Preprocessor1_Model1
-## 2 rsq     standard      0.921    10  0.00118 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   1129.       10 10.2     Preprocessor1_Model1
+## 2 rsq     standard      0.920    10  0.00160 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;And right off the bat, we can see a fairly high value for &lt;code&gt;rsq&lt;/code&gt;! However, &lt;code&gt;rsq&lt;/code&gt; doesn’t tell the whole story, so we should check our predictions and residuals plots.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;augment(rs01) %&amp;gt;%
   ggplot(aes(x = price,
@@ -1811,8 +1812,8 @@ collect_metrics(rs02)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;      &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   0.115    10 0.00141 Preprocessor1_Model1
-## 2 rsq     standard   0.932    10 0.00158 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   0.115    10 0.00143 Preprocessor1_Model1
+## 2 rsq     standard   0.932    10 0.00161 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Oof - that’s actually slightly worse than our baseline model!&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;rs02 %&amp;gt;%
   augment() %&amp;gt;%
@@ -1907,8 +1908,8 @@ collect_metrics(rs04)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;      &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   0.120    10  0.0150 Preprocessor1_Model1
-## 2 rsq     standard   0.921    10  0.0194 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   0.116    10  0.0136 Preprocessor1_Model1
+## 2 rsq     standard   0.927    10  0.0175 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Wow - still a bit worse! I’ll try upsampling &amp;amp; if there is no improvement, we’ll move on without resampling!&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;metrics &amp;lt;-
   metrics %&amp;gt;%
@@ -1939,8 +1940,8 @@ collect_metrics(rs05)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;      &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   0.106    10 0.00618 Preprocessor1_Model1
-## 2 rsq     standard   0.941    10 0.00714 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   0.101    10 0.00499 Preprocessor1_Model1
+## 2 rsq     standard   0.947    10 0.00536 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Okay - resampling gets stricken off our list of recipe steps! Let’s look at how the models compare so far&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;metrics &amp;lt;-
   metrics %&amp;gt;%
@@ -2097,7 +2098,7 @@ rec07 &amp;lt;-
   step_ns(starts_with(&amp;quot;carat_x_color&amp;quot;), deg_free = 15) 
 
 rec07&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Data Recipe
+&lt;pre&gt;&lt;code&gt;## Recipe
 ## 
 ## Inputs:
 ## 
@@ -2112,9 +2113,9 @@ rec07&lt;/code&gt;&lt;/pre&gt;
 ## Interactions with carat:starts_with(&amp;quot;cut_&amp;quot;)
 ## Interactions with carat:starts_with(&amp;quot;color_&amp;quot;)
 ## Variable mutation for c(x, y, z)
-## Variable mutation for volume_param
-## Natural Splines on starts_with(&amp;quot;carat_x_cut&amp;quot;)
-## Natural Splines on starts_with(&amp;quot;carat_x_color&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+## Variable mutation for log10(x * y * z)
+## Natural splines on starts_with(&amp;quot;carat_x_cut&amp;quot;)
+## Natural splines on starts_with(&amp;quot;carat_x_color&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;wf07 &amp;lt;-
   workflow() %&amp;gt;%
   add_model(mod07) %&amp;gt;%
@@ -2271,25 +2272,6 @@ final_fit %&amp;gt;%
 &lt;li&gt;Tuned regularization parameters on our model with feature engineering to arrive at the final model.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Our models’ performances, ranked from best to worst, show that the final tuned model did indeed perform the best on the test dataset!&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;metrics %&amp;gt;%
-  select(.metric, mean, model)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 14 x 3
-##    .metric   mean model  
-##    &amp;lt;chr&amp;gt;    &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;  
-##  1 rmse    0.0750 model07
-##  2 rsq     0.970  model07
-##  3 rmse    0.0793 model01
-##  4 rsq     0.966  model01
-##  5 rmse    0.115  model02
-##  6 rsq     0.932  model02
-##  7 rmse    0.0918 model03
-##  8 rsq     0.956  model03
-##  9 rmse    0.120  model04
-## 10 rsq     0.921  model04
-## 11 rmse    0.106  model05
-## 12 rsq     0.941  model05
-## 13 rmse    0.127  model06
-## 14 rsq     0.916  model06&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;final_preds &amp;lt;-
   final_fit %&amp;gt;%
   predict(diamonds_train) %&amp;gt;%
@@ -2410,38 +2392,10 @@ diamonds %&amp;gt;%
   geom_point(alpha = 0.1) +
   theme_minimal() +
   viridis::scale_color_viridis(discrete = TRUE)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;2400&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;This ease of use and visibility will make things more seamless for me and allow me to dig into more technical content in more detail in the future!&lt;/p&gt;
 &lt;p&gt;I’ll be taking a (much needed) vacation next week, spending some time off the grid in the Grand Canyon and surrounding area with my family. I’ve got a short post lined up for early November when I return - see you then!&lt;/p&gt;
 &lt;p&gt;As always, you can find the source files for &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race&#34;&gt;the script to generate the polling average&lt;/a&gt; and for &lt;a href=&#34;https://github.com/markjrieke/thedatadiary.net&#34;&gt;this site&lt;/a&gt; on my github.&lt;/p&gt;
-&lt;/div&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>The Gas Price Fallacy</title>
-      <link>https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/</link>
-      <pubDate>Wed, 13 Oct 2021 22:16:52 -0500</pubDate>
-      
-      <guid>https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/</guid>
-      <description>
-&lt;script src=&#34;https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
-
-
-&lt;p&gt;As America has vaccinated its population, life has seemingly begun to return to the pre-pandemic normal. Businesses have been opening to higher levels of capacity, schools are planning for higher levels of in-person learning in the fall, and, notably, Americans have returned to &lt;a href=&#34;https://covid19.apple.com/mobility&#34;&gt;pre-pandemic levels of transit&lt;/a&gt;.&lt;/p&gt;
-&lt;p&gt;&lt;a href=&#34;https://twitter.com/existentialfish/status/1377779116414533638&#34;&gt;Conservative commentators&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/Jim_Jordan/status/1406966549714440196&#34;&gt;representatives&lt;/a&gt; have pointed out that prices of commodity goods - in particular, gasoline - have skyrocketed over the past year and attribute this increase to Biden’s presidency. Looking at retail gasoline prices, we can see a steady increase since Biden took office.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;plot_01.png&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;What they fail to point out, however, is that the price of gasoline (and other commodities) significantly dropped during the pandemic, and that the increases are largely a return to pre-pandemic prices.&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;plot_02.png&#34; /&gt;&lt;/p&gt;
-&lt;p&gt;While there are certainly opportunities to critique the current administration’s energy policy (&lt;a href=&#34;https://apnews.com/article/joe-biden-billings-a3a37acf2fce55449b704b01badc1f67&#34;&gt;banning new drilling leases on federal land/water&lt;/a&gt; and &lt;a href=&#34;https://apnews.com/article/donald-trump-joe-biden-keystone-pipeline-canada-environment-and-nature-141eabd7cca6449dfbd2dab8165812f2&#34;&gt;canceling the Keystone XL pipeline’s border-crossing permit&lt;/a&gt;, for example), attributing the recent return to pre-pandemic gasoline prices is a particularly weak and intentionally misleading avenue of attack.&lt;/p&gt;
-&lt;p&gt;As always, you can find my work on &lt;a href=&#34;https://github.com/markjrieke/thedatadiary&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
-&lt;div id=&#34;some-readingviewing-material&#34; class=&#34;section level3&#34;&gt;
-&lt;h3&gt;Some Reading/Viewing Material&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;The Economist wrote an &lt;a href=&#34;https://www.economist.com/graphic-detail/2021/07/10/in-person-voting-really-did-accelerate-covid-19s-spread-in-america&#34;&gt;interesting article&lt;/a&gt; finding a significant link between a county’s in-person voting rate and new COVID cases in November.&lt;/li&gt;
-&lt;li&gt;Elliot Morris summarized the work of several political scientists in a recent article describing &lt;a href=&#34;https://gelliottmorris.substack.com/p/why-did-the-gop-slide-so-far-towards&#34;&gt;why the GOP slid so far towards authoritarianism&lt;/a&gt; in the past decade. The article is behind a subscriber paywall, but is well worth the read. In short, however, “ethnically antagonistic” voters are much more likely to agree with statements traditionally viewed as authoritarian. This group hadn’t coalesced under a single party until Trump brought these anti-racial voters into the party (recall his role in the &lt;a href=&#34;https://www.theatlantic.com/ideas/archive/2020/05/birtherism-and-trump/610978/&#34;&gt;birther conspiracy&lt;/a&gt; and the &lt;a href=&#34;https://www.cnn.com/2016/08/31/politics/2016-election-donald-trump-hillary-clinton-race/index.html&#34;&gt;racial antagonism surrounding his 2016 campaign&lt;/a&gt;), at which point democratic (note, small “d”) norms became a partisan issue.&lt;/li&gt;
-&lt;li&gt;In my machine learning class, I’ve started learning about the implementation of neural networks. The course’s instruction style is highly technical, but Grant Sanderson’s &lt;a href=&#34;https://www.youtube.com/watch?t=1015s&amp;amp;v=aircAruvnKk&#34;&gt;series on neural networks&lt;/a&gt; has helped me align a technical and intuitive understanding of the topic.&lt;/li&gt;
-&lt;/ul&gt;
 &lt;/div&gt;
 </description>
     </item>
@@ -2559,6 +2513,34 @@ diamonds %&amp;gt;%
 &lt;li&gt;There’s been a concerted effort by prominent conservatives to &lt;a href=&#34;https://twitter.com/gelliottmorris/status/1424524749875601408?s=21&#34;&gt;promote vaccination&lt;/a&gt; and &lt;a href=&#34;https://www.reviewjournal.com/opinion/letters/letter-dont-blame-the-gop-for-vaccine-hesitancy-2413731/amp/&#34;&gt;shift the blame for vaccine hesitancy to the Biden administration&lt;/a&gt;, pointing in particular to one of Kamala Harris’ comments during the Vice Presidential debate. This criticism falls fairly short, given that commentators like &lt;a href=&#34;https://www.youtube.com/watch?v=ocEFTIwnO6I&#34;&gt;Tucker Carlson&lt;/a&gt; and legislators like &lt;a href=&#34;https://www.cnn.com/2021/08/10/tech/twitter-marjorie-taylor-greene/index.html&#34;&gt;Marjorie Taylor Green&lt;/a&gt; continue to spread vaccine conspiracy theories. Further, a &lt;a href=&#34;https://www.economist.com/graphic-detail/2021/07/30/which-americans-are-against-the-jab&#34;&gt;statistical model by the Economist&lt;/a&gt; found that the strongest predictor of whether or not someone has been vaccinated is who they voted for in the 2020 presidential election.&lt;/li&gt;
 &lt;li&gt;Julia Silge was recently featured as a guest on an excellent episode of the &lt;a href=&#34;https://www.youtube.com/watch?v=p7z8yZucwlM&#34;&gt;Not So Standard Podcast&lt;/a&gt;. Well worth a listen for R dorks like myself.&lt;/li&gt;
 &lt;li&gt;Perry Bacon Jr wrote an &lt;a href=&#34;https://www.washingtonpost.com/opinions/2021/08/09/why-moderation-doesnt-guarantee-electoral-success-biden-democrats/&#34;&gt;informative piece&lt;/a&gt; on the misplaced importance on swing voters in election cycles.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>The Gas Price Fallacy</title>
+      <link>https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/</link>
+      <pubDate>Sun, 18 Jul 2021 22:16:52 -0500</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2021-07-18-the-gas-price-fallacy/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;As America has vaccinated its population, life has seemingly begun to return to the pre-pandemic normal. Businesses have been opening to higher levels of capacity, schools are planning for higher levels of in-person learning in the fall, and, notably, Americans have returned to &lt;a href=&#34;https://covid19.apple.com/mobility&#34;&gt;pre-pandemic levels of transit&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://twitter.com/existentialfish/status/1377779116414533638&#34;&gt;Conservative commentators&lt;/a&gt; and &lt;a href=&#34;https://twitter.com/Jim_Jordan/status/1406966549714440196&#34;&gt;representatives&lt;/a&gt; have pointed out that prices of commodity goods - in particular, gasoline - have skyrocketed over the past year and attribute this increase to Biden’s presidency. Looking at retail gasoline prices, we can see a steady increase since Biden took office.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;plot_01.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;What they fail to point out, however, is that the price of gasoline (and other commodities) significantly dropped during the pandemic, and that the increases are largely a return to pre-pandemic prices.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;plot_02.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;While there are certainly opportunities to critique the current administration’s energy policy (&lt;a href=&#34;https://apnews.com/article/joe-biden-billings-a3a37acf2fce55449b704b01badc1f67&#34;&gt;banning new drilling leases on federal land/water&lt;/a&gt; and &lt;a href=&#34;https://apnews.com/article/donald-trump-joe-biden-keystone-pipeline-canada-environment-and-nature-141eabd7cca6449dfbd2dab8165812f2&#34;&gt;canceling the Keystone XL pipeline’s border-crossing permit&lt;/a&gt;, for example), attributing the recent return to pre-pandemic gasoline prices is a particularly weak and intentionally misleading avenue of attack.&lt;/p&gt;
+&lt;p&gt;As always, you can find my work on &lt;a href=&#34;https://github.com/markjrieke/thedatadiary&#34;&gt;github&lt;/a&gt;.&lt;/p&gt;
+&lt;div id=&#34;some-readingviewing-material&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Some Reading/Viewing Material&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;The Economist wrote an &lt;a href=&#34;https://www.economist.com/graphic-detail/2021/07/10/in-person-voting-really-did-accelerate-covid-19s-spread-in-america&#34;&gt;interesting article&lt;/a&gt; finding a significant link between a county’s in-person voting rate and new COVID cases in November.&lt;/li&gt;
+&lt;li&gt;Elliot Morris summarized the work of several political scientists in a recent article describing &lt;a href=&#34;https://gelliottmorris.substack.com/p/why-did-the-gop-slide-so-far-towards&#34;&gt;why the GOP slid so far towards authoritarianism&lt;/a&gt; in the past decade. The article is behind a subscriber paywall, but is well worth the read. In short, however, “ethnically antagonistic” voters are much more likely to agree with statements traditionally viewed as authoritarian. This group hadn’t coalesced under a single party until Trump brought these anti-racial voters into the party (recall his role in the &lt;a href=&#34;https://www.theatlantic.com/ideas/archive/2020/05/birtherism-and-trump/610978/&#34;&gt;birther conspiracy&lt;/a&gt; and the &lt;a href=&#34;https://www.cnn.com/2016/08/31/politics/2016-election-donald-trump-hillary-clinton-race/index.html&#34;&gt;racial antagonism surrounding his 2016 campaign&lt;/a&gt;), at which point democratic (note, small “d”) norms became a partisan issue.&lt;/li&gt;
+&lt;li&gt;In my machine learning class, I’ve started learning about the implementation of neural networks. The course’s instruction style is highly technical, but Grant Sanderson’s &lt;a href=&#34;https://www.youtube.com/watch?t=1015s&amp;amp;v=aircAruvnKk&#34;&gt;series on neural networks&lt;/a&gt; has helped me align a technical and intuitive understanding of the topic.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
 </description>

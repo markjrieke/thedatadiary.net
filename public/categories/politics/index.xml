@@ -421,7 +421,7 @@ diamonds %&amp;gt;%
   geom_point(alpha = 0.1) +
   theme_minimal() +
   viridis::scale_color_viridis(discrete = TRUE)&lt;/code&gt;&lt;/pre&gt;
-&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;2400&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/figure-html/unnamed-chunk-1-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
 &lt;p&gt;This ease of use and visibility will make things more seamless for me and allow me to dig into more technical content in more detail in the future!&lt;/p&gt;
 &lt;p&gt;I’ll be taking a (much needed) vacation next week, spending some time off the grid in the Grand Canyon and surrounding area with my family. I’ve got a short post lined up for early November when I return - see you then!&lt;/p&gt;
 &lt;p&gt;As always, you can find the source files for &lt;a href=&#34;https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race&#34;&gt;the script to generate the polling average&lt;/a&gt; and for &lt;a href=&#34;https://github.com/markjrieke/thedatadiary.net&#34;&gt;this site&lt;/a&gt; on my github.&lt;/p&gt;

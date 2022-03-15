@@ -162,8 +162,8 @@ collect_metrics(rs01)</code></pre>
 <pre><code>## # A tibble: 2 x 6
 ##   .metric .estimator     mean     n  std_err .config             
 ##   &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               
-## 1 rmse    standard   1120.       10 12.0     Preprocessor1_Model1
-## 2 rsq     standard      0.921    10  0.00118 Preprocessor1_Model1</code></pre>
+## 1 rmse    standard   1129.       10 10.2     Preprocessor1_Model1
+## 2 rsq     standard      0.920    10  0.00160 Preprocessor1_Model1</code></pre>
 <p>And right off the bat, we can see a fairly high value for <code>rsq</code>! However, <code>rsq</code> doesn’t tell the whole story, so we should check our predictions and residuals plots.</p>
 <pre class="r"><code>augment(rs01) %&gt;%
   ggplot(aes(x = price,
@@ -428,8 +428,8 @@ collect_metrics(rs02)</code></pre>
 <pre><code>## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 rmse    standard   0.115    10 0.00141 Preprocessor1_Model1
-## 2 rsq     standard   0.932    10 0.00158 Preprocessor1_Model1</code></pre>
+## 1 rmse    standard   0.115    10 0.00143 Preprocessor1_Model1
+## 2 rsq     standard   0.932    10 0.00161 Preprocessor1_Model1</code></pre>
 <p>Oof - that’s actually slightly worse than our baseline model!</p>
 <pre class="r"><code>rs02 %&gt;%
   augment() %&gt;%
@@ -524,8 +524,8 @@ collect_metrics(rs04)</code></pre>
 <pre><code>## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 rmse    standard   0.120    10  0.0150 Preprocessor1_Model1
-## 2 rsq     standard   0.921    10  0.0194 Preprocessor1_Model1</code></pre>
+## 1 rmse    standard   0.116    10  0.0136 Preprocessor1_Model1
+## 2 rsq     standard   0.927    10  0.0175 Preprocessor1_Model1</code></pre>
 <p>Wow - still a bit worse! I’ll try upsampling &amp; if there is no improvement, we’ll move on without resampling!</p>
 <pre class="r"><code>metrics &lt;-
   metrics %&gt;%
@@ -556,8 +556,8 @@ collect_metrics(rs05)</code></pre>
 <pre><code>## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 rmse    standard   0.106    10 0.00618 Preprocessor1_Model1
-## 2 rsq     standard   0.941    10 0.00714 Preprocessor1_Model1</code></pre>
+## 1 rmse    standard   0.101    10 0.00499 Preprocessor1_Model1
+## 2 rsq     standard   0.947    10 0.00536 Preprocessor1_Model1</code></pre>
 <p>Okay - resampling gets stricken off our list of recipe steps! Let’s look at how the models compare so far</p>
 <pre class="r"><code>metrics &lt;-
   metrics %&gt;%
@@ -714,7 +714,7 @@ rec07 &lt;-
   step_ns(starts_with(&quot;carat_x_color&quot;), deg_free = 15) 
 
 rec07</code></pre>
-<pre><code>## Data Recipe
+<pre><code>## Recipe
 ## 
 ## Inputs:
 ## 
@@ -729,9 +729,9 @@ rec07</code></pre>
 ## Interactions with carat:starts_with(&quot;cut_&quot;)
 ## Interactions with carat:starts_with(&quot;color_&quot;)
 ## Variable mutation for c(x, y, z)
-## Variable mutation for volume_param
-## Natural Splines on starts_with(&quot;carat_x_cut&quot;)
-## Natural Splines on starts_with(&quot;carat_x_color&quot;)</code></pre>
+## Variable mutation for log10(x * y * z)
+## Natural splines on starts_with(&quot;carat_x_cut&quot;)
+## Natural splines on starts_with(&quot;carat_x_color&quot;)</code></pre>
 <pre class="r"><code>wf07 &lt;-
   workflow() %&gt;%
   add_model(mod07) %&gt;%
@@ -888,25 +888,6 @@ final_fit %&gt;%
 <li>Tuned regularization parameters on our model with feature engineering to arrive at the final model.</li>
 </ul>
 <p>Our models’ performances, ranked from best to worst, show that the final tuned model did indeed perform the best on the test dataset!</p>
-<pre class="r"><code>metrics %&gt;%
-  select(.metric, mean, model)</code></pre>
-<pre><code>## # A tibble: 14 x 3
-##    .metric   mean model  
-##    &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;  
-##  1 rmse    0.0750 model07
-##  2 rsq     0.970  model07
-##  3 rmse    0.0793 model01
-##  4 rsq     0.966  model01
-##  5 rmse    0.115  model02
-##  6 rsq     0.932  model02
-##  7 rmse    0.0918 model03
-##  8 rsq     0.956  model03
-##  9 rmse    0.120  model04
-## 10 rsq     0.921  model04
-## 11 rmse    0.106  model05
-## 12 rsq     0.941  model05
-## 13 rmse    0.127  model06
-## 14 rsq     0.916  model06</code></pre>
 <pre class="r"><code>final_preds &lt;-
   final_fit %&gt;%
   predict(diamonds_train) %&gt;%
