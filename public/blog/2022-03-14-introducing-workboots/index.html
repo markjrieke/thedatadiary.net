@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academia 4.3.1">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Mark Rieke">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Sometimes, we want a model that generates a range of possible outcomes around each prediction and may opt for a model that can generate a prediction interval, like a linear model.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/">
+
+  
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#fc6f5c">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Open+Sans|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academia.min.84fde4bbd64cc9b4e40ee4ad0a0d9576.css">
+
+  
+
+  
+  
+  
+    <script>
+      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+      ga('create', 'G-QM3KW2TS7Q', 'auto');
+      
+      ga('require', 'eventTracker');
+      ga('require', 'outboundLinkTracker');
+      ga('require', 'urlChangeTracker');
+      ga('send', 'pageview');
+    </script>
+    <script async src="//www.google-analytics.com/analytics.js"></script>
+    
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js" integrity="sha512-HUmooslVKj4m6OBu0OgzjXXr+QuFYy/k7eLI5jdeEy/F4RSgMn6XRWRGkFi5IFaFgy7uFTkegp3Z0XnJf3Jq+g==" crossorigin="anonymous"></script>
+    
+  
+  
+
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/">
+
+  
+  
+  
+  
+    
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@markjrieke">
+  <meta property="twitter:creator" content="@markjrieke">
+  
+  <meta property="og:site_name" content="the data diary">
+  <meta property="og:url" content="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/">
+  <meta property="og:title" content="Introducing {workboots} | the data diary">
+  <meta property="og:description" content="Sometimes, we want a model that generates a range of possible outcomes around each prediction and may opt for a model that can generate a prediction interval, like a linear model."><meta property="og:image" content="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/featured.PNG">
+  <meta property="twitter:image" content="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/featured.PNG"><meta property="og:locale" content="en-us">
+  
+  <meta property="article:published_time" content="2022-03-14T00:00:00&#43;00:00">
+  
+  <meta property="article:modified_time" content="2022-03-14T16:02:16-05:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>Introducing {workboots} | the data diary</title>
+
+</head>
+
+
+<body id="top" data-spy="scroll" data-target="#TableOfContents" data-offset="71" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">the data diary</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation"><span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+      
+      
+      <ul class="navbar-nav ml-auto">
+        
+
+        
+
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/about"><span>About</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/resume"><span>Resume</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article py-5" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="container split-header">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+        <img class="img-fluid w-100" src="/blog/2022-03-14-introducing-workboots/featured_hu77855daf42c5ca3c277ac56644d7cf8b_46754_680x500_fill_q90_lanczos_smart1_3.PNG" itemprop="image" alt="">
+        
+    </div>
+    <div class="col-lg-8">
+      <h1 itemprop="name">Introducing {workboots}</h1>
+
+      
+      <p class="page-subtitle">Generate bootstrap prediction intervals from a tidymodel workflow!</p>
+      
+
+      
+
+
+
+<meta content="2022-03-14 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2022-03-14 16:02:16 -0500 CDT" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Last updated on
+      
+    
+    <time>Mar 14, 2022</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/&amp;text=Introducing%20%7bworkboots%7d" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/&amp;t=Introducing%20%7bworkboots%7d" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Introducing%20%7bworkboots%7d&amp;body=https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/&amp;title=Introducing%20%7bworkboots%7d" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Introducing%20%7bworkboots%7d%20https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/&amp;title=Introducing%20%7bworkboots%7d" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+    
+    </div>
+  </div>
+</div>
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+<script src="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Sometimes, we want a model that generates a range of possible outcomes around each prediction and may opt for a model that can generate a prediction interval, like a linear model. Other times, we just care about point predictions and may opt to use a more powerful model like XGBoost. But what if we want the best of both worlds: getting a range of predictions while still using a powerful model? That’s where <a href="https://github.com/markjrieke/workboots"><code>{workboots}</code></a> comes to the rescue! <code>{workboots}</code> uses bootstrap resampling to train many models which can be used to generate a range of outcomes — regardless of model type.</p>
+<p><img src="pics/workboots.PNG" /></p>
+<div id="installation" class="section level3">
+<h3>Installation</h3>
+<p>Version 0.1.0 of <code>{workboots}</code> is available on <a href="https://cran.r-project.org/web/packages/workboots/index.html">CRAN</a>. Given that the package is still in early development, however, I’d recommend installing the development version from <a href="https://github.com/markjrieke/workboots">github</a>:</p>
+<pre class="r"><code># install from CRAN
+install.packages(&quot;workboots&quot;)
+
+# or install the development version
+devtools::install_github(&quot;markjrieke/workboots&quot;)</code></pre>
+</div>
+<div id="usage" class="section level3">
+<h3>Usage</h3>
+<p><code>{workboots}</code> builds on top of the <a href="https://www.tidymodels.org/"><code>{tidymodels}</code></a> suite of packages and is intended to be used in conjunction with a <a href="https://workflows.tidymodels.org/">tidymodel workflow</a>. Teaching how to use <code>{tidymodels}</code> is beyond the scope of this post, but some helpful resources are linked at the bottom for further exploration.</p>
+<p>We’ll walk through two examples that show the benefit of the package: estimating a linear model’s prediction interval and generating a prediction interval for a boosted tree model.</p>
+</div>
+<div id="estimating-a-prediction-interval" class="section level3">
+<h3>Estimating a prediction interval</h3>
+<p>Let’s get started with a model we know can generate a prediction interval: a basic linear model. In this example, we’ll use the <a href="https://modeldata.tidymodels.org/reference/ames.html">Ames housing dataset</a> to predict a home’s price based on its square footage.</p>
+<pre class="r"><code>library(tidymodels)
+
+# setup our data
+data(&quot;ames&quot;)
+ames_mod &lt;- ames %&gt;% select(First_Flr_SF, Sale_Price)
+
+# relationship between square footage and price
+ames_mod %&gt;%
+  ggplot(aes(x = First_Flr_SF, y = Sale_Price)) +
+  geom_point(alpha = 0.25) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &quot;log10&quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &quot;log10&quot;) +
+  labs(title = &quot;Relationship between Square Feet and Sale Price&quot;,
+       subtitle = &quot;Linear relationship between the log transforms of square footage and price&quot;,
+       x = NULL,
+       y = NULL)</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/figure-html/unnamed-chunk-3-1.png" width="4500" /></p>
+<p>We can use a linear model to predict the log transform of <code>Sale_Price</code> based on the log transform of <code>First_Flr_SF</code>. In this example, we’ll train a linear model then plot our predictions against a holdout set with a prediction interval.</p>
+<pre class="r"><code># log transform
+ames_mod &lt;- 
+  ames_mod %&gt;%
+  mutate(across(everything(), log10))
+
+# split into train/test data
+set.seed(918)
+ames_split &lt;- initial_split(ames_mod)
+ames_train &lt;- training(ames_split)
+ames_test &lt;- testing(ames_split)</code></pre>
+<pre class="r"><code># train a linear model
+set.seed(314)
+mod &lt;- lm(Sale_Price ~ First_Flr_SF, data = ames_train)
+
+# predict on new data with a prediction interval
+ames_preds &lt;-
+  mod %&gt;%
+  predict(ames_test, interval = &quot;predict&quot;) %&gt;%
+  as_tibble()
+
+# plot!
+ames_preds %&gt;%
+  
+  # re-scale predictions to match the original dataset&#39;s scale
+  bind_cols(ames_test) %&gt;%
+  mutate(across(everything(), ~10^.x)) %&gt;%
+  
+  # add geoms
+  ggplot(aes(x = First_Flr_SF)) +
+  geom_point(aes(y = Sale_Price),
+             alpha = 0.25) +
+  geom_line(aes(y = fit),
+            size = 1) +
+  geom_ribbon(aes(ymin = lwr,
+                  ymax = upr),
+              alpha = 0.25) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &quot;log10&quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &quot;log10&quot;) +
+  labs(title = &quot;Linear Model of Sale Price&quot;,
+       subtitle = &quot;Shaded area represents the 95% prediction interval&quot;,
+       x = NULL,
+       y = NULL) </code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/figure-html/unnamed-chunk-6-1.png" width="4500" /></p>
+<p>With <code>{workboots}</code>, we can approximate the linear model’s prediction interval by passing a workflow built on a linear model to the function <code>predict_boots()</code>.</p>
+<pre class="r"><code>library(tidymodels)
+library(workboots)
+
+# setup a workflow with a linear model
+ames_wf &lt;-
+  workflow() %&gt;%
+  add_recipe(recipe(Sale_Price ~ First_Flr_SF, data = ames_train)) %&gt;%
+  add_model(linear_reg())
+
+# generate bootstrap predictions on ames_test
+set.seed(713)
+ames_preds_boot &lt;-
+  ames_wf %&gt;%
+  predict_boots(
+    n = 2000,
+    training_data = ames_train,
+    new_data = ames_test
+  )</code></pre>
+<p><code>predict_boots()</code> works by creating 2000 <a href="https://rsample.tidymodels.org/reference/bootstraps.html">bootstrap resamples</a> of the training data, fitting a linear model to each resample, then generating 2000 predictions for each home’s price in the holdout set. We can then use <code>summarise_predictions()</code> to generate upper and lower intervals for each prediction.</p>
+<pre class="r"><code>ames_preds_boot %&gt;%
+  summarise_predictions()</code></pre>
+<pre><code>## # A tibble: 733 x 5
+##    rowid .preds               .pred_lower .pred .pred_upper
+##    &lt;int&gt; &lt;list&gt;                     &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;
+##  1     1 &lt;tibble [2,000 x 2]&gt;        5.17  5.44        5.71
+##  2     2 &lt;tibble [2,000 x 2]&gt;        4.98  5.27        5.55
+##  3     3 &lt;tibble [2,000 x 2]&gt;        4.97  5.25        5.52
+##  4     4 &lt;tibble [2,000 x 2]&gt;        5.12  5.40        5.67
+##  5     5 &lt;tibble [2,000 x 2]&gt;        5.15  5.44        5.71
+##  6     6 &lt;tibble [2,000 x 2]&gt;        4.93  5.21        5.49
+##  7     7 &lt;tibble [2,000 x 2]&gt;        4.67  4.94        5.22
+##  8     8 &lt;tibble [2,000 x 2]&gt;        4.85  5.13        5.40
+##  9     9 &lt;tibble [2,000 x 2]&gt;        4.87  5.14        5.41
+## 10    10 &lt;tibble [2,000 x 2]&gt;        5.14  5.41        5.69
+## # ... with 723 more rows</code></pre>
+<p>By overlaying the intervals on top of one another, we can see that the prediction interval generated by <code>predict_boots()</code> is a good approximation of the theoretical interval generated by <code>lm()</code>.</p>
+<pre class="r"><code>ames_preds_boot %&gt;%
+  summarise_predictions() %&gt;%
+  bind_cols(ames_test) %&gt;%
+  ggplot(aes(x = First_Flr_SF, y = .pred)) + geom_point()</code></pre>
+<p><img src="https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/figure-html/unnamed-chunk-10-1.png" width="4500" /></p>
+</div>
+
+    </div>
+
+    
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu566f88036a32ad6519e34d2b60700d41_471828_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="https://www.thedatadiary.net/">Mark Rieke</a></h5>
+      <h6 class="card-subtitle">Senior CX Analyst</h6>
+      <p class="card-text" itemprop="description">I&rsquo;m a mechanical engineer by education, data analyst by practice. I love machine learning and communicating complex topics clearly with simple and beautiful charts.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://twitter.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+      
+
+      
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="/js/academia.min.e40e230d9b3dfeac86994156b6388764.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4 mb-md-0">
+        
+        <p class="mb-0">
+          © Mark Rieke 2022 &middot; 
+          Powered by
+          <a href="https://gethugothemes.com" target="_blank" rel="noopener">Gethugothemes</a>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <ul class="list-inline network-icon text-right mb-0">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://twitter.com/markjrieke" target="_blank" rel="noopener" title="Follow me on twitter!"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://github.com/markjrieke" target="_blank" rel="noopener" title="Find my work on GitHub!"><i class="fab fa-github" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener" title="Help me out on Stack Overflow!"><i class="fab fa-stack-overflow" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener" title="Connect with me on LinkedIn!"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
