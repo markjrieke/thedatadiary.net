@@ -22,6 +22,7 @@
 &lt;script src=&#34;https://www.thedatadiary.net/blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
 
 
+&lt;p&gt;&lt;strong&gt;Note (3/14/22): This article was written prior to the release of the &lt;a href=&#34;https://github.com/markjrieke/workboots&#34;&gt;{workboots}&lt;/a&gt; package. Since the release of that package, I’ve discovered some errors with the methodology described here and would recommend instead referencing the &lt;a href=&#34;https://thedatadiary.net/blog/2022-03-14-introducing-workboots&#34;&gt;post associated with the release&lt;/a&gt;.&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;Statistical modeling sometimes presents conflicting goals. Oftentimes, building a model involves a mix of objectives that don’t necessarily mesh well together: super-accurate point predictions, explainability, fast performance, or an expression of confidence in the prediction. In my work as an analyst, I generally am focused on how explainable the model is while being able to express a confidence interval around each prediction. For that, simple linear models do the trick. If, however, I want to regularize via &lt;code&gt;{glmnet}&lt;/code&gt; (which — with good reason — &lt;a href=&#34;https://stats.stackexchange.com/questions/224796/why-are-confidence-intervals-and-p-values-not-reported-as-default-for-penalized&#34;&gt;doesn’t provide confidence intervals&lt;/a&gt;) or use a non-linear model like &lt;code&gt;{xgboost}&lt;/code&gt;, I have to drop the confidence interval around predictions. Or so I had previously thought! As it turns out, building a series of models from bootstrap resamples provides an alternative method of generating a confidence interval around a prediction.&lt;/p&gt;
 &lt;div id=&#34;setting-a-baseline-with-penguins&#34; class=&#34;section level3&#34;&gt;
 &lt;h3&gt;Setting a baseline with penguins&lt;/h3&gt;
@@ -608,8 +609,8 @@ collect_metrics(rs01)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator     mean     n  std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;         &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;    &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   1120.       10 12.0     Preprocessor1_Model1
-## 2 rsq     standard      0.921    10  0.00118 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   1129.       10 10.2     Preprocessor1_Model1
+## 2 rsq     standard      0.920    10  0.00160 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;And right off the bat, we can see a fairly high value for &lt;code&gt;rsq&lt;/code&gt;! However, &lt;code&gt;rsq&lt;/code&gt; doesn’t tell the whole story, so we should check our predictions and residuals plots.&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;augment(rs01) %&amp;gt;%
   ggplot(aes(x = price,
@@ -874,8 +875,8 @@ collect_metrics(rs02)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;      &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   0.115    10 0.00141 Preprocessor1_Model1
-## 2 rsq     standard   0.932    10 0.00158 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   0.115    10 0.00143 Preprocessor1_Model1
+## 2 rsq     standard   0.932    10 0.00161 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Oof - that’s actually slightly worse than our baseline model!&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;rs02 %&amp;gt;%
   augment() %&amp;gt;%
@@ -970,8 +971,8 @@ collect_metrics(rs04)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;      &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   0.120    10  0.0150 Preprocessor1_Model1
-## 2 rsq     standard   0.921    10  0.0194 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   0.116    10  0.0136 Preprocessor1_Model1
+## 2 rsq     standard   0.927    10  0.0175 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Wow - still a bit worse! I’ll try upsampling &amp;amp; if there is no improvement, we’ll move on without resampling!&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;metrics &amp;lt;-
   metrics %&amp;gt;%
@@ -1002,8 +1003,8 @@ collect_metrics(rs05)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre&gt;&lt;code&gt;## # A tibble: 2 x 6
 ##   .metric .estimator  mean     n std_err .config             
 ##   &amp;lt;chr&amp;gt;   &amp;lt;chr&amp;gt;      &amp;lt;dbl&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;               
-## 1 rmse    standard   0.106    10 0.00618 Preprocessor1_Model1
-## 2 rsq     standard   0.941    10 0.00714 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
+## 1 rmse    standard   0.101    10 0.00499 Preprocessor1_Model1
+## 2 rsq     standard   0.947    10 0.00536 Preprocessor1_Model1&lt;/code&gt;&lt;/pre&gt;
 &lt;p&gt;Okay - resampling gets stricken off our list of recipe steps! Let’s look at how the models compare so far&lt;/p&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;metrics &amp;lt;-
   metrics %&amp;gt;%
@@ -1160,7 +1161,7 @@ rec07 &amp;lt;-
   step_ns(starts_with(&amp;quot;carat_x_color&amp;quot;), deg_free = 15) 
 
 rec07&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## Data Recipe
+&lt;pre&gt;&lt;code&gt;## Recipe
 ## 
 ## Inputs:
 ## 
@@ -1175,9 +1176,9 @@ rec07&lt;/code&gt;&lt;/pre&gt;
 ## Interactions with carat:starts_with(&amp;quot;cut_&amp;quot;)
 ## Interactions with carat:starts_with(&amp;quot;color_&amp;quot;)
 ## Variable mutation for c(x, y, z)
-## Variable mutation for volume_param
-## Natural Splines on starts_with(&amp;quot;carat_x_cut&amp;quot;)
-## Natural Splines on starts_with(&amp;quot;carat_x_color&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+## Variable mutation for log10(x * y * z)
+## Natural splines on starts_with(&amp;quot;carat_x_cut&amp;quot;)
+## Natural splines on starts_with(&amp;quot;carat_x_color&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;wf07 &amp;lt;-
   workflow() %&amp;gt;%
   add_model(mod07) %&amp;gt;%
@@ -1334,25 +1335,6 @@ final_fit %&amp;gt;%
 &lt;li&gt;Tuned regularization parameters on our model with feature engineering to arrive at the final model.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;Our models’ performances, ranked from best to worst, show that the final tuned model did indeed perform the best on the test dataset!&lt;/p&gt;
-&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;metrics %&amp;gt;%
-  select(.metric, mean, model)&lt;/code&gt;&lt;/pre&gt;
-&lt;pre&gt;&lt;code&gt;## # A tibble: 14 x 3
-##    .metric   mean model  
-##    &amp;lt;chr&amp;gt;    &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;  
-##  1 rmse    0.0750 model07
-##  2 rsq     0.970  model07
-##  3 rmse    0.0793 model01
-##  4 rsq     0.966  model01
-##  5 rmse    0.115  model02
-##  6 rsq     0.932  model02
-##  7 rmse    0.0918 model03
-##  8 rsq     0.956  model03
-##  9 rmse    0.120  model04
-## 10 rsq     0.921  model04
-## 11 rmse    0.106  model05
-## 12 rsq     0.941  model05
-## 13 rmse    0.127  model06
-## 14 rsq     0.916  model06&lt;/code&gt;&lt;/pre&gt;
 &lt;pre class=&#34;r&#34;&gt;&lt;code&gt;final_preds &amp;lt;-
   final_fit %&amp;gt;%
   predict(diamonds_train) %&amp;gt;%
