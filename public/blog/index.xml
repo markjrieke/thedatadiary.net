@@ -7,10 +7,146 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Tue, 22 Feb 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 14 Mar 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introducing {workboots}</title>
+      <link>https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/</link>
+      <pubDate>Mon, 14 Mar 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/header-attrs/header-attrs.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;Sometimes, we want a model that generates a range of possible outcomes around each prediction and may opt for a model that can generate a prediction interval, like a linear model. Other times, we just care about point predictions and may opt to use a more powerful model like XGBoost. But what if we want the best of both worlds: getting a range of predictions while still using a powerful model? That’s where &lt;a href=&#34;https://github.com/markjrieke/workboots&#34;&gt;&lt;code&gt;{workboots}&lt;/code&gt;&lt;/a&gt; comes to the rescue! &lt;code&gt;{workboots}&lt;/code&gt; uses bootstrap resampling to train many models which can be used to generate a range of outcomes — regardless of model type.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/workboots.PNG&#34; /&gt;&lt;/p&gt;
+&lt;div id=&#34;installation&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Installation&lt;/h3&gt;
+&lt;p&gt;Version 0.1.0 of &lt;code&gt;{workboots}&lt;/code&gt; is available on &lt;a href=&#34;https://cran.r-project.org/web/packages/workboots/index.html&#34;&gt;CRAN&lt;/a&gt;. Given that the package is still in early development, however, I’d recommend installing the development version from &lt;a href=&#34;https://github.com/markjrieke/workboots&#34;&gt;github&lt;/a&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install from CRAN
+install.packages(&amp;quot;workboots&amp;quot;)
+
+# or install the development version
+devtools::install_github(&amp;quot;markjrieke/workboots&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;usage&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Usage&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;{workboots}&lt;/code&gt; builds on top of the &lt;a href=&#34;https://www.tidymodels.org/&#34;&gt;&lt;code&gt;{tidymodels}&lt;/code&gt;&lt;/a&gt; suite of packages and is intended to be used in conjunction with a &lt;a href=&#34;https://workflows.tidymodels.org/&#34;&gt;tidymodel workflow&lt;/a&gt;. Teaching how to use &lt;code&gt;{tidymodels}&lt;/code&gt; is beyond the scope of this post, but some helpful resources are linked at the bottom for further exploration.&lt;/p&gt;
+&lt;p&gt;We’ll walk through two examples that show the benefit of the package: estimating a linear model’s prediction interval and generating a prediction interval for a boosted tree model.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;estimating-a-prediction-interval&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Estimating a prediction interval&lt;/h3&gt;
+&lt;p&gt;Let’s get started with a model we know can generate a prediction interval: a basic linear model. In this example, we’ll use the &lt;a href=&#34;https://modeldata.tidymodels.org/reference/ames.html&#34;&gt;Ames housing dataset&lt;/a&gt; to predict a home’s price based on its square footage.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidymodels)
+
+# setup our data
+data(&amp;quot;ames&amp;quot;)
+ames_mod &amp;lt;- ames %&amp;gt;% select(First_Flr_SF, Sale_Price)
+
+# relationship between square footage and price
+ames_mod %&amp;gt;%
+  ggplot(aes(x = First_Flr_SF, y = Sale_Price)) +
+  geom_point(alpha = 0.25) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &amp;quot;log10&amp;quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &amp;quot;log10&amp;quot;) +
+  labs(title = &amp;quot;Relationship between Square Feet and Sale Price&amp;quot;,
+       subtitle = &amp;quot;Linear relationship between the log transforms of square footage and price&amp;quot;,
+       x = NULL,
+       y = NULL)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/figure-html/unnamed-chunk-3-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;We can use a linear model to predict the log transform of &lt;code&gt;Sale_Price&lt;/code&gt; based on the log transform of &lt;code&gt;First_Flr_SF&lt;/code&gt;. In this example, we’ll train a linear model then plot our predictions against a holdout set with a prediction interval.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# log transform
+ames_mod &amp;lt;- 
+  ames_mod %&amp;gt;%
+  mutate(across(everything(), log10))
+
+# split into train/test data
+set.seed(918)
+ames_split &amp;lt;- initial_split(ames_mod)
+ames_train &amp;lt;- training(ames_split)
+ames_test &amp;lt;- testing(ames_split)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# train a linear model
+set.seed(314)
+mod &amp;lt;- lm(Sale_Price ~ First_Flr_SF, data = ames_train)
+
+# predict on new data with a prediction interval
+ames_preds &amp;lt;-
+  mod %&amp;gt;%
+  predict(ames_test, interval = &amp;quot;predict&amp;quot;) %&amp;gt;%
+  as_tibble()
+
+# plot!
+ames_preds %&amp;gt;%
+  
+  # re-scale predictions to match the original dataset&amp;#39;s scale
+  bind_cols(ames_test) %&amp;gt;%
+  mutate(across(everything(), ~10^.x)) %&amp;gt;%
+  
+  # add geoms
+  ggplot(aes(x = First_Flr_SF)) +
+  geom_point(aes(y = Sale_Price),
+             alpha = 0.25) +
+  geom_line(aes(y = fit),
+            size = 1) +
+  geom_ribbon(aes(ymin = lwr,
+                  ymax = upr),
+              alpha = 0.25) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &amp;quot;log10&amp;quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &amp;quot;log10&amp;quot;) +
+  labs(title = &amp;quot;Linear Model of Sale Price&amp;quot;,
+       subtitle = &amp;quot;Shaded area represents the 95% prediction interval&amp;quot;,
+       x = NULL,
+       y = NULL) &lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/figure-html/unnamed-chunk-6-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;With &lt;code&gt;{workboots}&lt;/code&gt;, we can approximate the linear model’s prediction interval by passing a workflow built on a linear model to the function &lt;code&gt;predict_boots()&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidymodels)
+library(workboots)
+
+# setup a workflow with a linear model
+ames_wf &amp;lt;-
+  workflow() %&amp;gt;%
+  add_recipe(recipe(Sale_Price ~ First_Flr_SF, data = ames_train)) %&amp;gt;%
+  add_model(linear_reg())
+
+# generate bootstrap predictions on ames_test
+set.seed(713)
+ames_preds_boot &amp;lt;-
+  ames_wf %&amp;gt;%
+  predict_boots(
+    n = 2000,
+    training_data = ames_train,
+    new_data = ames_test
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;predict_boots()&lt;/code&gt; works by creating 2000 &lt;a href=&#34;https://rsample.tidymodels.org/reference/bootstraps.html&#34;&gt;bootstrap resamples&lt;/a&gt; of the training data, fitting a linear model to each resample, then generating 2000 predictions for each home’s price in the holdout set. We can then use &lt;code&gt;summarise_predictions()&lt;/code&gt; to generate upper and lower intervals for each prediction.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ames_preds_boot %&amp;gt;%
+  summarise_predictions()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 733 x 5
+##    rowid .preds               .pred_lower .pred .pred_upper
+##    &amp;lt;int&amp;gt; &amp;lt;list&amp;gt;                     &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt;       &amp;lt;dbl&amp;gt;
+##  1     1 &amp;lt;tibble [2,000 x 2]&amp;gt;        5.17  5.44        5.71
+##  2     2 &amp;lt;tibble [2,000 x 2]&amp;gt;        4.98  5.27        5.55
+##  3     3 &amp;lt;tibble [2,000 x 2]&amp;gt;        4.97  5.25        5.52
+##  4     4 &amp;lt;tibble [2,000 x 2]&amp;gt;        5.12  5.40        5.67
+##  5     5 &amp;lt;tibble [2,000 x 2]&amp;gt;        5.15  5.44        5.71
+##  6     6 &amp;lt;tibble [2,000 x 2]&amp;gt;        4.93  5.21        5.49
+##  7     7 &amp;lt;tibble [2,000 x 2]&amp;gt;        4.67  4.94        5.22
+##  8     8 &amp;lt;tibble [2,000 x 2]&amp;gt;        4.85  5.13        5.40
+##  9     9 &amp;lt;tibble [2,000 x 2]&amp;gt;        4.87  5.14        5.41
+## 10    10 &amp;lt;tibble [2,000 x 2]&amp;gt;        5.14  5.41        5.69
+## # ... with 723 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;By overlaying the intervals on top of one another, we can see that the prediction interval generated by &lt;code&gt;predict_boots()&lt;/code&gt; is a good approximation of the theoretical interval generated by &lt;code&gt;lm()&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ames_preds_boot %&amp;gt;%
+  summarise_predictions() %&amp;gt;%
+  bind_cols(ames_test) %&amp;gt;%
+  ggplot(aes(x = First_Flr_SF, y = .pred)) + geom_point()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-03-14-introducing-workboots/index_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>The Data Science Hierarchy of Needs</title>
