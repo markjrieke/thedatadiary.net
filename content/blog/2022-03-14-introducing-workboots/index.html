@@ -1,0 +1,311 @@
+---
+title: "Introducing {workboots}"
+author: ''
+date: '2022-03-14'
+slug: []
+categories:
+- rstats
+- workboots
+tags: []
+subtitle: Generate bootstrap prediction intervals from a tidymodel workflow!
+summary: ''
+authors: []
+lastmod: '2022-03-14T16:02:16-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+
+
+<p>Sometimes, we want a model that generates a range of possible outcomes around each prediction and may opt for a model that can generate a prediction interval, like a linear model. Other times, we just care about point predictions and may opt to use a more powerful model like XGBoost. But what if we want the best of both worlds: getting a range of predictions while still using a powerful model? That’s where <a href="https://github.com/markjrieke/workboots"><code>{workboots}</code></a> comes to the rescue! <code>{workboots}</code> uses bootstrap resampling to train many models which can be used to generate a range of outcomes — regardless of model type.</p>
+<p><img src="pics/workboots.PNG" /></p>
+<div id="installation" class="section level3">
+<h3>Installation</h3>
+<p>Version 0.1.0 of <code>{workboots}</code> is available on <a href="https://cran.r-project.org/web/packages/workboots/index.html">CRAN</a>. Given that the package is still in early development, however, I’d recommend installing the development version from <a href="https://github.com/markjrieke/workboots">github</a>:</p>
+<pre class="r"><code># install from CRAN
+install.packages(&quot;workboots&quot;)
+
+# or install the development version
+devtools::install_github(&quot;markjrieke/workboots&quot;)</code></pre>
+</div>
+<div id="usage" class="section level3">
+<h3>Usage</h3>
+<p><code>{workboots}</code> builds on top of the <a href="https://www.tidymodels.org/"><code>{tidymodels}</code></a> suite of packages and is intended to be used in conjunction with a <a href="https://workflows.tidymodels.org/">tidymodel workflow</a>. Teaching how to use <code>{tidymodels}</code> is beyond the scope of this post, but some helpful resources are linked at the bottom for further exploration.</p>
+<p>We’ll walk through two examples that show the benefit of the package: estimating a linear model’s prediction interval and generating a prediction interval for a boosted tree model.</p>
+</div>
+<div id="estimating-a-prediction-interval" class="section level3">
+<h3>Estimating a prediction interval</h3>
+<p>Let’s get started with a model we know can generate a prediction interval: a basic linear model. In this example, we’ll use the <a href="https://modeldata.tidymodels.org/reference/ames.html">Ames housing dataset</a> to predict a home’s price based on its square footage.</p>
+<pre class="r"><code>library(tidymodels)
+
+# setup our data
+data(&quot;ames&quot;)
+ames_mod &lt;- ames %&gt;% select(First_Flr_SF, Sale_Price)
+
+# relationship between square footage and price
+ames_mod %&gt;%
+  ggplot(aes(x = First_Flr_SF, y = Sale_Price)) +
+  geom_point(alpha = 0.25) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &quot;log10&quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &quot;log10&quot;) +
+  labs(title = &quot;Relationship between Square Feet and Sale Price&quot;,
+       subtitle = &quot;Linear relationship between the log transforms of square footage and price&quot;,
+       x = NULL,
+       y = NULL)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" width="4500" /></p>
+<p>We can use a linear model to predict the log transform of <code>Sale_Price</code> based on the log transform of <code>First_Flr_SF</code>. In this example, we’ll train a linear model then plot our predictions against a holdout set with a prediction interval.</p>
+<pre class="r"><code># log transform
+ames_mod &lt;- 
+  ames_mod %&gt;%
+  mutate(across(everything(), log10))
+
+# split into train/test data
+set.seed(918)
+ames_split &lt;- initial_split(ames_mod)
+ames_train &lt;- training(ames_split)
+ames_test &lt;- testing(ames_split)</code></pre>
+<pre class="r"><code># train a linear model
+set.seed(314)
+mod &lt;- lm(Sale_Price ~ First_Flr_SF, data = ames_train)
+
+# predict on new data with a prediction interval
+ames_preds &lt;-
+  mod %&gt;%
+  predict(ames_test, interval = &quot;predict&quot;) %&gt;%
+  as_tibble()
+
+# plot!
+ames_preds %&gt;%
+  
+  # re-scale predictions to match the original dataset&#39;s scale
+  bind_cols(ames_test) %&gt;%
+  mutate(across(everything(), ~10^.x)) %&gt;%
+  
+  # add geoms
+  ggplot(aes(x = First_Flr_SF)) +
+  geom_point(aes(y = Sale_Price),
+             alpha = 0.25) +
+  geom_line(aes(y = fit),
+            size = 1) +
+  geom_ribbon(aes(ymin = lwr,
+                  ymax = upr),
+              alpha = 0.25) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &quot;log10&quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &quot;log10&quot;) +
+  labs(title = &quot;Linear Model of Sale Price predicted by Square Footage&quot;,
+       subtitle = &quot;Shaded area represents the 95% prediction interval&quot;,
+       x = NULL,
+       y = NULL) </code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-6-1.png" width="4500" /></p>
+<p>With <code>{workboots}</code>, we can approximate the linear model’s prediction interval by passing a workflow built on a linear model to the function <code>predict_boots()</code>.</p>
+<pre class="r"><code>library(tidymodels)
+library(workboots)
+
+# setup a workflow with a linear model
+ames_wf &lt;-
+  workflow() %&gt;%
+  add_recipe(recipe(Sale_Price ~ First_Flr_SF, data = ames_train)) %&gt;%
+  add_model(linear_reg())
+
+# generate bootstrap predictions on ames_test
+set.seed(713)
+ames_preds_boot &lt;-
+  ames_wf %&gt;%
+  predict_boots(
+    n = 2000,
+    training_data = ames_train,
+    new_data = ames_test
+  )</code></pre>
+<p><code>predict_boots()</code> works by creating 2000 <a href="https://rsample.tidymodels.org/reference/bootstraps.html">bootstrap resamples</a> of the training data, fitting a linear model to each resample, then generating 2000 predictions for each home’s price in the holdout set. We can then use <code>summarise_predictions()</code> to generate upper and lower intervals for each prediction.</p>
+<pre class="r"><code>ames_preds_boot %&gt;%
+  summarise_predictions()</code></pre>
+<pre><code>## # A tibble: 733 x 5
+##    rowid .preds               .pred_lower .pred .pred_upper
+##    &lt;int&gt; &lt;list&gt;                     &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;
+##  1     1 &lt;tibble [2,000 x 2]&gt;        5.17  5.44        5.71
+##  2     2 &lt;tibble [2,000 x 2]&gt;        4.98  5.27        5.55
+##  3     3 &lt;tibble [2,000 x 2]&gt;        4.97  5.25        5.52
+##  4     4 &lt;tibble [2,000 x 2]&gt;        5.12  5.40        5.67
+##  5     5 &lt;tibble [2,000 x 2]&gt;        5.15  5.44        5.71
+##  6     6 &lt;tibble [2,000 x 2]&gt;        4.93  5.21        5.49
+##  7     7 &lt;tibble [2,000 x 2]&gt;        4.67  4.94        5.22
+##  8     8 &lt;tibble [2,000 x 2]&gt;        4.85  5.13        5.40
+##  9     9 &lt;tibble [2,000 x 2]&gt;        4.87  5.14        5.41
+## 10    10 &lt;tibble [2,000 x 2]&gt;        5.14  5.41        5.69
+## # ... with 723 more rows</code></pre>
+<p>By overlaying the intervals on top of one another, we can see that the prediction interval generated by <code>predict_boots()</code> is a good approximation of the theoretical interval generated by <code>lm()</code>.</p>
+<pre class="r"><code>ames_preds_boot %&gt;%
+  summarise_predictions() %&gt;%
+  bind_cols(ames_preds) %&gt;%
+  bind_cols(ames_test) %&gt;%
+  mutate(across(c(.pred_lower:Sale_Price), ~10^.x)) %&gt;%
+  ggplot(aes(x = First_Flr_SF)) +
+  geom_point(aes(y = Sale_Price),
+             alpha = 0.25) +
+  geom_line(aes(y = fit),
+            size = 1) +
+  geom_ribbon(aes(ymin = lwr,
+                  ymax = upr),
+              alpha = 0.25) +
+  geom_point(aes(y = .pred),
+             color = &quot;blue&quot;,
+             alpha = 0.25) +
+  geom_errorbar(aes(ymin = .pred_lower,
+                    ymax = .pred_upper),
+                color = &quot;blue&quot;,
+                alpha = 0.25,
+                width = 0.0125) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &quot;log10&quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &quot;log10&quot;) +
+  labs(title = &quot;Linear Model of Sale Price predicted by Square Footage&quot;,
+       subtitle = &quot;Bootstrap prediction interval closely matches theoretical prediction interval&quot;,
+       x = NULL,
+       y = NULL)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-10-1.png" width="4500" /></p>
+<p>Both <code>lm()</code> and <code>summarise_predictions()</code> use a 95% prediction interval by default but we can generate other intervals by passing different values to the parameter <code>conf</code>:</p>
+<pre class="r"><code>ames_preds_boot %&gt;%
+  
+  # generate 95% prediction interval
+  summarise_predictions(conf = 0.95) %&gt;%
+  rename(.pred_lower_95 = .pred_lower,
+         .pred_upper_95 = .pred_upper) %&gt;%
+  select(-.pred) %&gt;%
+  
+  # generate 80% prediction interval
+  summarise_predictions(conf = 0.80) %&gt;%
+  rename(.pred_lower_80 = .pred_lower,
+         .pred_upper_80 = .pred_upper) %&gt;%
+  bind_cols(ames_test) %&gt;%
+  mutate(across(c(.pred_lower_95:Sale_Price), ~10^.x)) %&gt;%
+  
+  # plot!
+  ggplot(aes(x = First_Flr_SF)) +
+  geom_point(aes(y = Sale_Price),
+             alpha = 0.25) +
+  geom_line(aes(y = .pred),
+            size = 1,
+            color = &quot;blue&quot;) +
+  geom_ribbon(aes(ymin = .pred_lower_95,
+                  ymax = .pred_upper_95),
+              alpha = 0.25,
+              fill = &quot;blue&quot;) +
+  geom_ribbon(aes(ymin = .pred_lower_80,
+                  ymax = .pred_upper_80),
+              alpha = 0.25,
+              fill = &quot;blue&quot;) +
+  scale_y_continuous(labels = scales::dollar_format(), trans = &quot;log10&quot;) +
+  scale_x_continuous(labels = scales::comma_format(), trans = &quot;log10&quot;) +
+  labs(title = &quot;Linear Model of Sale Price predicted by Square Footage&quot;,
+       subtitle = &quot;Predictions alongside 95% and 80% bootstrap prediction interval&quot;,
+       x = NULL,
+       y = NULL)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-11-1.png" width="4500" /></p>
+<p>As this example shows, <code>{workboots}</code> can approximate linear prediction intervals pretty well! But this isn’t very useful, since we can just generate a linear prediction interval from a linear model directly. The real benefit of <code>{workboots}</code> comes from generating prediction intervals from <em>any</em> model!</p>
+</div>
+<div id="bootstrap-prediction-intervals-with-non-linear-models" class="section level3">
+<h3>Bootstrap prediction intervals with non-linear models</h3>
+<p><a href="https://xgboost.readthedocs.io/en/stable/">XGBoost</a> is one of my favorite models. Up until now, however, in situations that require a prediction interval, I’ve had to opt for a simpler model. With <code>{workboots}</code>, that’s no longer an issue! In this example, we’ll use XGBoost and <code>{workboots}</code> to generate predictions of a penguins weight from the <a href="https://modeldata.tidymodels.org/reference/penguins.html">Palmer Penguins dataset</a>.</p>
+<p>To get started, let’s build a workflow and train an individual model.</p>
+<pre class="r"><code># load and prep data
+data(&quot;penguins&quot;)
+
+penguins &lt;-
+  penguins %&gt;%
+  drop_na()
+
+# split data into training and testing sets
+set.seed(123)
+penguins_split &lt;- initial_split(penguins)
+penguins_test &lt;- testing(penguins_split)
+penguins_train &lt;- training(penguins_split)</code></pre>
+<pre class="r"><code># create a workflow
+penguins_wf &lt;-
+  workflow() %&gt;%
+  
+  # add preprocessing steps
+  add_recipe(
+    recipe(body_mass_g ~ ., data = penguins_train) %&gt;%
+      step_dummy(all_nominal_predictors()) 
+  ) %&gt;%
+  
+  # add xgboost model spec
+  add_model(
+    boost_tree(&quot;regression&quot;)
+  )
+
+# fit to training data &amp; predict on test data
+set.seed(234)
+penguins_preds &lt;-
+  penguins_wf %&gt;%
+  fit(penguins_train) %&gt;%
+  predict(penguins_test)</code></pre>
+<p>As mentioned above, XGBoost models can only generate point predictions.</p>
+<pre class="r"><code>penguins_preds %&gt;%
+  bind_cols(penguins_test) %&gt;%
+  ggplot(aes(x = body_mass_g,
+             y = .pred)) +
+  geom_point() +
+  geom_abline(linetype = &quot;dashed&quot;,
+              color = &quot;gray&quot;) +
+  labs(title = &quot;XGBoost Model of Penguin Weight&quot;,
+       subtitle = &quot;Individual model can only output individual predictions&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-15-1.png" width="4500" /></p>
+<p>With <code>{workboots}</code>, however, we can generate a prediction interval from our XGBoost model for each penguin’s weight!</p>
+<pre class="r"><code># create 2000 models from bootstrap resamples and make predictions on the test set
+set.seed(345)
+penguins_preds_boot &lt;-
+  penguins_wf %&gt;%
+  predict_boots(
+    n = 2000,
+    training_data = penguins_train,
+    new_data = penguins_test
+  )
+
+penguins_preds_boot %&gt;%
+  summarise_predictions()</code></pre>
+<pre><code>## # A tibble: 84 x 5
+##    rowid .preds               .pred_lower .pred .pred_upper
+##    &lt;int&gt; &lt;list&gt;                     &lt;dbl&gt; &lt;dbl&gt;       &lt;dbl&gt;
+##  1     1 &lt;tibble [2,000 x 2]&gt;       2788. 3470.       4136.
+##  2     2 &lt;tibble [2,000 x 2]&gt;       2838. 3534.       4231.
+##  3     3 &lt;tibble [2,000 x 2]&gt;       2942. 3598.       4301.
+##  4     4 &lt;tibble [2,000 x 2]&gt;       3354. 4158.       4889.
+##  5     5 &lt;tibble [2,000 x 2]&gt;       3186. 3870.       4500.
+##  6     6 &lt;tibble [2,000 x 2]&gt;       2884. 3519.       4208.
+##  7     7 &lt;tibble [2,000 x 2]&gt;       2790. 3434.       4094.
+##  8     8 &lt;tibble [2,000 x 2]&gt;       3394. 4071.       4772.
+##  9     9 &lt;tibble [2,000 x 2]&gt;       2812. 3447.       4096.
+## 10    10 &lt;tibble [2,000 x 2]&gt;       2744. 3404.       4063.
+## # ... with 74 more rows</code></pre>
+<p>How does our bootstrap model perform?</p>
+<pre class="r"><code>penguins_preds_boot %&gt;%
+  summarise_predictions() %&gt;%
+  bind_cols(penguins_test) %&gt;%
+  ggplot(aes(x = body_mass_g,
+             y = .pred,
+             ymin = .pred_lower,
+             ymax = .pred_upper)) +
+  geom_abline(linetype = &quot;dashed&quot;,
+              color = &quot;gray&quot;) +
+  geom_errorbar(alpha = 0.5,
+                color = &quot;blue&quot;) +
+  geom_point(alpha = 0.5,
+             color = &quot;blue&quot;) +
+  labs(title = &quot;XGBoost Model of Penguin Weight&quot;,
+       subtitle = &quot;Bootstrap models can generate prediction intervals&quot;)</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-18-1.png" width="4500" /></p>
+<p>This particular model may be in need of some tuning for better performance, but the important takeaway is that we were able to generate a prediction distribution for the model! This method works with other regression models as well — just create a workflow then let <code>{workboots}</code> take care of the rest!</p>
+</div>
+<div id="tidymodel-resources" class="section level3">
+<h3>Tidymodel Resources</h3>
+<ul>
+<li><a href="https://www.tidymodels.org/start/">Getting Started with Tidymodels</a></li>
+<li><a href="https://www.tmwr.org/">Tidy Modeling with R</a></li>
+<li><a href="https://juliasilge.com/blog/">Julia Silge’s Blog</a> provides use cases of tidymodels with weekly <a href="https://github.com/rfordatascience/tidytuesday">#tidytuesday</a> datasets.</li>
+</ul>
+</div>
