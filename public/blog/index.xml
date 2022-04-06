@@ -7,10 +7,33 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Mon, 14 Mar 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 06 Apr 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Impeachment Republicans and Democracy</title>
+      <link>https://www.thedatadiary.net/blog/2022-04-06-impeachment-republicans-and-democracy/</link>
+      <pubDate>Wed, 06 Apr 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-04-06-impeachment-republicans-and-democracy/</guid>
+      <description>
+
+
+&lt;p&gt;A few months ago, Harrison Lavelle wrote &lt;a href=&#34;https://split-ticket.org/2022/01/10/impeachment-republicans-where-are-they-now/&#34;&gt;a piece for Split Ticket&lt;/a&gt; reviewing the electoral challenges faced by house republicans who voted to impeach Donald Trump for his role in the assault on the capitol. Examining the voting records of these republicans who broke with their colleagues shows, unsurprisingly, that they tend to be more supportive of bills protecting democratic (note — small “d”) norms.&lt;/p&gt;
+&lt;p&gt;FiveThirtyEight &lt;a href=&#34;https://fivethirtyeight.com/features/which-senators-and-representatives-vote-in-favor-of-democracy/&#34;&gt;developed a democracy index&lt;/a&gt; to evaluate how members of congress vote to protect demcratic basics and create a more inclusive democracy. The linked article is well worth reading and walks through the caveats and limitations of the metric, but, notably, house republicans who voted to impeach Donald Trump are on average more supportive of pro-democracy bills than their colleagues who voted to acquit (on bills through September 1st of last year, the day the article was published).&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-04-06-impeachment-republicans-and-democracy/index_files/figure-html/unnamed-chunk-2-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;There are some outliers: Tom Rice (SC-7) voted to impeach Trump but his votes on (small d) democratic bills are in line with the rest of house republicans whereas Brian Fitzpatrick (PA-1) and Tom Reed (NY-23) voted to acquit but have the highest pro-democracy scores by this ranking (there are other republicans who voted to acquit that have democracy scores similar to their colleagues who voted to impeach, but to avoid cluttering the plot, only the mathematical outliers are shown).&lt;/p&gt;
+&lt;div id=&#34;polling-bites&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Polling bites&lt;/h3&gt;
+&lt;p&gt;There has been very little movement in the generic congressional ballot — republicans are still &lt;em&gt;slightly favored&lt;/em&gt; by ~2 points. Biden’s presidential approval rating received a slight bump at the onset of Russia’s invasion of Ukraine, but the marginal gains since then have faded away and he currently sits at a &lt;strong&gt;-12.6%&lt;/strong&gt; net approval.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;png/generic_ballot_current.png&#34;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;png/approval_disapproval_current.png&#34;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;png/net_approval_current.png&#34;&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Introducing {workboots}</title>
