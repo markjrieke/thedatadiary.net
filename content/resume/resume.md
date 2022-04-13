@@ -51,19 +51,19 @@ subtitle = ""
 
 
 
-#### Senior CX Analyst, Memorial Hermann Health System
+### Senior CX Analyst, Memorial Hermann Health System
 Jun '21 - present
 
 * Analyze large patient survey datasets with R and tidymodels to find actionable insights from both structured & unstructured data.
 * Build tools & setup workflows for automated reporting.
 
-#### Engineer in the Engineering Management Acceleration Program (EMAP), Siemens Energy
+### Engineer in the Engineering Management Acceleration Program (EMAP), Siemens Energy
 Jun '18 - Jun '21
 
 * Managed third party engineering firm and international drafting team to design a new mobile gas turbine genset.
 * Built and maintained the Total Cost of Ownership (TCO) tool, allowing customers to estimate capital cost, maintenance cost, and emissions profile over a project lifetime. Part of a sales effort that led to a 10-unit $80+MM sale.
 * Managed engineering budget and schedule as project engineer, responding to urgent customer pivots as required.
 
-## Education
+### Education
 
 * University of Tulsa - BSME in Mechanical Engineering, 2018
