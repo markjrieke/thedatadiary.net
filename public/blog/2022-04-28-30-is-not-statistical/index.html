@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academia 4.3.1">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Mark Rieke">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="In my role as an analyst, my team and I are required to put together reports that summarize each hospital’s patient satisfaction performance in a table. These are reviewed by our system’s executive leadership team and the hospital directors in monthly operational reviews (MORs).">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/">
+
+  
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#fc6f5c">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Open+Sans|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academia.min.84fde4bbd64cc9b4e40ee4ad0a0d9576.css">
+
+  
+
+  
+  
+  
+    <script>
+      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+      ga('create', 'G-QM3KW2TS7Q', 'auto');
+      
+      ga('require', 'eventTracker');
+      ga('require', 'outboundLinkTracker');
+      ga('require', 'urlChangeTracker');
+      ga('send', 'pageview');
+    </script>
+    <script async src="//www.google-analytics.com/analytics.js"></script>
+    
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js" integrity="sha512-HUmooslVKj4m6OBu0OgzjXXr+QuFYy/k7eLI5jdeEy/F4RSgMn6XRWRGkFi5IFaFgy7uFTkegp3Z0XnJf3Jq+g==" crossorigin="anonymous"></script>
+    
+  
+  
+
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/">
+
+  
+  
+  
+  
+    
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@markjrieke">
+  <meta property="twitter:creator" content="@markjrieke">
+  
+  <meta property="og:site_name" content="the data diary">
+  <meta property="og:url" content="https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/">
+  <meta property="og:title" content="&#34;30 is not Statistical&#34; | the data diary">
+  <meta property="og:description" content="In my role as an analyst, my team and I are required to put together reports that summarize each hospital’s patient satisfaction performance in a table. These are reviewed by our system’s executive leadership team and the hospital directors in monthly operational reviews (MORs)."><meta property="og:image" content="https://www.thedatadiary.net/img/background.png">
+  <meta property="twitter:image" content="https://www.thedatadiary.net/img/background.png"><meta property="og:locale" content="en-us">
+  
+  <meta property="article:published_time" content="2022-04-28T00:00:00&#43;00:00">
+  
+  <meta property="article:modified_time" content="2022-04-28T10:21:13-05:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>&#34;30 is not Statistical&#34; | the data diary</title>
+
+</head>
+
+
+<body id="top" data-spy="scroll" data-target="#TableOfContents" data-offset="71" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">the data diary</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation"><span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+      
+      
+      <ul class="navbar-nav ml-auto">
+        
+
+        
+
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/about"><span>About</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/resume"><span>Resume</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article py-5" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    
+    
+    
+    <div class="article-container py-3">
+      <h1 itemprop="name">&#34;30 is not Statistical&#34;</h1>
+
+      
+      <p class="page-subtitle">Organizational resistance to uncertainty</p>
+      
+
+      
+      
+
+
+
+<meta content="2022-04-28 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2022-04-28 10:21:13 -0500 CDT" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Last updated on
+      
+    
+    <time>Apr 28, 2022</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder"></i>
+    <a href="/categories/rstats/">rstats</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/&amp;text=&amp;#34;30%20is%20not%20Statistical&amp;#34;" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/&amp;t=&amp;#34;30%20is%20not%20Statistical&amp;#34;" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=&amp;#34;30%20is%20not%20Statistical&amp;#34;&amp;body=https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/&amp;title=&amp;#34;30%20is%20not%20Statistical&amp;#34;" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=&amp;#34;30%20is%20not%20Statistical&amp;#34;%20https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/&amp;title=&amp;#34;30%20is%20not%20Statistical&amp;#34;" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+      
+    </div>
+  </div>
+</div>
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+
+
+<p>In my role as an analyst, my team and I are required to put together reports that summarize each hospital’s patient satisfaction performance in a table. These are reviewed by our system’s executive leadership team and the hospital directors in monthly operational reviews (MORs). The format I inherited, loosely recreated below with fake data, color codes each month’s performance against the hospital’s goal: green when outperforming and red when underperforming.</p>
+<p><img src="pics/table.png" /></p>
+<p>“But wait!” you may ask, “what do the gray cells mean?” <em>That</em>, dear reader, has been the source of most of my organizational frustration in this role. When the number of surveys returned is less than 30 for a given month, we simply gray-out that cell under the guise of the phrase, “30 is not statistical.”</p>
+<p>I don’t think this practice (or something similar) is unique to my organization — I’ve seen similar outputs from previous employers and in other companies’ published reports. While this isn’t the best use of the underlying data, I understand <em>why</em> this sort of method gets adapted into so many organizational lexicons: companies want their decisions to be based on data and their understanding, albeit incorrect, is that a sample size less than 30 doesn’t provide meaningful info. For this reason, I think it’s important to explore <strong>where</strong> this sentiment came from, <strong>what</strong> the problems with this data-presentation style are, <strong>what</strong> I think would be a better way of presenting the data, and ultimately <strong>why</strong> companies may be hesitant to update their methodology.</p>
+<div id="where-does-this-come-from" class="section level2">
+<h2>Where does this come from?</h2>
+<p>At first glance, 30 is a pretty arbitrary number to use as a cutoff. In this case, this cutoff can cause downstream issues with interpreting the data because the difference between <code>n = 30</code> and <code>n = 31</code> is so visually distinct! In our case, the cutoff of 30 was passed down from one of our previous survey vendors, but I believe that the wider root of why this value appears has to do with the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">central limit theorem</a>.</p>
+<p>The central limit theorem states that as a sample size increases, the probability distribution of the sample mean approaches a normal distribution, <em>regardless of the source distribution!</em> As a rule of thumb, this theorem holds true when the <a href="https://stats.stackexchange.com/questions/2541/what-references-should-be-cited-to-support-using-30-as-a-large-enough-sample-siz">sample size is at least 30</a>. In practice, this means that when there are at least 30 samples, we can generally approximate the distribution as normal. The central limit theorem is incredibly useful and an important foundation for a wide array of statistical techniques. Stating that the data doesn’t meet the criteria for the central limit theorem to hold, however, is very different from saying that data is worthless when the sample size is less than 30!</p>
+</div>
+<div id="problems-with-this-approach" class="section level2">
+<h2>Problems with this approach</h2>
+<ol style="list-style-type: decimal">
+<li>Sometimes, the source distribution is known, and whether or not the central limit theorem holds is irrelevant! In my particular case, I am often dealing with patient satisfaction data that lies on a 0-100% scale. This is the perfect use case for modeling the sample with the <a href="https://en.wikipedia.org/wiki/Beta_distribution">beta distribution</a> (which is bound by 0 and 1).</li>
+<li>As mentioned above, graying-out samples where the sample size is less than 30 visually communicates that some months can be ignored. This is a waste of valuable data! While it is true that a larger sample size implies greater confidence in the score, the confidence interval widths for <code>n = 30</code> and <code>n = 31</code> are not <em>so different</em> and we can still estimate the uncertainty with the smaller sample.</li>
+<li>Tabular data is incredibly difficult to parse at-a-glance! <a href="https://www.rstudio.com/resources/rstudioconf-2020/effective-visualizations/">Research shows</a> that spatial encoding (e.g., length, position) is the most interpretable mode of data presentation. Intuitively, it makes sense — there’s a lot less mental overhead involved in looking at a set of points and comparing positions <em>collectively</em> than stringing together several comparisons of individual pairs of numbers in your head.</li>
+</ol>
+</div>
+<div id="a-better-approach" class="section level2">
+<h2>A better approach</h2>
+<p>When the underlying distribution is known, a better approach would be to display the data in a plot, regardless of n-size, and use a confidence interval to indicate uncertainty. In this case, we can plot each survey’s scores over time with a line and use a shaded area for the confidence interval.</p>
+<p><img src="https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/index_files/figure-html/unnamed-chunk-2-1.png" width="4500" /></p>
+<p>This, I believe, has a few benefits.</p>
+<ol style="list-style-type: decimal">
+<li>This is simply more visually appealing than the table. I (along with most people, I’d assume) prefer the look of a well formatted plot over a well formatted table (even if well formatted, a table is still a big block of text).</li>
+<li>It is far easier to discern the overall trend. Instead of reading and trying to compare values, we can simply see which direction the line is moving!</li>
+<li>Most imortantly, <em>we do not throw out valuable data because of sample size.</em> We actually end up encoding <em>more</em> information — n-size, which was missing from the table, is encoded in the width of the confidence interval (a smaller confidence interval indicates a larger sample). In this toy example, surveys B and D included a few months with fewer than 30 returns — can you tell which months they were without looking at the table?</li>
+</ol>
+<p>The tradeoff is that we can no longer explicitly see each month’s score and it is a bit harder to tell if a hospital is meeting the goal when the score is close. In my experience, however, this is not how formatted tables are used — executives that I interact with typically try to determine overall trends from tabular data!</p>
+</div>
+<div id="organizational-resistance" class="section level2">
+<h2>Organizational resistance</h2>
+<p>While the changes suggested here have clear benefits over the table, I’ve thus far been unsuccessful in any attempts to change the reporting methodology and I suspect that similar efforts at other companies would encounter similar organizational resistance. Much of what’s stated below is anec-data, but I assume will ring true to anyone who has struggled with getting their proposed operational changes implemented.</p>
+<p>As companies scale, it becomes more &amp; more difficult to implement change. On top of that, some industries (including Healthcare, the one I work in) are similarly inertial on an industry level. In this particular case, changing a report’s format may seem small in the grand scheme of things, but this is the same format the executive team has been seeing since 2017! The system executives and individual hospital leaders have a rapport and vernacular built around these monthly reports in this format — updating the format similarly requires that the executives and leaders update their long-held understanding and language built around tabular data.</p>
+<p>Tabular data in general shows up in reports across industries. My hunch is that the main driver of this is the widespread integration of Microsoft Excel as the workhorse for most analysts’ tasks. Excel get wide use as a calculator, a data storage system (eek!), and a presentation tool. Most analysts are incredibly comfortable working in Excel and while it is possible to create plots that show both the score and confidence interval, it is far simpler to apply a bit of conditional formatting and submit the raw data as the report itself.</p>
+<p>This is not to say that tabular reports have no use — when individual values are important, tabular reports are preferred! If, however, the goal is to understand trends over time or relationships between values, plots are a far better option!</p>
+</div>
+
+    </div>
+
+    
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu566f88036a32ad6519e34d2b60700d41_471828_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="https://www.thedatadiary.net/">Mark Rieke</a></h5>
+      <h6 class="card-subtitle">Senior CX Analyst</h6>
+      <p class="card-text" itemprop="description">I&rsquo;m a mechanical engineer by education, data analyst by practice. I love machine learning and communicating complex topics clearly with simple and beautiful charts.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://twitter.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+      
+
+      
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="/js/academia.min.e40e230d9b3dfeac86994156b6388764.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4 mb-md-0">
+        
+        <p class="mb-0">
+          © Mark Rieke 2022 &middot; 
+          Powered by
+          <a href="https://gethugothemes.com" target="_blank" rel="noopener">Gethugothemes</a>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <ul class="list-inline network-icon text-right mb-0">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://twitter.com/markjrieke" target="_blank" rel="noopener" title="Follow me on twitter!"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://github.com/markjrieke" target="_blank" rel="noopener" title="Find my work on GitHub!"><i class="fab fa-github" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener" title="Help me out on Stack Overflow!"><i class="fab fa-stack-overflow" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener" title="Connect with me on LinkedIn!"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
