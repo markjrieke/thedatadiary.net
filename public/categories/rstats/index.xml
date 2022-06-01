@@ -7,10 +7,88 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Thu, 28 Apr 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 31 May 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/rstats/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Practical Data Visualization Tips for Excel Users</title>
+      <link>https://www.thedatadiary.net/blog/2022-05-31-practical-data-vizualization-tips-for-excel-users/</link>
+      <pubDate>Tue, 31 May 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-05-31-practical-data-vizualization-tips-for-excel-users/</guid>
+      <description>
+
+
+&lt;p&gt;I am an avid R user and will always advocate that others use R (or another programming language) for generating reproducible visualizations. In just about every organization, however, Excel plays an important role in an analyst’s toolkit. In this post, I’ll share some visualization design practices that I picked up while learning R but are ubiquitous and transferable to Excel (most of these suggestions are ripped directly from &lt;a href=&#34;https://www.williamrchase.com/about/&#34;&gt;Will Chase’s&lt;/a&gt; &lt;a href=&#34;https://www.youtube.com/watch?v=h5cTacaWE6I&#34;&gt;“Glamour of Graphics”&lt;/a&gt; talk from rstudio::conf(2020), which has &lt;em&gt;heavily informed&lt;/em&gt; how I think about visualization design).&lt;/p&gt;
+&lt;div id=&#34;a-motivating-example&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;A motivating example&lt;/h2&gt;
+&lt;p&gt;For the purposes of this exercise, let’s use fake patient satisfaction data from the Sesame Street Health System, which includes several hospitals and campuses. Let’s say that our system-wide patient satisfaction for the current fiscal year looks like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/system_px.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Most of the hospitals have pretty high satisfaction scores — generally greater than &lt;strong&gt;75%&lt;/strong&gt;! The overall system score, however, sits at &lt;strong&gt;65%&lt;/strong&gt;. Concerned that there may be an error in the data pipeline or dashboard, your boss asks that you investigate what’s going on and provide an update at the next team meeting.&lt;/p&gt;
+&lt;p&gt;At first glance, it may be pretty obvious what’s going on — Big Bird Emergency has a pretty low satisfaction score and you know from experience that it’s a larger hospital that generates a lot of survey returns, which may be driving the score down. Since you’re presenting, however, it’s best to use a visualization to communicate this.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;putting-together-a-bad-plot&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Putting together a bad plot&lt;/h2&gt;
+&lt;p&gt;Downloading the hospital data and opening in Excel confirms that Big Bird Emergency has far more survey returns than other hospitals.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/system_raw.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;A quick plot that &lt;em&gt;technically&lt;/em&gt; includes all the information needed may look something like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_01.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;While this does answer the question originally asked, the answer is not &lt;strong&gt;clearly communicated by a quick glance&lt;/strong&gt;. Viewers who know what was originally asked have to do some extra mental work to decode the plot, and viewers who see this without the original context may not find anything useful. Our goal should be to provide a visualization that:&lt;/p&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;Clearly communicates the message we want to convey.&lt;/li&gt;
+&lt;li&gt;Is able to stand alone in other contexts and still communicate the same message.&lt;/li&gt;
+&lt;li&gt;Is visually appealing.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Let’s get started!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;putting-together-a-good-plot&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Putting together a good plot&lt;/h2&gt;
+&lt;div id=&#34;changing-to-a-bar-plot&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Changing to a bar plot&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_02.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The first order of business is to convert the plot from a pie chart to a bar plot. Pie charts are loved by executives but loathed by visualization practitioners, since information is encoded in each slice’s angle and &lt;a href=&#34;https://en.wikipedia.org/wiki/Graphical_perception&#34;&gt;differences in angle are difficult for the human eye to detect&lt;/a&gt;. Bar plots encode the same information with relative position on a scale, which is the most effective method for showing differences. This also has the added benefit in Excel of automatically converting each hospital to the same color, which reduces a lot of the visual noise that was in the original plot.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;flipping-axes&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Flipping axes&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_03.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In order to read the hospital names in the previous plot, viewers need to crane their necks to align with the axis text. The angled text also takes up a lot of whitespace and makes the important part — the actual data — look a bit squished. Changing to a horizontal bar plot alleviates both of these issues (horizontal bar plots are preferred over vertical ones in general for this reason).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;ordering-the-data&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Ordering the data&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_04.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Unordered categories in a plot can be messy and visually confusing — the viewer’s eye needs to dart around to determine which values are greater than other ones. Ordering the categories reduces this cognitive load and allows the viewer to simply read through the list. In this case (and in most cases), we don’t care about the exact values (just the &lt;em&gt;relative difference&lt;/em&gt; between values), so we can also remove the data labels.&lt;/p&gt;
+&lt;p&gt;To order a plot in Excel, we don’t actually need to do anything to the plot itself — simply turn the raw data into a table then arrange the rows by &lt;code&gt;survey_returns&lt;/code&gt;:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;pics/ordered_campuses.png&#34; /&gt;&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;giving-the-plot-a-narrative&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Giving the plot a narrative&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_05.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;The original title, “FYTD Surveys”, while technically informative, is uninspiring. We’re putting together this plot to answer the specific question, &lt;em&gt;why is the system satisfaction score 65% when most hospitals have a higher score?&lt;/em&gt; A good visualization will directly answer this without needing additional context from the analyst — the title is a great place to state that &lt;em&gt;Big Bird Emergency is driving the system score down&lt;/em&gt;.&lt;/p&gt;
+&lt;p&gt;Also note that there are no axis labels on this plot. Axis labels are often unnecessary — they take up valuable whitespace with information that is either readily apparent (I don’t need a label to know that the y-axis refers to each hospital!) or encoded elsewhere. When possible, remove axis labels and describe the necessary detail elsewhere (i.e., the title or subtitle).&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;highlighting-the-important-bits&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Highlighting the important bits&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_06.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Color can be a great way to draw our attention to a particular portion of a plot. In this case, not all of the hospitals are equally important in this plot’s narrative — we’re making a distinct point regarding Big Bird Emergency. Highlighting the text and bar for Big Bird Emergency in yellow (Big Bird is, after all, a big yellow bird) while graying out the other bars visually communicates to the viewer this is the hospital deserving the most attention in this plot.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;realigning-the-plot&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Realigning the plot&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_07.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;In the vast majority of cases, a left-aligned the title/subtitle is strongly preferred over center-aligned one. In western countries, we tend to naturally orient our attention in the top-left corner of plots when we first view them, then migrate our gaze downwards and leftwards (eye-tracking studies confirm this, however I can’t seem to find the source I heard this from, so you’ll just have to take my word for it here). By aligning the title to the left, we reduce how much the viewer needs to dart their eyes around the plot to understand it.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;adding-the-final-touches&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Adding the final touches&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;pics/plot_08.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Adding some final formatting touches to polish up the visualization not only improves the quality of the plot but also shows the viewer that you’re serious about your craft and willing to go the extra mile to really make a visualization shine. In this case, applying comma-formatting to the x-axis, changing the font, and updating the background to an off-white are all minor edits, but their effects have a big impact on the visualization’s overall presentation.&lt;/p&gt;
+&lt;p&gt;&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;My buddy is an electrician and told me a few months ago that he always leaves the screws in a vertical position on jobs as a sign of craftsmanship. Been thinking ever since what my “vertical screws” equivalent is for product design. &lt;a href=&#34;https://t.co/dM9CFEG8MF&#34;&gt;pic.twitter.com/dM9CFEG8MF&lt;/a&gt;&lt;/p&gt;&amp;mdash; Mike Rundle (@flyosity) &lt;a href=&#34;https://twitter.com/flyosity/status/1495087213150879747?ref_src=twsrc%5Etfw&#34;&gt;February 19, 2022&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>&#34;30 is not Statistical&#34;</title>
