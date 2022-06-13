@@ -45,7 +45,7 @@ I recently picked up [David Robinson's](http://varianceexplained.org/about/) boo
 
 The first section is highly focused on modeling the probability of success/failure of some binary outcome using a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution). This is highly relevant to my work as an analyst, where whether or not a patient responded positively to a particular question on a survey can be modeled with this method. Thus far, however, I've taken the [frequentist](https://en.wikipedia.org/wiki/Frequentist_inference) approach to analyses, which assumes we know nothing about what the data ought to look like prior to analyzing it. This is largely because I didn't know of a robust way to estimate a [prior](https://en.wikipedia.org/wiki/Prior_probability) for a Bayesian analysis.
 
-Thankfully, however, the book walks through examples of exactly how to do this! We can use a [maximum likelihood estimator](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) to estimate a reasonable prior given the current data. That's quite a bit of statistical mumbo-jumbo --- in this post I'll walk through an example that spells it out a bit more clearly using fake hospital satisfaction data.
+Thankfully, however, the book walks through examples of exactly how to do this! We can use a [maximum likelihood estimator](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) to estimate a reasonable prior given the current data. That's quite a bit of statistical mumbo-jumbo --- in this post I'll walk through an example that spells it out a bit more clearly using fake hospital satisfaction data (N.B.; this is largely a recreation of the steps taken in the book --- practice makes perfect!).
 
 ## Setting up the data
 
