@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://www.thedatadiary.net/project/workboots/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/project/nplyr/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/project/riekelib/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://www.thedatadiary.net/categories/bayes-theorem/</loc>
     <lastmod>2022-06-12T16:37:09-05:00</lastmod>
   </url><url>
@@ -143,12 +152,25 @@
     <loc>https://www.thedatadiary.net/resume/</loc>
     <lastmod>2020-01-01T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>https://www.thedatadiary.net/tags/deep-learning/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/tags/demo/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/project/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/tags/robotics/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://www.thedatadiary.net/tags/</loc>
+    <lastmod>2016-04-27T00:00:00+00:00</lastmod>
+  </url><url>
     <loc>https://www.thedatadiary.net/authors/</loc>
   </url><url>
     <loc>https://www.thedatadiary.net/authors/admin/</loc>
   </url><url>
     <loc>https://www.thedatadiary.net/publication_types/</loc>
-  </url><url>
-    <loc>https://www.thedatadiary.net/tags/</loc>
   </url>
 </urlset>
