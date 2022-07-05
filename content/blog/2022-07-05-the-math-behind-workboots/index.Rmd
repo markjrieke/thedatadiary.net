@@ -40,6 +40,7 @@ ggplot2::theme_set(
 Generating prediction intervals with workboots hinges on a few core concepts: bootstrap resampling, estimating prediction error for each resample, and aggregating the resampled prediction errors for each observation. The [`bootstraps()` documentation from {rsample}](https://rsample.tidymodels.org/reference/bootstraps.html) gives a concise definition of bootstrap resampling:
 
 > A bootstrap sample is a sample that is the same size as the original data set that is made using replacement. This results in analysis samples that have multiple replicates of some of the original rows of the data. The assessment set is defined as the rows of the original data that were not included in the bootstrap sample. This is often referred to as the "out-of-bag" (OOB) sample.
+
 This vignette will walk through the details of estimating and aggregating prediction errors --- additional resources can be found in Davison and Hinkley's book, [*Bootstrap Methods and their Application*](https://www.cambridge.org/core/books/bootstrap-methods-and-their-application/ED2FD043579F27952363566DC09CBD6A), or Efron and Tibshirani's paper, [*Improvements on Cross-Validation: The Bootstrap .632+ Method*](https://www.jstor.org/stable/2965703).
 
 ### The Bootstrap .632+ Method
