@@ -7,10 +7,89 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Sun, 12 Jun 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 05 Jul 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/blog/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>The Math Behind workboots</title>
+      <link>https://www.thedatadiary.net/blog/2022-07-05-the-math-behind-workboots/</link>
+      <pubDate>Tue, 05 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-07-05-the-math-behind-workboots/</guid>
+      <description>
+
+
+&lt;p&gt;Generating prediction intervals with workboots hinges on a few core concepts: bootstrap resampling, estimating prediction error for each resample, and aggregating the resampled prediction errors for each observation. The &lt;a href=&#34;https://rsample.tidymodels.org/reference/bootstraps.html&#34;&gt;&lt;code&gt;bootstraps()&lt;/code&gt; documentation from {rsample}&lt;/a&gt; gives a concise definition of bootstrap resampling:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;A bootstrap sample is a sample that is the same size as the original data set that is made using replacement. This results in analysis samples that have multiple replicates of some of the original rows of the data. The assessment set is defined as the rows of the original data that were not included in the bootstrap sample. This is often referred to as the “out-of-bag” (OOB) sample.
+This vignette will walk through the details of estimating and aggregating prediction errors — additional resources can be found in Davison and Hinkley’s book, &lt;a href=&#34;https://www.cambridge.org/core/books/bootstrap-methods-and-their-application/ED2FD043579F27952363566DC09CBD6A&#34;&gt;&lt;em&gt;Bootstrap Methods and their Application&lt;/em&gt;&lt;/a&gt;, or Efron and Tibshirani’s paper, &lt;a href=&#34;https://www.jstor.org/stable/2965703&#34;&gt;&lt;em&gt;Improvements on Cross-Validation: The Bootstrap .632+ Method&lt;/em&gt;&lt;/a&gt;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;div id=&#34;the-bootstrap-.632-method&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;The Bootstrap .632+ Method&lt;/h3&gt;
+&lt;p&gt;&lt;em&gt;What follows here is largely a summary of &lt;a href=&#34;https://stats.stackexchange.com/questions/96739/what-is-the-632-rule-in-bootstrapping/96750#96750&#34;&gt;this explanation&lt;/a&gt; of the .632+ error rate by Benjamin Deonovic.&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;When working with bootstrap resamples of a dataset, there are two error estimates we can work with: the bootstrap training error and the out-of-bag (oob) error. Using the &lt;a href=&#34;https://modeldata.tidymodels.org/reference/Sacramento.html&#34;&gt;Sacramento housing dataset&lt;/a&gt;, we can estimate the training and oob error for a single bootstrap.&lt;/p&gt;
+&lt;pre class=&#34;r fold-show&#34;&gt;&lt;code&gt;sacramento_boots
+#&amp;gt; # Bootstrap sampling 
+#&amp;gt; # A tibble: 1 × 2
+#&amp;gt;   splits            id        
+#&amp;gt;   &amp;lt;list&amp;gt;            &amp;lt;chr&amp;gt;     
+#&amp;gt; 1 &amp;lt;split [699/261]&amp;gt; Bootstrap1&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Using a &lt;a href=&#34;https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm#k-NN_regression&#34;&gt;k-nearest-neighbor regression model&lt;/a&gt; and &lt;a href=&#34;https://en.wikipedia.org/wiki/Root-mean-square_deviation#:~:text=The%20root%2Dmean%2Dsquare%20deviation,estimator%20and%20the%20values%20observed.&#34;&gt;rmse&lt;/a&gt; as our error metric, we find that the training and oob error differ, with the training error lesser than the oob error.&lt;/p&gt;
+&lt;pre class=&#34;r fold-show&#34;&gt;&lt;code&gt;sacramento_train_err
+#&amp;gt; [1] 0.08979873
+sacramento_oob_err
+#&amp;gt; [1] 0.1661675&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The training error is overly optimistic in the model’s performance and likely to under-estimate the prediction error. We are interested in the model’s performance on new data. The oob error, on the other hand, is likely to over-estimate the prediction error! This is due to non-distinct observations in the bootstrap sample that results from sampling with replacement. Given that &lt;a href=&#34;https://stats.stackexchange.com/questions/88980/why-on-average-does-each-bootstrap-sample-contain-roughly-two-thirds-of-observat?lq=1&#34;&gt;the average number of distinct observations in a bootstrap training set is about &lt;code&gt;0.632 * total_observations&lt;/code&gt;&lt;/a&gt;, Efron and Tibshirani proposed a blend of the training and oob error with the 0.632 estimate:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\begin{align*}
+Err_{.632} &amp;amp; = 0.368 Err_{train} + 0.632 Err_{oob}
+\end{align*}\]&lt;/span&gt;&lt;/p&gt;
+&lt;pre class=&#34;r fold-show&#34;&gt;&lt;code&gt;sacramento_632 &amp;lt;- 0.368 * sacramento_train_err + 0.632 * sacramento_oob_err
+sacramento_632
+#&amp;gt; [1] 0.1380638&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If, however, the model is highly overfit to the bootstrap training set, the training error will approach 0 and the 0.632 estimate will &lt;em&gt;under estimate&lt;/em&gt; the prediction error.&lt;/p&gt;
+&lt;p&gt;An example from &lt;a href=&#34;http://appliedpredictivemodeling.com/&#34;&gt;&lt;em&gt;Applied Predictive Modeling&lt;/em&gt;&lt;/a&gt; shows that as model complexity increases, the reported resample accuracy by the 0.632 estimate continues to increase whereas other resampling strategies report diminishing returns:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://user-images.githubusercontent.com/5731043/157986232-9c32c1c2-a7ed-4f9f-b28e-7d8ccb7ac41c.png&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;As an alternative to the 0.632 estimate, Efron &amp;amp; Tibshirani also propose the 0.632+ estimate, which re-weights the blend of training and oob error based on the model overfit rate:&lt;/p&gt;
+&lt;p&gt;&lt;span class=&#34;math display&#34;&gt;\[\begin{align*}
+Err_{0.632+} &amp;amp; = (1 - w) Err_{train} + w Err_{oob} \\
+\\
+w &amp;amp; = \frac{0.632}{1 - 0.368 R} \\
+\\
+R &amp;amp; = \frac{Err_{oob} - Err_{train}}{\gamma - Err_{train}}
+\end{align*}\]&lt;/span&gt;&lt;/p&gt;
+&lt;p&gt;Here, &lt;span class=&#34;math inline&#34;&gt;\(R\)&lt;/span&gt; represents the overfit rate and &lt;span class=&#34;math inline&#34;&gt;\(\gamma\)&lt;/span&gt; is the no-information error rate, estimated by evaulating all combinations of predictions and actual values in the bootstrap training set.&lt;/p&gt;
+&lt;pre class=&#34;r fold-show&#34;&gt;&lt;code&gt;sacramento_632_plus &amp;lt;- (1 - w) * sacramento_train_err + w * sacramento_oob_err
+sacramento_632_plus
+#&amp;gt; [1] 0.1450502&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;When there is no overfitting (i.e., &lt;span class=&#34;math inline&#34;&gt;\(R = 0\)&lt;/span&gt;) the 0.632+ estimate will equal the 0.632 estimate. In this case, however, the model is overfitting the training set and the 0.632+ error estimate is pushed a bit closer to the oob error.&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;prediction-intervals-with-many-bootstraps&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Prediction intervals with many bootstraps&lt;/h3&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Root-mean-square_deviation#Formula&#34;&gt;For an unbiased estimator, rmse is the standard deviation of the residuals&lt;/a&gt;. With this in mind, we can modify our predictions to include a sample from the residual distribution (for more information, see Algorithm 6.4 from Davison and Hinkley’s &lt;em&gt;Bootstrap Methods and their Application&lt;/em&gt;):&lt;/p&gt;
+&lt;pre class=&#34;r fold-show&#34;&gt;&lt;code&gt;set.seed(999)
+resid_train_add &amp;lt;- rnorm(length(preds_train), 0, sacramento_632_plus)
+preds_train_mod &amp;lt;- preds_train + resid_train_add&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Thus far, we’ve been working with a single bootstrap resample. When working with a single bootstrap resample, adding this residual term gives a pretty poor estimate for each observation:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-07-05-the-math-behind-workboots/index_files/figure-html/unnamed-chunk-10-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;With workboots, however, we can repeat this process over many bootstrap datasets to generate a prediction distribution for each observation:&lt;/p&gt;
+&lt;pre class=&#34;r fold-show&#34;&gt;&lt;code&gt;library(workboots)
+# fit and predict price in sacramento_test from 100 models
+# the default number of resamples is 2000 - dropping here to speed up knitting
+set.seed(555)
+sacramento_pred_int &amp;lt;-
+  sacramento_wf %&amp;gt;%
+  predict_boots(
+    n = 100,
+    training_data = sacramento_train,
+    new_data = sacramento_test
+  )&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-07-05-the-math-behind-workboots/index_files/figure-html/unnamed-chunk-12-1.png&#34; width=&#34;672&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;This methodology produces prediction distributions that are &lt;a href=&#34;https://markjrieke.github.io/workboots/articles/Estimating-Linear-Intervals.html&#34;&gt;consistent with what we might expect from linear models&lt;/a&gt; while making no assumptions about model type (i.e., we can use a non-parametric model; in this case, a k-nearest neighbors regression).&lt;/p&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Estimate your uncertainty</title>
