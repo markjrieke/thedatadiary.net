@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>nplyr on the data diary</title>
+    <link>https://www.thedatadiary.net/categories/nplyr/</link>
+    <description>Recent content in nplyr on the data diary</description>
+    <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
+    <language>en-us</language>
+    <copyright>&amp;copy; Mark Rieke {year}</copyright>
+    <lastBuildDate>Sun, 24 Jul 2022 00:00:00 +0000</lastBuildDate>
+    
+	    <atom:link href="https://www.thedatadiary.net/categories/nplyr/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Introducing {nplyr}</title>
+      <link>https://www.thedatadiary.net/blog/2022-07-24-introducing-nplyr/</link>
+      <pubDate>Sun, 24 Jul 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-07-24-introducing-nplyr/</guid>
+      <description>
+
+
+&lt;p&gt;Data manipulation and transformation is a fundamental part of any analysis. There are excellent tools in the R ecosystem for manipulating data frames (&lt;a href=&#34;https://dplyr.tidyverse.org/&#34;&gt;dplyr&lt;/a&gt;, &lt;a href=&#34;https://rdatatable.gitlab.io/data.table/&#34;&gt;data.table&lt;/a&gt;, and &lt;a href=&#34;https://arrow.apache.org/docs/r/&#34;&gt;arrow&lt;/a&gt;, to name a few). Sometimes, however, it is desirable to work with &lt;em&gt;nested&lt;/em&gt; data frames, for which few tools are readily available.&lt;/p&gt;
+&lt;p&gt;This is where &lt;a href=&#34;https://markjrieke.github.io/nplyr/&#34;&gt;nplyr&lt;/a&gt; comes into play! nplyr is a grammar of nested data manipulation that allows users to perform dplyr-like manipulations on data frames nested within a list-col of another data frame. Most dplyr verbs have nested equivalents in nplyr. For example:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;nest_mutate()&lt;/code&gt; is the nested equivalent of &lt;code&gt;mutate()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;nest_select()&lt;/code&gt; is the nested equivalent of &lt;code&gt;select()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;nest_filter()&lt;/code&gt; is the nested equivalent of &lt;code&gt;filter()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;nest_summarise()&lt;/code&gt; is the nested equivalent of &lt;code&gt;summarise()&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;nest_group_by()&lt;/code&gt; is the nested equivalent of &lt;code&gt;group_by()&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div id=&#34;installation&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Installation&lt;/h3&gt;
+&lt;p&gt;nplyr 0.1.0 is available on &lt;a href=&#34;https://cran.r-project.org/web/packages/nplyr/index.html&#34;&gt;CRAN&lt;/a&gt;. Alternatively, you can install the development version from github with the &lt;a href=&#34;https://cran.r-project.org/package=devtools&#34;&gt;devtools&lt;/a&gt; or &lt;a href=&#34;https://cran.r-project.org/package=remotes&#34;&gt;remotes&lt;/a&gt; package:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# install from CRAN
+install.packages(&amp;quot;nplyr&amp;quot;)
+
+# install from github
+devtools::install_github(&amp;quot;markjrieke/nplyr&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;usage&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Usage&lt;/h3&gt;
+&lt;p&gt;To get started, we’ll create a nested column for the country data within each continent from the &lt;a href=&#34;https://cran.r-project.org/package=gapminder&#34;&gt;gapminder&lt;/a&gt; dataset.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(nplyr)
+
+gm_nest &amp;lt;-
+  gapminder::gapminder_unfiltered %&amp;gt;%
+  tidyr::nest(country_data = -continent)
+
+gm_nest&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 6 × 2
+##   continent country_data        
+##   &amp;lt;fct&amp;gt;     &amp;lt;list&amp;gt;              
+## 1 Asia      &amp;lt;tibble [578 × 5]&amp;gt;  
+## 2 Europe    &amp;lt;tibble [1,302 × 5]&amp;gt;
+## 3 Africa    &amp;lt;tibble [637 × 5]&amp;gt;  
+## 4 Americas  &amp;lt;tibble [470 × 5]&amp;gt;  
+## 5 FSU       &amp;lt;tibble [139 × 5]&amp;gt;  
+## 6 Oceania   &amp;lt;tibble [187 × 5]&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;dplyr can perform operations on the top-level data frame, but with nplyr, we can perform operations on the nested data frames:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gm_nest_example &amp;lt;-
+  gm_nest %&amp;gt;%
+  nest_filter(country_data, year == max(year)) %&amp;gt;%
+  nest_mutate(country_data, pop_millions = pop/1000000)
+
+# each nested tibble is now filtered to the most recent year
+gm_nest_example&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 6 × 2
+##   continent country_data     
+##   &amp;lt;fct&amp;gt;     &amp;lt;list&amp;gt;           
+## 1 Asia      &amp;lt;tibble [43 × 6]&amp;gt;
+## 2 Europe    &amp;lt;tibble [34 × 6]&amp;gt;
+## 3 Africa    &amp;lt;tibble [53 × 6]&amp;gt;
+## 4 Americas  &amp;lt;tibble [33 × 6]&amp;gt;
+## 5 FSU       &amp;lt;tibble [9 × 6]&amp;gt; 
+## 6 Oceania   &amp;lt;tibble [11 × 6]&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# if we unnest, we can see that a new column for pop_millions has been created
+gm_nest_example %&amp;gt;%
+  slice_head(n = 1) %&amp;gt;%
+  tidyr::unnest(country_data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 43 × 7
+##    continent country           year lifeExp        pop gdpPercap pop_millions
+##    &amp;lt;fct&amp;gt;     &amp;lt;fct&amp;gt;            &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt;      &amp;lt;int&amp;gt;     &amp;lt;dbl&amp;gt;        &amp;lt;dbl&amp;gt;
+##  1 Asia      Afghanistan       2007    43.8   31889923      975.       31.9  
+##  2 Asia      Azerbaijan        2007    67.5    8017309     7709.        8.02 
+##  3 Asia      Bahrain           2007    75.6     708573    29796.        0.709
+##  4 Asia      Bangladesh        2007    64.1  150448339     1391.      150.   
+##  5 Asia      Bhutan            2007    65.6    2327849     4745.        2.33 
+##  6 Asia      Brunei            2007    77.1     386511    48015.        0.387
+##  7 Asia      Cambodia          2007    59.7   14131858     1714.       14.1  
+##  8 Asia      China             2007    73.0 1318683096     4959.     1319.   
+##  9 Asia      Hong Kong, China  2007    82.2    6980412    39725.        6.98 
+## 10 Asia      India             2007    64.7 1110396331     2452.     1110.   
+## # … with 33 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;nplyr also supports grouped operations with &lt;code&gt;nest_group_by()&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;gm_nest_example &amp;lt;-
+  gm_nest %&amp;gt;%
+  nest_group_by(country_data, year) %&amp;gt;%
+  nest_summarise(
+    country_data,
+    n = n(),
+    lifeExp = median(lifeExp),
+    pop = median(pop),
+    gdpPercap = median(gdpPercap)
+  )
+
+gm_nest_example&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 6 × 2
+##   continent country_data     
+##   &amp;lt;fct&amp;gt;     &amp;lt;list&amp;gt;           
+## 1 Asia      &amp;lt;tibble [58 × 5]&amp;gt;
+## 2 Europe    &amp;lt;tibble [58 × 5]&amp;gt;
+## 3 Africa    &amp;lt;tibble [13 × 5]&amp;gt;
+## 4 Americas  &amp;lt;tibble [57 × 5]&amp;gt;
+## 5 FSU       &amp;lt;tibble [44 × 5]&amp;gt;
+## 6 Oceania   &amp;lt;tibble [56 × 5]&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# unnesting shows summarised tibbles for each continent
+gm_nest_example %&amp;gt;%
+  slice(2) %&amp;gt;%
+  tidyr::unnest(country_data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 58 × 6
+##    continent  year     n lifeExp      pop gdpPercap
+##    &amp;lt;fct&amp;gt;     &amp;lt;int&amp;gt; &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt;    &amp;lt;dbl&amp;gt;     &amp;lt;dbl&amp;gt;
+##  1 Europe     1950    22    65.8 7408264      6343.
+##  2 Europe     1951    18    65.7 7165515      6509.
+##  3 Europe     1952    31    65.9 7124673      5210.
+##  4 Europe     1953    17    67.3 7346100      6774.
+##  5 Europe     1954    17    68.0 7423300      7046.
+##  6 Europe     1955    17    68.5 7499400      7817.
+##  7 Europe     1956    17    68.5 7575800      8224.
+##  8 Europe     1957    31    67.5 7363802      6093.
+##  9 Europe     1958    18    69.6 8308052.     8833.
+## 10 Europe     1959    18    69.6 8379664.     9088.
+## # … with 48 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;div id=&#34;other-use-cases&#34; class=&#34;section level3&#34;&gt;
+&lt;h3&gt;Other use cases&lt;/h3&gt;
+&lt;p&gt;In the previous set of examples, the output from nplyr’s nested operations could be obtained by unnesting and performing grouped dplyr operations.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# we can use nplyr to perform operations on the nested data
+gm_nest %&amp;gt;%
+  nest_filter(country_data, year == max(year)) %&amp;gt;%
+  nest_mutate(country_data, pop_millions = pop/1000000) %&amp;gt;%
+  slice_head(n = 1) %&amp;gt;%
+  tidyr::unnest(country_data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 43 × 7
+##    continent country           year lifeExp        pop gdpPercap pop_millions
+##    &amp;lt;fct&amp;gt;     &amp;lt;fct&amp;gt;            &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt;      &amp;lt;int&amp;gt;     &amp;lt;dbl&amp;gt;        &amp;lt;dbl&amp;gt;
+##  1 Asia      Afghanistan       2007    43.8   31889923      975.       31.9  
+##  2 Asia      Azerbaijan        2007    67.5    8017309     7709.        8.02 
+##  3 Asia      Bahrain           2007    75.6     708573    29796.        0.709
+##  4 Asia      Bangladesh        2007    64.1  150448339     1391.      150.   
+##  5 Asia      Bhutan            2007    65.6    2327849     4745.        2.33 
+##  6 Asia      Brunei            2007    77.1     386511    48015.        0.387
+##  7 Asia      Cambodia          2007    59.7   14131858     1714.       14.1  
+##  8 Asia      China             2007    73.0 1318683096     4959.     1319.   
+##  9 Asia      Hong Kong, China  2007    82.2    6980412    39725.        6.98 
+## 10 Asia      India             2007    64.7 1110396331     2452.     1110.   
+## # … with 33 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# in this case, we could have obtained the same result with tidyr and dplyr
+gm_nest %&amp;gt;%
+  tidyr::unnest(country_data) %&amp;gt;%
+  group_by(continent) %&amp;gt;%
+  filter(year == max(year)) %&amp;gt;%
+  mutate(pop_millions = pop/1000000) %&amp;gt;%
+  ungroup() %&amp;gt;%
+  filter(continent == &amp;quot;Asia&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 43 × 7
+##    continent country           year lifeExp        pop gdpPercap pop_millions
+##    &amp;lt;fct&amp;gt;     &amp;lt;fct&amp;gt;            &amp;lt;int&amp;gt;   &amp;lt;dbl&amp;gt;      &amp;lt;int&amp;gt;     &amp;lt;dbl&amp;gt;        &amp;lt;dbl&amp;gt;
+##  1 Asia      Afghanistan       2007    43.8   31889923      975.       31.9  
+##  2 Asia      Azerbaijan        2007    67.5    8017309     7709.        8.02 
+##  3 Asia      Bahrain           2007    75.6     708573    29796.        0.709
+##  4 Asia      Bangladesh        2007    64.1  150448339     1391.      150.   
+##  5 Asia      Bhutan            2007    65.6    2327849     4745.        2.33 
+##  6 Asia      Brunei            2007    77.1     386511    48015.        0.387
+##  7 Asia      Cambodia          2007    59.7   14131858     1714.       14.1  
+##  8 Asia      China             2007    73.0 1318683096     4959.     1319.   
+##  9 Asia      Hong Kong, China  2007    82.2    6980412    39725.        6.98 
+## 10 Asia      India             2007    64.7 1110396331     2452.     1110.   
+## # … with 33 more rows&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Why, then, might we need to use nplyr? Well, in other scenarios, it may be far more convenient to work with nested data frames or it may not even be possible to unnest!&lt;/p&gt;
+&lt;p&gt;Consider a set of surveys that an organization might use to gather market data. It is common for organization to have separate surveys for separate purposes but to gather the same baseline set of data across all surveys (for example , a respondent’s age and gender may be recorded across all surveys, but each survey will have a different set of questions). Let’s use two fake surveys with the below questions for this example:&lt;/p&gt;
+&lt;div id=&#34;survey-1-job&#34; class=&#34;section level6&#34;&gt;
+&lt;h6&gt;Survey 1: Job&lt;/h6&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;How old are you? (multiple choice)&lt;/li&gt;
+&lt;li&gt;What city do you live in? (multiple choice)&lt;/li&gt;
+&lt;li&gt;What field do you work in? (multiple choice)&lt;/li&gt;
+&lt;li&gt;Overall, how satisfied are you with your job? (multiple choice)&lt;/li&gt;
+&lt;li&gt;What is your annual salary? (numeric entry)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;div id=&#34;survey-2-personal-life&#34; class=&#34;section level6&#34;&gt;
+&lt;h6&gt;Survey 2: Personal Life&lt;/h6&gt;
+&lt;ol style=&#34;list-style-type: decimal&#34;&gt;
+&lt;li&gt;How old are you? (multiple choice)&lt;/li&gt;
+&lt;li&gt;What city do you live in? (multiple choice)&lt;/li&gt;
+&lt;li&gt;What field do you work in? (mulitple choice)&lt;/li&gt;
+&lt;li&gt;Overall, how satisfied are you with your personal life (multiple choice)&lt;/li&gt;
+&lt;li&gt;Please provide any additional detail (text entry)&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;In this scenario, both surveys are collecting demographic information — age, location, and industry — but differ in the remaining questions. A convenient way to get the response files into the environment would be to use &lt;code&gt;purrr::map()&lt;/code&gt; to read each file to a nested data frame.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;path &amp;lt;- &amp;quot;https://raw.githubusercontent.com/markjrieke/nplyr/main/data-raw/&amp;quot;
+
+surveys &amp;lt;- 
+  tibble::tibble(survey_file = c(&amp;quot;job_survey&amp;quot;, &amp;quot;personal_survey&amp;quot;)) %&amp;gt;%
+  mutate(survey_data = purrr::map(survey_file, ~readr::read_csv(paste0(path, .x, &amp;quot;.csv&amp;quot;))))
+
+surveys&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 2 × 2
+##   survey_file     survey_data            
+##   &amp;lt;chr&amp;gt;           &amp;lt;list&amp;gt;                 
+## 1 job_survey      &amp;lt;spec_tbl_df [500 × 6]&amp;gt;
+## 2 personal_survey &amp;lt;spec_tbl_df [750 × 6]&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;code&gt;tidyr::unnest()&lt;/code&gt; can usually handle idiosyncracies in layout when unnesting, but in this case unnesting throws an error!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;surveys %&amp;gt;%
+  tidyr::unnest(survey_data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Error:
+## ! Can&amp;#39;t combine `Q5` &amp;lt;double&amp;gt; and `Q5` &amp;lt;character&amp;gt;.&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This is because the surveys share column names but not necessarily column types! In this case, both data frames contain a column named &lt;code&gt;Q5&lt;/code&gt;, but in &lt;code&gt;job_survey&lt;/code&gt; it’s a double and in &lt;code&gt;personal_survey&lt;/code&gt; it’s a character.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;surveys %&amp;gt;%
+  slice(1) %&amp;gt;%
+  tidyr::unnest(survey_data) %&amp;gt;%
+  glimpse()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Rows: 500
+## Columns: 7
+## $ survey_file &amp;lt;chr&amp;gt; &amp;quot;job_survey&amp;quot;, &amp;quot;job_survey&amp;quot;, &amp;quot;job_survey&amp;quot;, &amp;quot;job_survey&amp;quot;, &amp;quot;j…
+## $ survey_name &amp;lt;chr&amp;gt; &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;job&amp;quot;, &amp;quot;j…
+## $ Q1          &amp;lt;dbl&amp;gt; 100, 81, 51, 81, 80, 32, 65, 57, 43, 94, 25, 83, 61, 66, 8…
+## $ Q2          &amp;lt;chr&amp;gt; &amp;quot;Austin&amp;quot;, &amp;quot;San Antonio&amp;quot;, &amp;quot;Austin&amp;quot;, &amp;quot;Austin&amp;quot;, &amp;quot;Dallas&amp;quot;, &amp;quot;Fo…
+## $ Q3          &amp;lt;chr&amp;gt; &amp;quot;Consulting&amp;quot;, &amp;quot;Consulting&amp;quot;, &amp;quot;Consulting&amp;quot;, &amp;quot;Technology&amp;quot;, &amp;quot;C…
+## $ Q4          &amp;lt;chr&amp;gt; &amp;quot;Somewhat dissatisfied&amp;quot;, &amp;quot;Neither satisfied nor dissatisfi…
+## $ Q5          &amp;lt;dbl&amp;gt; 163, 48, 190, 25, 143, 233, 43, 243, 158, 235, 245, 195, 2…&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;surveys %&amp;gt;%
+  slice(2) %&amp;gt;%
+  tidyr::unnest(survey_data) %&amp;gt;%
+  glimpse()&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## Rows: 750
+## Columns: 7
+## $ survey_file &amp;lt;chr&amp;gt; &amp;quot;personal_survey&amp;quot;, &amp;quot;personal_survey&amp;quot;, &amp;quot;personal_survey&amp;quot;, &amp;quot;…
+## $ survey_name &amp;lt;chr&amp;gt; &amp;quot;personal&amp;quot;, &amp;quot;personal&amp;quot;, &amp;quot;personal&amp;quot;, &amp;quot;personal&amp;quot;, &amp;quot;personal&amp;quot;…
+## $ Q1          &amp;lt;dbl&amp;gt; 91, 32, 40, 23, 88, 69, 96, 40, 57, 40, 39, 70, 29, 38, 57…
+## $ Q2          &amp;lt;chr&amp;gt; &amp;quot;Austin&amp;quot;, &amp;quot;San Antonio&amp;quot;, &amp;quot;San Antonio&amp;quot;, &amp;quot;Austin&amp;quot;, &amp;quot;Dallas&amp;quot;…
+## $ Q3          &amp;lt;chr&amp;gt; &amp;quot;Energy&amp;quot;, &amp;quot;Healthcare&amp;quot;, &amp;quot;Consulting&amp;quot;, &amp;quot;Consulting&amp;quot;, &amp;quot;Techn…
+## $ Q4          &amp;lt;chr&amp;gt; &amp;quot;Neither satisfied nor dissatisfied&amp;quot;, &amp;quot;Extremely satisfied…
+## $ Q5          &amp;lt;chr&amp;gt; &amp;quot;Blandit eros! A, ligula facilisis imperdiet! Interdum pla…&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;We could potentially get around this issue with unnesting by reading in all columns as characters via &lt;code&gt;readr::read_csv(x, col_types = cols(.default = &#34;c&#34;))&lt;/code&gt;, but this presents its own challenges. &lt;code&gt;Q5&lt;/code&gt; would still be better represented as a double in &lt;code&gt;job_survey&lt;/code&gt; and, from the survey question text, &lt;code&gt;Q4&lt;/code&gt; has similar, but distinctly different, meanings across the survey files.&lt;/p&gt;
+&lt;p&gt;This is where nplyr can assist! Rather than malign the data types or create separate objects for each survey file, we can use nplyr to perform operations directly on the nested data frames.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;surveys &amp;lt;- 
+  surveys %&amp;gt;%
+  nest_mutate(survey_data,
+              age_group = if_else(Q1 &amp;lt; 65, &amp;quot;Adult&amp;quot;, &amp;quot;Retirement Age&amp;quot;)) %&amp;gt;%
+  nest_group_by(survey_data, Q3) %&amp;gt;%
+  nest_add_count(survey_data, 
+                 name = &amp;quot;n_respondents_in_industry&amp;quot;) %&amp;gt;%
+  nest_mutate(survey_data, 
+              median_industry_age = median(Q1)) %&amp;gt;%
+  nest_ungroup(survey_data)
+
+surveys %&amp;gt;%
+  slice(1) %&amp;gt;%
+  tidyr::unnest(survey_data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 500 × 10
+##    survey_file survey_name    Q1 Q2          Q3            Q4       Q5 age_group
+##    &amp;lt;chr&amp;gt;       &amp;lt;chr&amp;gt;       &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;       &amp;lt;chr&amp;gt;         &amp;lt;chr&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;    
+##  1 job_survey  job           100 Austin      Consulting    Some…   163 Retireme…
+##  2 job_survey  job            81 San Antonio Consulting    Neit…    48 Retireme…
+##  3 job_survey  job            51 Austin      Consulting    Extr…   190 Adult    
+##  4 job_survey  job            81 Austin      Technology    Extr…    25 Retireme…
+##  5 job_survey  job            80 Dallas      Consulting    Extr…   143 Retireme…
+##  6 job_survey  job            32 Fort Worth  Energy        Some…   233 Adult    
+##  7 job_survey  job            65 Dallas      Consulting    Some…    43 Retireme…
+##  8 job_survey  job            57 Houston     Healthcare    Some…   243 Adult    
+##  9 job_survey  job            43 Dallas      Government S… Neit…   158 Adult    
+## 10 job_survey  job            94 Fort Worth  Healthcare    Extr…   235 Retireme…
+## # … with 490 more rows, and 2 more variables: n_respondents_in_industry &amp;lt;int&amp;gt;,
+## #   median_industry_age &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;surveys %&amp;gt;%
+  slice(2) %&amp;gt;%
+  tidyr::unnest(survey_data)&lt;/code&gt;&lt;/pre&gt;
+&lt;pre&gt;&lt;code&gt;## # A tibble: 750 × 10
+##    survey_file     survey_name    Q1 Q2          Q3        Q4    Q5    age_group
+##    &amp;lt;chr&amp;gt;           &amp;lt;chr&amp;gt;       &amp;lt;dbl&amp;gt; &amp;lt;chr&amp;gt;       &amp;lt;chr&amp;gt;     &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt; &amp;lt;chr&amp;gt;    
+##  1 personal_survey personal       91 Austin      Energy    Neit… Blan… Retireme…
+##  2 personal_survey personal       32 San Antonio Healthca… Extr… Elem… Adult    
+##  3 personal_survey personal       40 San Antonio Consulti… Some… Eget… Adult    
+##  4 personal_survey personal       23 Austin      Consulti… Extr… Scel… Adult    
+##  5 personal_survey personal       88 Dallas      Technolo… Neit… Aene… Retireme…
+##  6 personal_survey personal       69 Fort Worth  Technolo… Neit… Inte… Retireme…
+##  7 personal_survey personal       96 Houston     Healthca… Extr… Blan… Retireme…
+##  8 personal_survey personal       40 Houston     Consulti… Extr… Scel… Adult    
+##  9 personal_survey personal       57 Fort Worth  Energy    Extr… Pede… Adult    
+## 10 personal_survey personal       40 Fort Worth  Healthca… Extr… Phar… Adult    
+## # … with 740 more rows, and 2 more variables: n_respondents_in_industry &amp;lt;int&amp;gt;,
+## #   median_industry_age &amp;lt;dbl&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
