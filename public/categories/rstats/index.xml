@@ -7,10 +7,913 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Sun, 24 Jul 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 20 Aug 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/rstats/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Finding new wedding bops with {tidyclust} and {spotifyr}</title>
+      <link>https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/</link>
+      <pubDate>Sat, 20 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/</guid>
+      <description>
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/htmlwidgets/htmlwidgets.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/d3-bundle/d3-bundle.min.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/d3-lasso/d3-lasso.min.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/save-svg-as-png/save-svg-as-png.min.js&#34;&gt;&lt;/script&gt;
+&lt;link href=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/ggiraphjs/ggiraphjs.min.css&#34; rel=&#34;stylesheet&#34; /&gt;
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/ggiraphjs/ggiraphjs.min.js&#34;&gt;&lt;/script&gt;
+&lt;script src=&#34;https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/girafe-binding/girafe.js&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;Last November, I (finally) popped the big question and &lt;a href=&#34;https://www.instagram.com/p/Cc6ReimO2tH/?igshid=YmMyMTA2M2Y=&#34;&gt;proposed&lt;/a&gt;! Since then, my fiance and I have been diligently planning our wedding. While we have most of the big-ticket items checked off (venue, catering, photography, etc.), one area we still have more work to do is on the wedding playlist. We’ve &lt;a href=&#34;https://open.spotify.com/playlist/66saUDfW5ggYD6JDAHbxyV&#34;&gt;started putting together a playlist on spotify&lt;/a&gt;, but it feels like it’s come to a bit of a stand-still. Currently, there’s a mix of zesty bops and tame songs on the playlist (we need to accommodate both our college friends and our grandparents!), but spotify’s track recommender only wants to suggest tamer songs right now. Our goal is to have a full dance floor the entire night — to achieve this, we can use &lt;a href=&#34;https://www.rcharlie.com/spotifyr/index.html&#34;&gt;spotifyr&lt;/a&gt; and the new &lt;a href=&#34;https://emilhvitfeldt.github.io/tidyclust/index.html&#34;&gt;tidyclust&lt;/a&gt; package to pull in the current playlist, cluster the songs based on their features, and find new songs based on the bop cluster.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidymodels)
+library(tidyclust)
+library(spotifyr)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you’d like to follow along, I’d recommend installing the development versions of &lt;a href=&#34;https://github.com/tidymodels/parsnip&#34;&gt;parsnip&lt;/a&gt; and &lt;a href=&#34;https://github.com/tidymodels/workflows&#34;&gt;workflows&lt;/a&gt;, as some of the functionality that interacts with tidyclust &lt;a href=&#34;https://emilhvitfeldt.github.io/tidyclust/articles/k_means.html#setup&#34;&gt;isn’t yet on CRAN&lt;/a&gt;.&lt;/p&gt;
+&lt;div id=&#34;pulling-in-the-playlist&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Pulling in the playlist&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.rcharlie.com/spotifyr/index.html&#34;&gt;spotifyr&lt;/a&gt; is an R interface to spotify’s web API and gives access to a host of track features (you can follow &lt;a href=&#34;https://msmith7161.github.io/what-is-speechiness/&#34;&gt;this tutorial&lt;/a&gt; to get it setup). I’ll use the functions &lt;code&gt;get_user_playlists()&lt;/code&gt; and &lt;code&gt;get_playlist_tracks()&lt;/code&gt; to pull in songs that are currently on our wedding playlist (appropriately named “Ding dong”).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# get the songs that are currently on the wedding playlist
+ding_dong &amp;lt;- 
+  get_user_playlists(&amp;quot;12130039175&amp;quot;) %&amp;gt;%
+  filter(name == &amp;quot;Ding dong&amp;quot;) %&amp;gt;%
+  pull(id) %&amp;gt;%
+  get_playlist_tracks() %&amp;gt;% 
+  as_tibble() %&amp;gt;%
+  select(track.id, track.name, track.popularity) %&amp;gt;%
+  rename_with(~stringr::str_replace(.x, &amp;quot;\\.&amp;quot;, &amp;quot;_&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;31%&#34; /&gt;
+&lt;col width=&#34;45%&#34; /&gt;
+&lt;col width=&#34;23%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_id&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;track_popularity&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;5jkFvD4UJrmdoezzT1FRoP&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Rasputin&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;65&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;1D066zixBwqFYqBhKgdPzp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Fergalicious&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;71&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;12jjuxN1gxlm29cqL5M6MW&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;I Got You&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;65&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2grjqo0Frpf2okIBiifQKs&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;September&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;81&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2RlgNHKcydI9sayD2Df2xp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Mr. Blue Sky&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;80&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;6x4tKaOzfNJpEJHySoiJcs&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Mambo No. 5 (a Little Bit of…)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;77&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;3n3Ppam7vgaVa1iaRUc9Lp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Mr. Brightside&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;66&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;7Cp69rNBwU0gaFT8zxExlE&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Ymca&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;50&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;3Gf5nttwcX9aaSQXRWidEZ&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Ride Wit Me&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;76&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;3wMUvT6eIw2L5cZFG1yH9j&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Country Grammar (Hot Shit)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;70&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Spotify estimates quite a few &lt;a href=&#34;https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features&#34;&gt;features&lt;/a&gt; for each song in their catalog: speechiness (the presence of words on a track), acousticness (whether or not a song includes acoustic instruments), liveness (estimates whether or not the track is live or studio-recorded), etc. We can use &lt;code&gt;get_track_audio_features()&lt;/code&gt; to get the features for each song based on its &lt;code&gt;track_id&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# pull in track features of songs on the playlist
+track_features &amp;lt;- 
+  ding_dong %&amp;gt;%
+  pull(track_id) %&amp;gt;%
+  get_track_audio_features()
+
+# join together
+ding_dong &amp;lt;- 
+  ding_dong %&amp;gt;%
+  left_join(track_features, by = c(&amp;quot;track_id&amp;quot; = &amp;quot;id&amp;quot;))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In my case, I’m interested in the energy and valence (positivity) of each song, so I’ll select these variables to use in the cluster analysis.&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;valence&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;energy&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Rasputin&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.966&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.893&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Fergalicious&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.829&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.583&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;I Got You&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.544&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.399&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;September&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.979&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.832&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Mr. Blue Sky&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.478&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.338&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Mambo No. 5 (a Little Bit of…)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.892&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.807&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Mr. Brightside&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.240&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.918&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Ymca&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.671&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.951&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Ride Wit Me&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.722&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.700&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Country Grammar (Hot Shit)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.565&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.664&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;div id=&#34;clustering-with-tidyclust&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Clustering with &lt;code&gt;tidyclust&lt;/code&gt;&lt;/h2&gt;
+&lt;p&gt;Currently, the playlist covers a wide spectrum of of songs. For new songs on the playlist, I’m really just interested in songs similar to others in the top right corner of the below chart with high energy and valence.&lt;/p&gt;
+&lt;div id=&#34;htmlwidget-1&#34; style=&#34;width:4500px;height:3000px;&#34; class=&#34;girafe html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-1&#34;&gt;{&#34;x&#34;:{&#34;html&#34;:&#34;&lt;?xml version=\&#34;1.0\&#34; encoding=\&#34;UTF-8\&#34;?&gt;\n&lt;svg xmlns=&#39;http://www.w3.org/2000/svg&#39; xmlns:xlink=&#39;http://www.w3.org/1999/xlink&#39; id=&#39;svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd&#39; viewBox=&#39;0 0 432 360&#39;&gt;\n &lt;defs&gt;\n  &lt;clipPath id=&#39;svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c1&#39;&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39;/&gt;\n  &lt;\/clipPath&gt;\n  &lt;clipPath id=&#39;svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c2&#39;&gt;\n   &lt;rect x=&#39;55.03&#39; y=&#39;49.4&#39; width=&#39;370&#39; height=&#39;270.57&#39;/&gt;\n  &lt;\/clipPath&gt;\n &lt;\/defs&gt;\n &lt;g&gt;\n  &lt;g clip-path=&#39;url(#svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c1)&#39;&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39; fill=&#39;#FFFFFF&#39; stroke=&#39;#FFFFFF&#39; stroke-width=&#39;0.75&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39;/&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39; fill=&#39;#FFFFFF&#39; stroke=&#39;#FFFFFF&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39;/&gt;\n  &lt;\/g&gt;\n  &lt;g clip-path=&#39;url(#svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c2)&#39;&gt;\n   &lt;polyline points=&#39;55.03,245.02 425.03,245.02&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,167.67 425.03,167.67&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,90.32 425.03,90.32&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;155.20,319.97 155.20,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;259.92,319.97 259.92,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;364.64,319.97 364.64,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,283.69 425.03,283.69&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,206.34 425.03,206.34&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,128.99 425.03,128.99&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,51.64 425.03,51.64&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;102.84,319.97 102.84,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;207.56,319.97 207.56,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;312.28,319.97 312.28,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;417.00,319.97 417.00,49.40&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;circle cx=&#39;402.76&#39; cy=&#39;93.02&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Rasputin&#39;/&gt;\n   &lt;circle cx=&#39;345.38&#39; cy=&#39;212.92&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Fergalicious&#39;/&gt;\n   &lt;circle cx=&#39;225.99&#39; cy=&#39;284.08&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;I Got You&#39;/&gt;\n   &lt;circle cx=&#39;408.21&#39; cy=&#39;116.62&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;September&#39;/&gt;\n   &lt;circle cx=&#39;198.35&#39; cy=&#39;307.67&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Mr. Blue Sky&#39;/&gt;\n   &lt;circle cx=&#39;371.77&#39; cy=&#39;126.28&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Mambo No. 5 (a Little Bit of...)&#39;/&gt;\n   &lt;circle cx=&#39;98.65&#39; cy=&#39;83.35&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Mr. Brightside&#39;/&gt;\n   &lt;circle cx=&#39;279.19&#39; cy=&#39;70.59&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Ymca&#39;/&gt;\n   &lt;circle cx=&#39;300.56&#39; cy=&#39;167.67&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Ride Wit Me&#39;/&gt;\n   &lt;circle cx=&#39;234.79&#39; cy=&#39;181.59&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Country Grammar (Hot Shit)&#39;/&gt;\n   &lt;circle cx=&#39;172.38&#39; cy=&#39;103.47&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Shout, Pts. 1 &amp;amp;amp; 2&#39;/&gt;\n   &lt;circle cx=&#39;125.46&#39; cy=&#39;202.86&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Low (feat. T-Pain)&#39;/&gt;\n   &lt;circle cx=&#39;325.27&#39; cy=&#39;183.91&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Come On Eileen&#39;/&gt;\n   &lt;circle cx=&#39;259.92&#39; cy=&#39;178.5&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Gold Digger&#39;/&gt;\n   &lt;circle cx=&#39;330.71&#39; cy=&#39;76.01&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Fireball (feat. John Ryan)&#39;/&gt;\n   &lt;circle cx=&#39;312.7&#39; cy=&#39;134.41&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Bang Bang&#39;/&gt;\n   &lt;circle cx=&#39;352.92&#39; cy=&#39;81.81&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Can&amp;amp;#39;t Hold Us (feat. Ray Dalton)&#39;/&gt;\n   &lt;circle cx=&#39;249.87&#39; cy=&#39;103.85&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Don&amp;amp;#39;t Stop Me Now - Remastered 2011&#39;/&gt;\n   &lt;circle cx=&#39;365.06&#39; cy=&#39;89.54&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Take on Me&#39;/&gt;\n   &lt;circle cx=&#39;350.82&#39; cy=&#39;143.69&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Uncertain Smile&#39;/&gt;\n   &lt;circle cx=&#39;205.47&#39; cy=&#39;61.7&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Everytime We Touch&#39;/&gt;\n   &lt;circle cx=&#39;400.67&#39; cy=&#39;146.78&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;It&amp;amp;#39;s Tricky&#39;/&gt;\n   &lt;circle cx=&#39;272.49&#39; cy=&#39;211.76&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Brass Monkey&#39;/&gt;\n   &lt;circle cx=&#39;263.69&#39; cy=&#39;282.53&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Wagon Wheel&#39;/&gt;\n   &lt;circle cx=&#39;270.81&#39; cy=&#39;148.72&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Love On Top&#39;/&gt;\n   &lt;circle cx=&#39;391.87&#39; cy=&#39;158.77&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;I Think We&amp;amp;#39;re Alone Now&#39;/&gt;\n   &lt;circle cx=&#39;361.29&#39; cy=&#39;119.71&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;I Wanna Dance with Somebody (Who Loves Me)&#39;/&gt;\n   &lt;circle cx=&#39;386.84&#39; cy=&#39;202.86&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Uptown Funk (feat. Bruno Mars)&#39;/&gt;\n   &lt;circle cx=&#39;112.06&#39; cy=&#39;212.53&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Single Ladies (Put a Ring on It)&#39;/&gt;\n   &lt;circle cx=&#39;392.71&#39; cy=&#39;128.99&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Shake It Off&#39;/&gt;\n   &lt;circle cx=&#39;340.77&#39; cy=&#39;163.8&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Jump Around&#39;/&gt;\n   &lt;circle cx=&#39;315.63&#39; cy=&#39;119.71&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Hips Don&amp;amp;#39;t Lie (feat. Wyclef Jean)&#39;/&gt;\n   &lt;circle cx=&#39;241.91&#39; cy=&#39;142.91&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Body (feat. Brando)&#39;/&gt;\n   &lt;circle cx=&#39;285.89&#39; cy=&#39;115.84&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Jackie Chan&#39;/&gt;\n   &lt;circle cx=&#39;151.85&#39; cy=&#39;214.85&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Wake Up in the Sky&#39;/&gt;\n   &lt;circle cx=&#39;187.46&#39; cy=&#39;228&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Summer, Highland Falls - Live at the Bayou, Washington, D.C. - July 1980&#39;/&gt;\n   &lt;circle cx=&#39;297.2&#39; cy=&#39;108.11&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Magic Dance&#39;/&gt;\n   &lt;circle cx=&#39;315.22&#39; cy=&#39;95.73&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Dancing with Myself - 2001 Remaster&#39;/&gt;\n   &lt;circle cx=&#39;271.65&#39; cy=&#39;71.37&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Waterloo&#39;/&gt;\n   &lt;circle cx=&#39;231.02&#39; cy=&#39;90.7&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Potential Breakup Song&#39;/&gt;\n   &lt;circle cx=&#39;381.4&#39; cy=&#39;119.32&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Levitating (feat. DaBaby)&#39;/&gt;\n   &lt;circle cx=&#39;184.52&#39; cy=&#39;121.64&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Forever&#39;/&gt;\n   &lt;circle cx=&#39;344.54&#39; cy=&#39;135.95&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;White Walls (feat. ScHoolboy Q &amp;amp;amp; Hollis)&#39;/&gt;\n   &lt;circle cx=&#39;253.22&#39; cy=&#39;85.68&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Rose Tattoo&#39;/&gt;\n   &lt;circle cx=&#39;197.09&#39; cy=&#39;85.68&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Kiss Me I&amp;amp;#39;m #!@&amp;amp;#39;faced&#39;/&gt;\n   &lt;circle cx=&#39;162.32&#39; cy=&#39;137.89&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;All Night (feat. Knox Fortune)&#39;/&gt;\n   &lt;circle cx=&#39;282.54&#39; cy=&#39;131.7&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Don&amp;amp;#39;t Start Now&#39;/&gt;\n   &lt;circle cx=&#39;380.56&#39; cy=&#39;106.56&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;The Legend of Chavo Guerrero&#39;/&gt;\n   &lt;circle cx=&#39;398.57&#39; cy=&#39;168.83&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Bam Bam (feat. Ed Sheeran)&#39;/&gt;\n   &lt;circle cx=&#39;228.51&#39; cy=&#39;142.14&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;The Spins&#39;/&gt;\n   &lt;circle cx=&#39;167.77&#39; cy=&#39;188.16&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Hung Up&#39;/&gt;\n   &lt;circle cx=&#39;355.43&#39; cy=&#39;95.34&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;BREAK MY SOUL&#39;/&gt;\n   &lt;circle cx=&#39;270.81&#39; cy=&#39;190.1&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Post Malone (feat. RANI)&#39;/&gt;\n   &lt;circle cx=&#39;218.87&#39; cy=&#39;181.98&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Take Me Out&#39;/&gt;\n   &lt;circle cx=&#39;200.86&#39; cy=&#39;90.32&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Sk8er Boi&#39;/&gt;\n   &lt;circle cx=&#39;328.2&#39; cy=&#39;65.95&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Timber (feat. Ke$ha)&#39;/&gt;\n   &lt;circle cx=&#39;301.39&#39; cy=&#39;128.22&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Time of Our Lives&#39;/&gt;\n   &lt;circle cx=&#39;192.48&#39; cy=&#39;94.57&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Levels - Radio Edit&#39;/&gt;\n   &lt;circle cx=&#39;285.89&#39; cy=&#39;157.61&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Body On My&#39;/&gt;\n   &lt;circle cx=&#39;402.34&#39; cy=&#39;61.7&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Hey Ya!&#39;/&gt;\n   &lt;circle cx=&#39;297.2&#39; cy=&#39;114.68&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;TiK ToK&#39;/&gt;\n   &lt;circle cx=&#39;401.92&#39; cy=&#39;212.92&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;SexyBack (feat. Timbaland)&#39;/&gt;\n   &lt;circle cx=&#39;315.63&#39; cy=&#39;86.84&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Nice For What&#39;/&gt;\n   &lt;circle cx=&#39;341.19&#39; cy=&#39;130.93&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Up&#39;/&gt;\n   &lt;circle cx=&#39;71.84&#39; cy=&#39;136.34&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Clarity&#39;/&gt;\n   &lt;circle cx=&#39;286.31&#39; cy=&#39;181.59&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;good 4 u&#39;/&gt;\n   &lt;circle cx=&#39;373.44&#39; cy=&#39;147.17&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Cake By The Ocean&#39;/&gt;\n   &lt;circle cx=&#39;124.21&#39; cy=&#39;134.02&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Titanium (feat. Sia)&#39;/&gt;\n   &lt;circle cx=&#39;229.34&#39; cy=&#39;99.6&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Where Them Girls At (feat. Nicki Minaj &amp;amp;amp; Flo Rida)&#39;/&gt;\n   &lt;circle cx=&#39;330.3&#39; cy=&#39;155.68&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;I Know You Want Me (Calle Ocho)&#39;/&gt;\n   &lt;circle cx=&#39;196.25&#39; cy=&#39;102.31&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Club Can&amp;amp;#39;t Handle Me (feat. David Guetta)&#39;/&gt;\n   &lt;circle cx=&#39;343.28&#39; cy=&#39;88&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;I Love It (feat. Charli XCX)&#39;/&gt;\n   &lt;circle cx=&#39;390.61&#39; cy=&#39;170.76&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Treasure&#39;/&gt;\n   &lt;circle cx=&#39;357.52&#39; cy=&#39;70.98&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;She Bangs - English Version&#39;/&gt;\n   &lt;circle cx=&#39;327.78&#39; cy=&#39;77.94&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Magic (feat. Rivers Cuomo)&#39;/&gt;\n   &lt;circle cx=&#39;385.17&#39; cy=&#39;114.29&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Toxic&#39;/&gt;\n   &lt;circle cx=&#39;220.13&#39; cy=&#39;75.23&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Give Me Everything (feat. Ne-Yo, Afrojack &amp;amp;amp; Nayer)&#39;/&gt;\n   &lt;circle cx=&#39;342.44&#39; cy=&#39;206.34&#39; r=&#39;3.07pt&#39; fill=&#39;#000000&#39; fill-opacity=&#39;0.5&#39; stroke=&#39;#000000&#39; stroke-opacity=&#39;0.5&#39; title=&#39;Temperature&#39;/&gt;\n  &lt;\/g&gt;\n  &lt;g clip-path=&#39;url(#svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c1)&#39;&gt;\n   &lt;text x=&#39;27.91&#39; y=&#39;287.67&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;40%&lt;\/text&gt;\n   &lt;text x=&#39;28.14&#39; y=&#39;210.32&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;60%&lt;\/text&gt;\n   &lt;text x=&#39;28.22&#39; y=&#39;132.97&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;80%&lt;\/text&gt;\n   &lt;text x=&#39;23.41&#39; y=&#39;55.62&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;100%&lt;\/text&gt;\n   &lt;text x=&#39;92.81&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;25%&lt;\/text&gt;\n   &lt;text x=&#39;197.43&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;50%&lt;\/text&gt;\n   &lt;text x=&#39;302.26&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;75%&lt;\/text&gt;\n   &lt;text x=&#39;404.33&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;100%&lt;\/text&gt;\n   &lt;text x=&#39;214.33&#39; y=&#39;350.04&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;valence&lt;\/text&gt;\n   &lt;text transform=&#39;translate(16.93,207.45) rotate(-90.00)&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;energy&lt;\/text&gt;\n   &lt;text x=&#39;6.97&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;Hover&lt;\/text&gt;\n   &lt;text x=&#39;50.24&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;over&lt;\/text&gt;\n   &lt;text x=&#39;82.72&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;each&lt;\/text&gt;\n   &lt;text x=&#39;117.45&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;point&lt;\/text&gt;\n   &lt;text x=&#39;155.42&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;to&lt;\/text&gt;\n   &lt;text x=&#39;171.57&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;see&lt;\/text&gt;\n   &lt;text x=&#39;196.5&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;the&lt;\/text&gt;\n   &lt;text x=&#39;221.19&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;song&#39;s&lt;\/text&gt;\n   &lt;text x=&#39;266.55&#39; y=&#39;39.44&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;name!&lt;\/text&gt;\n   &lt;text x=&#39;6.97&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;The&lt;\/text&gt;\n   &lt;text x=&#39;42.15&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;current&lt;\/text&gt;\n   &lt;text x=&#39;104.99&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;wedding&lt;\/text&gt;\n   &lt;text x=&#39;178.64&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;playlist&lt;\/text&gt;\n  &lt;\/g&gt;\n &lt;\/g&gt;\n&lt;\/svg&gt;&#34;,&#34;js&#34;:null,&#34;uid&#34;:&#34;svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd&#34;,&#34;ratio&#34;:1.2,&#34;settings&#34;:{&#34;tooltip&#34;:{&#34;css&#34;:&#34;.tooltip_SVGID_ { background-color:gray;color:white;padding:2px;border-radius:2px;font-family:Roboto Slab; ; position:absolute;pointer-events:none;z-index:999;}&#34;,&#34;placement&#34;:&#34;doc&#34;,&#34;offx&#34;:10,&#34;offy&#34;:0,&#34;use_cursor_pos&#34;:true,&#34;opacity&#34;:0.8,&#34;usefill&#34;:false,&#34;usestroke&#34;:false,&#34;delay&#34;:{&#34;over&#34;:200,&#34;out&#34;:500}},&#34;hover&#34;:{&#34;css&#34;:&#34;.hover_SVGID_ { fill:#1279BF;stroke:#1279BF;cursor:pointer; }&#34;,&#34;reactive&#34;:false},&#34;hoverkey&#34;:{&#34;css&#34;:&#34;.hover_key_SVGID_ { stroke:red; }&#34;,&#34;reactive&#34;:false},&#34;hovertheme&#34;:{&#34;css&#34;:&#34;.hover_theme_SVGID_ { fill:green; }&#34;,&#34;reactive&#34;:false},&#34;hoverinv&#34;:{&#34;css&#34;:&#34;&#34;},&#34;zoom&#34;:{&#34;min&#34;:1,&#34;max&#34;:1},&#34;capture&#34;:{&#34;css&#34;:&#34;.selected_SVGID_ { fill:red;stroke:gray; }&#34;,&#34;type&#34;:&#34;multiple&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;capturekey&#34;:{&#34;css&#34;:&#34;.selected_key_SVGID_ { stroke:gray; }&#34;,&#34;type&#34;:&#34;single&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;capturetheme&#34;:{&#34;css&#34;:&#34;.selected_theme_SVGID_ { stroke:gray; }&#34;,&#34;type&#34;:&#34;single&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;toolbar&#34;:{&#34;position&#34;:&#34;topright&#34;,&#34;saveaspng&#34;:true,&#34;pngname&#34;:&#34;diagram&#34;},&#34;sizing&#34;:{&#34;rescale&#34;:true,&#34;width&#34;:1}}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;Broadly, there are three generic categories that the songs on the current playlist fall into: high energy and valence, low energy, or low valence (songs with low energy and valence will fall into one of the “low” categories). Rather than manually assign categories, we can use tidyclust to cluster the songs into three groups using the &lt;a href=&#34;https://en.wikipedia.org/wiki/K-means_clustering&#34;&gt;kmeans&lt;/a&gt; algorithm.&lt;/p&gt;
+&lt;p&gt;There’s some &lt;a href=&#34;https://emilhvitfeldt.github.io/tidyclust/articles/k_means.html&#34;&gt;great documentation on the package site&lt;/a&gt;, but to get started, we’ll categorize the songs on the current playlist by “fitting” a kmeans model (using the &lt;a href=&#34;https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html&#34;&gt;stats&lt;/a&gt; engine under the hood).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# create a clustering obj
+set.seed(918)
+ding_dong_clusters &amp;lt;- 
+  k_means(num_clusters = 3) %&amp;gt;%
+  fit(~ valence + energy,
+      data = ding_dong) &lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-2&#34; style=&#34;width:4500px;height:3000px;&#34; class=&#34;girafe html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-2&#34;&gt;{&#34;x&#34;:{&#34;html&#34;:&#34;&lt;?xml version=\&#34;1.0\&#34; encoding=\&#34;UTF-8\&#34;?&gt;\n&lt;svg xmlns=&#39;http://www.w3.org/2000/svg&#39; xmlns:xlink=&#39;http://www.w3.org/1999/xlink&#39; id=&#39;svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6&#39; viewBox=&#39;0 0 432 360&#39;&gt;\n &lt;defs&gt;\n  &lt;clipPath id=&#39;svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c1&#39;&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39;/&gt;\n  &lt;\/clipPath&gt;\n  &lt;clipPath id=&#39;svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c2&#39;&gt;\n   &lt;rect x=&#39;55.03&#39; y=&#39;49.46&#39; width=&#39;370&#39; height=&#39;270.51&#39;/&gt;\n  &lt;\/clipPath&gt;\n &lt;\/defs&gt;\n &lt;g&gt;\n  &lt;g clip-path=&#39;url(#svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c1)&#39;&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39; fill=&#39;#FFFFFF&#39; stroke=&#39;#FFFFFF&#39; stroke-width=&#39;0.75&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39;/&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39; fill=&#39;#FFFFFF&#39; stroke=&#39;#FFFFFF&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39;/&gt;\n  &lt;\/g&gt;\n  &lt;g clip-path=&#39;url(#svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c2)&#39;&gt;\n   &lt;polyline points=&#39;55.03,245.04 425.03,245.04&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,167.70 425.03,167.70&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,90.37 425.03,90.37&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;155.20,319.97 155.20,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;259.92,319.97 259.92,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;364.64,319.97 364.64,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,283.70 425.03,283.70&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,206.37 425.03,206.37&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,129.04 425.03,129.04&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;55.03,51.70 425.03,51.70&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;102.84,319.97 102.84,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;207.56,319.97 207.56,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;312.28,319.97 312.28,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;417.00,319.97 417.00,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;circle cx=&#39;402.76&#39; cy=&#39;93.08&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Rasputin&#39;/&gt;\n   &lt;circle cx=&#39;345.38&#39; cy=&#39;212.94&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Fergalicious&#39;/&gt;\n   &lt;circle cx=&#39;225.99&#39; cy=&#39;284.09&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Got You&#39;/&gt;\n   &lt;circle cx=&#39;408.21&#39; cy=&#39;116.66&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;September&#39;/&gt;\n   &lt;circle cx=&#39;198.35&#39; cy=&#39;307.67&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Mr. Blue Sky&#39;/&gt;\n   &lt;circle cx=&#39;371.77&#39; cy=&#39;126.33&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Mambo No. 5 (a Little Bit of...)&#39;/&gt;\n   &lt;circle cx=&#39;98.65&#39; cy=&#39;83.41&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Mr. Brightside&#39;/&gt;\n   &lt;circle cx=&#39;279.19&#39; cy=&#39;70.65&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Ymca&#39;/&gt;\n   &lt;circle cx=&#39;300.56&#39; cy=&#39;167.7&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Ride Wit Me&#39;/&gt;\n   &lt;circle cx=&#39;234.79&#39; cy=&#39;181.62&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Country Grammar (Hot Shit)&#39;/&gt;\n   &lt;circle cx=&#39;172.38&#39; cy=&#39;103.52&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Shout, Pts. 1 &amp;amp;amp; 2&#39;/&gt;\n   &lt;circle cx=&#39;125.46&#39; cy=&#39;202.89&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Low (feat. T-Pain)&#39;/&gt;\n   &lt;circle cx=&#39;325.27&#39; cy=&#39;183.94&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Come On Eileen&#39;/&gt;\n   &lt;circle cx=&#39;259.92&#39; cy=&#39;178.53&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Gold Digger&#39;/&gt;\n   &lt;circle cx=&#39;330.71&#39; cy=&#39;76.06&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Fireball (feat. John Ryan)&#39;/&gt;\n   &lt;circle cx=&#39;312.7&#39; cy=&#39;134.45&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bang Bang&#39;/&gt;\n   &lt;circle cx=&#39;352.92&#39; cy=&#39;81.86&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Can&amp;amp;#39;t Hold Us (feat. Ray Dalton)&#39;/&gt;\n   &lt;circle cx=&#39;249.87&#39; cy=&#39;103.9&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Don&amp;amp;#39;t Stop Me Now - Remastered 2011&#39;/&gt;\n   &lt;circle cx=&#39;365.06&#39; cy=&#39;89.6&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Take on Me&#39;/&gt;\n   &lt;circle cx=&#39;350.82&#39; cy=&#39;143.73&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Uncertain Smile&#39;/&gt;\n   &lt;circle cx=&#39;205.47&#39; cy=&#39;61.76&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Everytime We Touch&#39;/&gt;\n   &lt;circle cx=&#39;400.67&#39; cy=&#39;146.82&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;It&amp;amp;#39;s Tricky&#39;/&gt;\n   &lt;circle cx=&#39;272.49&#39; cy=&#39;211.78&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Brass Monkey&#39;/&gt;\n   &lt;circle cx=&#39;263.69&#39; cy=&#39;282.54&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Wagon Wheel&#39;/&gt;\n   &lt;circle cx=&#39;270.81&#39; cy=&#39;148.76&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Love On Top&#39;/&gt;\n   &lt;circle cx=&#39;391.87&#39; cy=&#39;158.81&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Think We&amp;amp;#39;re Alone Now&#39;/&gt;\n   &lt;circle cx=&#39;361.29&#39; cy=&#39;119.76&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Wanna Dance with Somebody (Who Loves Me)&#39;/&gt;\n   &lt;circle cx=&#39;386.84&#39; cy=&#39;202.89&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Uptown Funk (feat. Bruno Mars)&#39;/&gt;\n   &lt;circle cx=&#39;112.06&#39; cy=&#39;212.56&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Single Ladies (Put a Ring on It)&#39;/&gt;\n   &lt;circle cx=&#39;392.71&#39; cy=&#39;129.04&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Shake It Off&#39;/&gt;\n   &lt;circle cx=&#39;340.77&#39; cy=&#39;163.84&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Jump Around&#39;/&gt;\n   &lt;circle cx=&#39;315.63&#39; cy=&#39;119.76&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Hips Don&amp;amp;#39;t Lie (feat. Wyclef Jean)&#39;/&gt;\n   &lt;circle cx=&#39;241.91&#39; cy=&#39;142.96&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Body (feat. Brando)&#39;/&gt;\n   &lt;circle cx=&#39;285.89&#39; cy=&#39;115.89&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Jackie Chan&#39;/&gt;\n   &lt;circle cx=&#39;151.85&#39; cy=&#39;214.88&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Wake Up in the Sky&#39;/&gt;\n   &lt;circle cx=&#39;187.46&#39; cy=&#39;228.02&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Summer, Highland Falls - Live at the Bayou, Washington, D.C. - July 1980&#39;/&gt;\n   &lt;circle cx=&#39;297.2&#39; cy=&#39;108.16&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Magic Dance&#39;/&gt;\n   &lt;circle cx=&#39;315.22&#39; cy=&#39;95.78&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Dancing with Myself - 2001 Remaster&#39;/&gt;\n   &lt;circle cx=&#39;271.65&#39; cy=&#39;71.42&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Waterloo&#39;/&gt;\n   &lt;circle cx=&#39;231.02&#39; cy=&#39;90.76&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Potential Breakup Song&#39;/&gt;\n   &lt;circle cx=&#39;381.4&#39; cy=&#39;119.37&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Levitating (feat. DaBaby)&#39;/&gt;\n   &lt;circle cx=&#39;184.52&#39; cy=&#39;121.69&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Forever&#39;/&gt;\n   &lt;circle cx=&#39;344.54&#39; cy=&#39;136&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;White Walls (feat. ScHoolboy Q &amp;amp;amp; Hollis)&#39;/&gt;\n   &lt;circle cx=&#39;253.22&#39; cy=&#39;85.73&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Rose Tattoo&#39;/&gt;\n   &lt;circle cx=&#39;197.09&#39; cy=&#39;85.73&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Kiss Me I&amp;amp;#39;m #!@&amp;amp;#39;faced&#39;/&gt;\n   &lt;circle cx=&#39;162.32&#39; cy=&#39;137.93&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;All Night (feat. Knox Fortune)&#39;/&gt;\n   &lt;circle cx=&#39;282.54&#39; cy=&#39;131.74&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Don&amp;amp;#39;t Start Now&#39;/&gt;\n   &lt;circle cx=&#39;380.56&#39; cy=&#39;106.61&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;The Legend of Chavo Guerrero&#39;/&gt;\n   &lt;circle cx=&#39;398.57&#39; cy=&#39;168.86&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bam Bam (feat. Ed Sheeran)&#39;/&gt;\n   &lt;circle cx=&#39;228.51&#39; cy=&#39;142.18&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;The Spins&#39;/&gt;\n   &lt;circle cx=&#39;167.77&#39; cy=&#39;188.2&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Hung Up&#39;/&gt;\n   &lt;circle cx=&#39;355.43&#39; cy=&#39;95.4&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;BREAK MY SOUL&#39;/&gt;\n   &lt;circle cx=&#39;270.81&#39; cy=&#39;190.13&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Post Malone (feat. RANI)&#39;/&gt;\n   &lt;circle cx=&#39;218.87&#39; cy=&#39;182.01&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Take Me Out&#39;/&gt;\n   &lt;circle cx=&#39;200.86&#39; cy=&#39;90.37&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Sk8er Boi&#39;/&gt;\n   &lt;circle cx=&#39;328.2&#39; cy=&#39;66.01&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Timber (feat. Ke$ha)&#39;/&gt;\n   &lt;circle cx=&#39;301.39&#39; cy=&#39;128.26&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Time of Our Lives&#39;/&gt;\n   &lt;circle cx=&#39;192.48&#39; cy=&#39;94.62&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Levels - Radio Edit&#39;/&gt;\n   &lt;circle cx=&#39;285.89&#39; cy=&#39;157.65&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Body On My&#39;/&gt;\n   &lt;circle cx=&#39;402.34&#39; cy=&#39;61.76&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Hey Ya!&#39;/&gt;\n   &lt;circle cx=&#39;297.2&#39; cy=&#39;114.73&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;TiK ToK&#39;/&gt;\n   &lt;circle cx=&#39;401.92&#39; cy=&#39;212.94&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;SexyBack (feat. Timbaland)&#39;/&gt;\n   &lt;circle cx=&#39;315.63&#39; cy=&#39;86.89&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Nice For What&#39;/&gt;\n   &lt;circle cx=&#39;341.19&#39; cy=&#39;130.97&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Up&#39;/&gt;\n   &lt;circle cx=&#39;71.84&#39; cy=&#39;136.38&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Clarity&#39;/&gt;\n   &lt;circle cx=&#39;286.31&#39; cy=&#39;181.62&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;good 4 u&#39;/&gt;\n   &lt;circle cx=&#39;373.44&#39; cy=&#39;147.21&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Cake By The Ocean&#39;/&gt;\n   &lt;circle cx=&#39;124.21&#39; cy=&#39;134.06&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Titanium (feat. Sia)&#39;/&gt;\n   &lt;circle cx=&#39;229.34&#39; cy=&#39;99.65&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Where Them Girls At (feat. Nicki Minaj &amp;amp;amp; Flo Rida)&#39;/&gt;\n   &lt;circle cx=&#39;330.3&#39; cy=&#39;155.72&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Know You Want Me (Calle Ocho)&#39;/&gt;\n   &lt;circle cx=&#39;196.25&#39; cy=&#39;102.36&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Club Can&amp;amp;#39;t Handle Me (feat. David Guetta)&#39;/&gt;\n   &lt;circle cx=&#39;343.28&#39; cy=&#39;88.05&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Love It (feat. Charli XCX)&#39;/&gt;\n   &lt;circle cx=&#39;390.61&#39; cy=&#39;170.8&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Treasure&#39;/&gt;\n   &lt;circle cx=&#39;357.52&#39; cy=&#39;71.04&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;She Bangs - English Version&#39;/&gt;\n   &lt;circle cx=&#39;327.78&#39; cy=&#39;78&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Magic (feat. Rivers Cuomo)&#39;/&gt;\n   &lt;circle cx=&#39;385.17&#39; cy=&#39;114.34&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Toxic&#39;/&gt;\n   &lt;circle cx=&#39;220.13&#39; cy=&#39;75.29&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Give Me Everything (feat. Ne-Yo, Afrojack &amp;amp;amp; Nayer)&#39;/&gt;\n   &lt;circle cx=&#39;342.44&#39; cy=&#39;206.37&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Temperature&#39;/&gt;\n  &lt;\/g&gt;\n  &lt;g clip-path=&#39;url(#svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c1)&#39;&gt;\n   &lt;text x=&#39;27.91&#39; y=&#39;287.68&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;40%&lt;\/text&gt;\n   &lt;text x=&#39;28.14&#39; y=&#39;210.35&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;60%&lt;\/text&gt;\n   &lt;text x=&#39;28.22&#39; y=&#39;133.02&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;80%&lt;\/text&gt;\n   &lt;text x=&#39;23.41&#39; y=&#39;55.68&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;100%&lt;\/text&gt;\n   &lt;text x=&#39;92.81&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;25%&lt;\/text&gt;\n   &lt;text x=&#39;197.43&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;50%&lt;\/text&gt;\n   &lt;text x=&#39;302.26&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;75%&lt;\/text&gt;\n   &lt;text x=&#39;404.33&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;100%&lt;\/text&gt;\n   &lt;text x=&#39;214.33&#39; y=&#39;350.04&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;valence&lt;\/text&gt;\n   &lt;text transform=&#39;translate(16.93,207.49) rotate(-90.00)&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;energy&lt;\/text&gt;\n   &lt;text x=&#39;6.97&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;Clustered&lt;\/text&gt;\n   &lt;text x=&#39;72.85&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;into&lt;\/text&gt;\n   &lt;text x=&#39;102.64&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#DD5129&#39;&gt;zesty&lt;\/text&gt;\n   &lt;text x=&#39;141.53&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#DD5129&#39;&gt;bops&lt;\/text&gt;\n   &lt;text x=&#39;174.96&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;,&lt;\/text&gt;\n   &lt;text x=&#39;181.19&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#43B284&#39;&gt;dark&lt;\/text&gt;\n   &lt;text x=&#39;214.64&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#43B284&#39;&gt;bangers&lt;\/text&gt;\n   &lt;text x=&#39;269.08&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;,&lt;\/text&gt;\n   &lt;text x=&#39;275.32&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;and&lt;\/text&gt;\n   &lt;text x=&#39;304.04&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#0F7BA2&#39;&gt;mellow&lt;\/text&gt;\n   &lt;text x=&#39;355.37&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#0F7BA2&#39;&gt;jams&lt;\/text&gt;\n   &lt;text x=&#39;6.97&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;Clusters&lt;\/text&gt;\n   &lt;text x=&#39;75.74&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;in&lt;\/text&gt;\n   &lt;text x=&#39;96.28&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;the&lt;\/text&gt;\n   &lt;text x=&#39;125.92&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;current&lt;\/text&gt;\n   &lt;text x=&#39;188.75&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;playlist&lt;\/text&gt;\n  &lt;\/g&gt;\n &lt;\/g&gt;\n&lt;\/svg&gt;&#34;,&#34;js&#34;:null,&#34;uid&#34;:&#34;svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6&#34;,&#34;ratio&#34;:1.2,&#34;settings&#34;:{&#34;tooltip&#34;:{&#34;css&#34;:&#34;.tooltip_SVGID_ { color:white;padding:2px;border-radius:2px;font-family:Roboto Slab; ; position:absolute;pointer-events:none;z-index:999;}&#34;,&#34;placement&#34;:&#34;doc&#34;,&#34;offx&#34;:10,&#34;offy&#34;:0,&#34;use_cursor_pos&#34;:true,&#34;opacity&#34;:0.8,&#34;usefill&#34;:true,&#34;usestroke&#34;:false,&#34;delay&#34;:{&#34;over&#34;:200,&#34;out&#34;:500}},&#34;hover&#34;:{&#34;css&#34;:&#34;.hover_SVGID_ { fill:#1279BF;stroke:#1279BF;cursor:pointer; }&#34;,&#34;reactive&#34;:false},&#34;hoverkey&#34;:{&#34;css&#34;:&#34;.hover_key_SVGID_ { stroke:red; }&#34;,&#34;reactive&#34;:false},&#34;hovertheme&#34;:{&#34;css&#34;:&#34;.hover_theme_SVGID_ { fill:green; }&#34;,&#34;reactive&#34;:false},&#34;hoverinv&#34;:{&#34;css&#34;:&#34;&#34;},&#34;zoom&#34;:{&#34;min&#34;:1,&#34;max&#34;:1},&#34;capture&#34;:{&#34;css&#34;:&#34;.selected_SVGID_ { fill:red;stroke:gray; }&#34;,&#34;type&#34;:&#34;multiple&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;capturekey&#34;:{&#34;css&#34;:&#34;.selected_key_SVGID_ { stroke:gray; }&#34;,&#34;type&#34;:&#34;single&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;capturetheme&#34;:{&#34;css&#34;:&#34;.selected_theme_SVGID_ { stroke:gray; }&#34;,&#34;type&#34;:&#34;single&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;toolbar&#34;:{&#34;position&#34;:&#34;topright&#34;,&#34;saveaspng&#34;:true,&#34;pngname&#34;:&#34;diagram&#34;},&#34;sizing&#34;:{&#34;rescale&#34;:true,&#34;width&#34;:1}}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;As expected, the majority of songs in the current playlist fall into the bop cluster. Let’s explore this cluster using in more detail with the custom metric &lt;code&gt;vibe&lt;/code&gt;.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# assign to clusters
+ding_dong_vibes &amp;lt;- 
+  ding_dong_clusters %&amp;gt;%
+  augment(ding_dong) %&amp;gt;%
+  select(track_name,
+         valence, 
+         energy, 
+         .pred_cluster) %&amp;gt;%
+  mutate(vibe = valence + energy)
+
+# what are songs with the biggest vibe?
+ding_dong_vibes %&amp;gt;%
+  arrange(desc(vibe)) %&amp;gt;%
+  slice_head(n = 10) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table style=&#34;width:100%;&#34;&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;48%&#34; /&gt;
+&lt;col width=&#34;11%&#34; /&gt;
+&lt;col width=&#34;10%&#34; /&gt;
+&lt;col width=&#34;20%&#34; /&gt;
+&lt;col width=&#34;8%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;valence&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;energy&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;.pred_cluster&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;vibe&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Hey Ya!&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.965&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.974&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.939&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Rasputin&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.966&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.893&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.859&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;September&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.979&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.832&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.811&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;She Bangs - English Version&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.858&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.950&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.808&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Take on Me&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.876&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.902&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.778&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;The Legend of Chavo Guerrero&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.913&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.858&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.771&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Can’t Hold Us (feat. Ray Dalton)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.847&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.922&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.769&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Toxic&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.924&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.838&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.762&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Timber (feat. Ke$ha)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.788&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.963&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.751&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Shake It Off&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.942&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.800&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.742&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;As expected, when arranging by &lt;code&gt;vibe&lt;/code&gt;, the top songs are all a part of the first cluster. And they are, indeed, &lt;em&gt;a vibe&lt;/em&gt;:&lt;/p&gt;
+
+
+
+&lt;iframe src=&#34;https://open.spotify.com/embed/track/1uPrIHgYztXSkkcts9jet8&#34;
+    width=&#34;100%&#34;
+    height=&#34;380&#34;
+    frameborder=&#34;0&#34;
+    allowtransparency=&#34;true&#34;
+    allow=&#34;encrypted-media&#34;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;Compare that with the second cluster, which are generally lower energy (I’d personally disagree with spotify ranking Mr. Blue Sky and Single Ladies as “low energy,” but most others make sense).&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ding_dong_vibes %&amp;gt;%
+  filter(.pred_cluster == &amp;quot;Cluster_2&amp;quot;) %&amp;gt;%
+  arrange(vibe) %&amp;gt;%
+  slice_head(n = 10) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;67%&#34; /&gt;
+&lt;col width=&#34;7%&#34; /&gt;
+&lt;col width=&#34;6%&#34; /&gt;
+&lt;col width=&#34;12%&#34; /&gt;
+&lt;col width=&#34;5%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;valence&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;energy&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;.pred_cluster&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;vibe&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Mr. Blue Sky&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.478&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.338&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.816&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Single Ladies (Put a Ring on It)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.272&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.584&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.856&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Low (feat. T-Pain)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.304&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.609&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.913&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;I Got You&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.544&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.399&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.943&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Wake Up in the Sky&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.367&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.578&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.945&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Summer, Highland Falls - Live at the Bayou, Washington, D.C. - July 1980&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.452&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.544&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.996&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Wagon Wheel&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.634&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.403&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.037&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Hung Up&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.405&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.647&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.052&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Take Me Out&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.527&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.663&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.190&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Country Grammar (Hot Shit)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.565&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.664&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.229&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+
+&lt;iframe src=&#34;https://open.spotify.com/embed/track/12jjuxN1gxlm29cqL5M6MW&#34;
+    width=&#34;100%&#34;
+    height=&#34;380&#34;
+    frameborder=&#34;0&#34;
+    allowtransparency=&#34;true&#34;
+    allow=&#34;encrypted-media&#34;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;Finally, the third cluster mostly contains songs with low valence but relatively high energy.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;ding_dong_vibes %&amp;gt;%
+  filter(.pred_cluster == &amp;quot;Cluster_3&amp;quot;) %&amp;gt;%
+  arrange(vibe) %&amp;gt;%
+  slice_head(n = 10) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;54%&#34; /&gt;
+&lt;col width=&#34;10%&#34; /&gt;
+&lt;col width=&#34;9%&#34; /&gt;
+&lt;col width=&#34;18%&#34; /&gt;
+&lt;col width=&#34;7%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;valence&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;energy&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;.pred_cluster&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;vibe&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Clarity&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.176&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.781&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.957&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Titanium (feat. Sia)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.301&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.787&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.088&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Mr. Brightside&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.240&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.918&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.158&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;All Night (feat. Knox Fortune)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.392&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.777&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.169&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Forever&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.445&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.819&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.264&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Shout, Pts. 1 &amp;amp; 2&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.416&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.866&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.282&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;The Spins&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.550&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.766&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.316&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Club Can’t Handle Me (feat. David Guetta)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.473&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.869&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.342&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Body (feat. Brando)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.582&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.764&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.346&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Levels - Radio Edit&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.464&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.889&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_3&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.353&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+
+
+&lt;iframe src=&#34;https://open.spotify.com/embed/track/3n3Ppam7vgaVa1iaRUc9Lp&#34;
+    width=&#34;100%&#34;
+    height=&#34;380&#34;
+    frameborder=&#34;0&#34;
+    allowtransparency=&#34;true&#34;
+    allow=&#34;encrypted-media&#34;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;Now that I have the songs in the current playlist sorted by cluster, let’s pull in some new songs and assign them to the appropriate cluster!&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id=&#34;adding-new-songs&#34; class=&#34;section level2&#34;&gt;
+&lt;h2&gt;Adding new songs&lt;/h2&gt;
+&lt;p&gt;To go searching for new songs, we’ll start by casting a wide net then narrow the search with some of the &lt;code&gt;get_*()&lt;/code&gt; functions from spotifyr. I’ll start by using &lt;code&gt;get_categories()&lt;/code&gt; to explore the categories available in spotify.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;get_categories() %&amp;gt;%
+  as_tibble() %&amp;gt;%
+  select(id, name) %&amp;gt;%
+  slice_head(n = 10) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;id&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;name&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;toplists&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Top Lists&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;hiphop&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Hip-Hop&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;pop&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Pop&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;country&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Country&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;0JQ5DAqbMKFxXaXKP7zcDp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Latin&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;rock&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Rock&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;summer&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Summer&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;0JQ5DAqbMKFAXlCG6QvYQ4&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Workout&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;0JQ5DAqbMKFEZPnFQSFB1T&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;R&amp;amp;B&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;edm_dance&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Dance/Electronic&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;I don’t really want to play country music or R&amp;amp;B during the wedding, so I’ll filter to a few categories before using &lt;code&gt;get_category_playlists()&lt;/code&gt; to pull in the featured playlists available in each category.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;# pull in playlist ids
+playlists &amp;lt;- 
+  get_categories() %&amp;gt;%
+  as_tibble() %&amp;gt;%
+  filter(id %in% c(&amp;quot;toplists&amp;quot;, &amp;quot;hiphop&amp;quot;, &amp;quot;pop&amp;quot;, &amp;quot;rock&amp;quot;, &amp;quot;summer&amp;quot;)) %&amp;gt;%
+  pull(id) %&amp;gt;%
+  map_dfr(get_category_playlists) %&amp;gt;%
+  as_tibble() %&amp;gt;%
+  select(id, name, description) %&amp;gt;%
+  distinct(id, .keep_all = TRUE)
+
+playlists %&amp;gt;%
+  slice_head(n = 10) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;18%&#34; /&gt;
+&lt;col width=&#34;14%&#34; /&gt;
+&lt;col width=&#34;67%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;id&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;name&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;description&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DXcBWIGoYBM5M&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Today’s Top Hits&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Steve Lacy is on top of the Hottest 50!&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DX0XUsuxWHRQd&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;RapCaviar&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Music from Drake, Offset and 42 Dugg.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DXcF6B6QPhFDv&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Rock This&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;The latest from Panic! At The Disco along with the Rock songs you need to hear today.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DX4dyzvuaRJ0n&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;mint&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;The world’s biggest dance hits. Cover: Zedd &amp;amp; Maren Morris&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DX1lVhptIYRda&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Hot Country&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Today’s top country hits of the week, worldwide! Cover: Tyler Hubbard&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DX10zKzsJ2jva&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Viva Latino&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Today’s top Latin hits, elevando nuestra música. Cover: Anitta, Maluma.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZF1DX4SBhb3fqCJd&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Are &amp;amp; Be&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;The pulse of R&amp;amp;B music today. Cover: Tink&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZEVXbLRQDuF5jeBp&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Top 50 - USA&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Your daily update of the most played tracks right now - USA.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZEVXbMDoHDwVN2tF&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Top 50 - Global&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Your daily update of the most played tracks right now - Global.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;37i9dQZEVXbLiRSasKsNU9&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Viral 50 - Global&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Your daily update of the most viral tracks right now - Global.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;There’s a lot of playlists in &lt;code&gt;playlists&lt;/code&gt;, so I’ve gone through and selected a few that I’m interested in exploring further.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;selected_playlists &amp;lt;-
+  c(&amp;quot;Today&amp;#39;s Top Hits&amp;quot;,
+    &amp;quot;mint&amp;quot;,
+    &amp;quot;Top 50 - US&amp;quot;,
+    &amp;quot;Top 50 - Global&amp;quot;,
+    &amp;quot;Viral 50 - US&amp;quot;,
+    &amp;quot;Viral 50 - Global&amp;quot;,
+    &amp;quot;New Music Friday&amp;quot;,
+    &amp;quot;Most Necessary&amp;quot;,
+    &amp;quot;Internet People&amp;quot;,
+    &amp;quot;Gold School&amp;quot;,
+    &amp;quot;Hot Hits USA&amp;quot;,
+    &amp;quot;Pop Rising&amp;quot;,
+    &amp;quot;teen beats&amp;quot;,
+    &amp;quot;big on the internet&amp;quot;,
+    &amp;quot;Party Hits&amp;quot;,
+    &amp;quot;Mega Hit Mix&amp;quot;,
+    &amp;quot;Pumped Pop&amp;quot;,
+    &amp;quot;Hit Rewind&amp;quot;,
+    &amp;quot;The Ultimate Hit Mix&amp;quot;,
+    &amp;quot;00s Rock Anthems&amp;quot;,
+    &amp;quot;Summer Hits&amp;quot;,
+    &amp;quot;Barack Obama&amp;#39;s Summer 2022 Playlist&amp;quot;,
+    &amp;quot;Summer Hits of the 10s&amp;quot;,
+    &amp;quot;Family Road Trip&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With this shorter list of playlists, I can pull in the all the songs that appear on each with &lt;code&gt;get_playlist_tracks()&lt;/code&gt;. Some songs may appear on multiple playlists, so we’ll only look at unique songs by &lt;code&gt;track_id&lt;/code&gt;. I’ve already pulled in features for songs currently on the playlist, so we can filter those out as well. Finally, &lt;code&gt;get_track_audio_features()&lt;/code&gt; limits queries to a maximum of 100 songs, so we’ll select the top 100 most popular songs within the sample.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;new_songs &amp;lt;- 
+  playlists %&amp;gt;%
+  filter(name %in% selected_playlists) %&amp;gt;%
+  pull(id) %&amp;gt;%
+  map_dfr(get_playlist_tracks) %&amp;gt;%
+  as_tibble()
+
+new_songs &amp;lt;- 
+  new_songs %&amp;gt;%
+  select(track.id,
+         track.name,
+         track.popularity) %&amp;gt;%
+  rename_with(~stringr::str_replace(.x, &amp;quot;\\.&amp;quot;, &amp;quot;_&amp;quot;)) %&amp;gt;%
+  distinct(track_id, .keep_all = TRUE) %&amp;gt;%
+  arrange(desc(track_popularity)) %&amp;gt;%
+  filter(!track_id %in% ding_dong$track_id) %&amp;gt;%
+  slice_head(n = 100)&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;28%&#34; /&gt;
+&lt;col width=&#34;50%&#34; /&gt;
+&lt;col width=&#34;21%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_id&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;track_popularity&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;2tTmW7RDtMQtBk7m2rYeSw&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Quevedo: Bzrp Music Sessions, Vol. 52&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;100&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;6Sq7ltF9Qa7SNFBsV5Cogx&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Me Porto Bonito&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;99&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;6xGruZOHLs39ZbVccQTuPZ&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Glimpse of Us&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;97&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;1IHWl5LamUGEuP4ozKQSXZ&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Tití Me Preguntó&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;97&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;4LRPiXqCikLlN15c3yImP7&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;As It Was&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;96&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;5Eax0qFko2dh7Rl2lYs3bx&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Efecto&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;96&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;3k3NWokhRRkEPhCzPmV8TW&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Ojitos Lindos&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;96&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;75FEaRjZTKLhTrFGsfMUXR&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Running Up That Hill (A Deal With God)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;95&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;6Xom58OOXk2SoU711L2IXO&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Moscow Mule&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;95&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;0mBP9X2gPCuapvpZ7TGDk3&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Left and Right (Feat. Jung Kook of BTS)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;94&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Now let’s assign these 100 news songs to the clusters we found earlier based on their valence and energy!&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;new_song_features &amp;lt;- 
+  new_songs %&amp;gt;%
+  pull(track_id) %&amp;gt;%
+  get_track_audio_features()
+
+new_songs &amp;lt;- 
+  new_songs %&amp;gt;%
+  left_join(new_song_features, by = c(&amp;quot;track_id&amp;quot; = &amp;quot;id&amp;quot;))
+
+new_songs_clustered &amp;lt;- 
+  ding_dong_clusters %&amp;gt;%
+  augment(new_songs) %&amp;gt;%
+  select(track_name,
+         valence,
+         energy,
+         .pred_cluster) %&amp;gt;%
+  mutate(vibe = valence + energy)&lt;/code&gt;&lt;/pre&gt;
+&lt;div id=&#34;htmlwidget-3&#34; style=&#34;width:4500px;height:3000px;&#34; class=&#34;girafe html-widget&#34;&gt;&lt;/div&gt;
+&lt;script type=&#34;application/json&#34; data-for=&#34;htmlwidget-3&#34;&gt;{&#34;x&#34;:{&#34;html&#34;:&#34;&lt;?xml version=\&#34;1.0\&#34; encoding=\&#34;UTF-8\&#34;?&gt;\n&lt;svg xmlns=&#39;http://www.w3.org/2000/svg&#39; xmlns:xlink=&#39;http://www.w3.org/1999/xlink&#39; id=&#39;svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8&#39; viewBox=&#39;0 0 432 360&#39;&gt;\n &lt;defs&gt;\n  &lt;clipPath id=&#39;svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c1&#39;&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39;/&gt;\n  &lt;\/clipPath&gt;\n  &lt;clipPath id=&#39;svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c2&#39;&gt;\n   &lt;rect x=&#39;50.53&#39; y=&#39;49.46&#39; width=&#39;374.5&#39; height=&#39;270.51&#39;/&gt;\n  &lt;\/clipPath&gt;\n &lt;\/defs&gt;\n &lt;g&gt;\n  &lt;g clip-path=&#39;url(#svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c1)&#39;&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39; fill=&#39;#FFFFFF&#39; stroke=&#39;#FFFFFF&#39; stroke-width=&#39;0.75&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39;/&gt;\n   &lt;rect x=&#39;0&#39; y=&#39;0&#39; width=&#39;432&#39; height=&#39;360&#39; fill=&#39;#FFFFFF&#39; stroke=&#39;#FFFFFF&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39;/&gt;\n  &lt;\/g&gt;\n  &lt;g clip-path=&#39;url(#svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c2)&#39;&gt;\n   &lt;polyline points=&#39;50.53,284.39 425.03,284.39&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;50.53,211.64 425.03,211.64&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;50.53,138.88 425.03,138.88&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;50.53,66.12 425.03,66.12&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;82.94,319.97 82.94,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;178.88,319.97 178.88,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;274.83,319.97 274.83,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;370.78,319.97 370.78,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;0.68&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;50.53,248.01 425.03,248.01&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;50.53,175.26 425.03,175.26&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;50.53,102.50 425.03,102.50&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;130.91,319.97 130.91,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;226.86,319.97 226.86,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;322.80,319.97 322.80,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;polyline points=&#39;418.75,319.97 418.75,49.46&#39; fill=&#39;none&#39; stroke=&#39;#EBEBEB&#39; stroke-width=&#39;1.36&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;butt&#39;/&gt;\n   &lt;circle cx=&#39;246.05&#39; cy=&#39;109.05&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Quevedo: Bzrp Music Sessions, Vol. 52&#39;/&gt;\n   &lt;circle cx=&#39;198.07&#39; cy=&#39;134.51&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Me Porto Bonito&#39;/&gt;\n   &lt;circle cx=&#39;137.82&#39; cy=&#39;278.21&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Glimpse of Us&#39;/&gt;\n   &lt;circle cx=&#39;106.73&#39; cy=&#39;133.42&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Tití Me Preguntó&#39;/&gt;\n   &lt;circle cx=&#39;289.03&#39; cy=&#39;127.6&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;As It Was&#39;/&gt;\n   &lt;circle cx=&#39;124.77&#39; cy=&#39;220.73&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Efecto&#39;/&gt;\n   &lt;circle cx=&#39;137.82&#39; cy=&#39;143.97&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Ojitos Lindos&#39;/&gt;\n   &lt;circle cx=&#39;110.57&#39; cy=&#39;194.54&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Running Up That Hill (A Deal With God)&#39;/&gt;\n   &lt;circle cx=&#39;147.03&#39; cy=&#39;148.34&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Moscow Mule&#39;/&gt;\n   &lt;circle cx=&#39;310.91&#39; cy=&#39;178.17&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Left and Right (Feat. Jung Kook of BTS)&#39;/&gt;\n   &lt;circle cx=&#39;332.4&#39; cy=&#39;166.89&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;DESPECHÁ&#39;/&gt;\n   &lt;circle cx=&#39;238.37&#39; cy=&#39;205.82&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;PROVENZA&#39;/&gt;\n   &lt;circle cx=&#39;351.59&#39; cy=&#39;103.59&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Ain&amp;amp;#39;t Worried&#39;/&gt;\n   &lt;circle cx=&#39;380.75&#39; cy=&#39;128.69&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Late Night Talking&#39;/&gt;\n   &lt;circle cx=&#39;361.18&#39; cy=&#39;146.52&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;La Bachata&#39;/&gt;\n   &lt;circle cx=&#39;289.03&#39; cy=&#39;127.6&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;As It Was&#39;/&gt;\n   &lt;circle cx=&#39;195.77&#39; cy=&#39;144.7&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Tarot&#39;/&gt;\n   &lt;circle cx=&#39;255.64&#39; cy=&#39;162.16&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Te Felicito&#39;/&gt;\n   &lt;circle cx=&#39;312.06&#39; cy=&#39;123.24&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;About Damn Time&#39;/&gt;\n   &lt;circle cx=&#39;215.73&#39; cy=&#39;102.87&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Party&#39;/&gt;\n   &lt;circle cx=&#39;216.11&#39; cy=&#39;149.79&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Like You (A Happier Song) (with Doja Cat)&#39;/&gt;\n   &lt;circle cx=&#39;358.11&#39; cy=&#39;133.79&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Sunroof&#39;/&gt;\n   &lt;circle cx=&#39;408&#39; cy=&#39;185.08&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Doja&#39;/&gt;\n   &lt;circle cx=&#39;69.47&#39; cy=&#39;171.26&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;MIDDLE OF THE NIGHT&#39;/&gt;\n   &lt;circle cx=&#39;175.43&#39; cy=&#39;148.7&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Jimmy Cooks (feat. 21 Savage)&#39;/&gt;\n   &lt;circle cx=&#39;257.18&#39; cy=&#39;107.59&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;La Corriente&#39;/&gt;\n   &lt;circle cx=&#39;299.78&#39; cy=&#39;209.09&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bad Habit&#39;/&gt;\n   &lt;circle cx=&#39;88.31&#39; cy=&#39;199.63&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Running Up That Hill (A Deal With God) - 2018 Remaster&#39;/&gt;\n   &lt;circle cx=&#39;318.97&#39; cy=&#39;174.89&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Vegas (From the Original Motion Picture Soundtrack ELVIS)&#39;/&gt;\n   &lt;circle cx=&#39;135.52&#39; cy=&#39;162.16&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Where Are You Now&#39;/&gt;\n   &lt;circle cx=&#39;300.54&#39; cy=&#39;142.52&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Ferrari&#39;/&gt;\n   &lt;circle cx=&#39;122.09&#39; cy=&#39;208.73&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Until I Found You&#39;/&gt;\n   &lt;circle cx=&#39;187.71&#39; cy=&#39;99.96&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Sweater Weather&#39;/&gt;\n   &lt;circle cx=&#39;163.15&#39; cy=&#39;127.97&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Blinding Lights&#39;/&gt;\n   &lt;circle cx=&#39;354.27&#39; cy=&#39;194.17&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Una Noche en Medellín&#39;/&gt;\n   &lt;circle cx=&#39;262.17&#39; cy=&#39;79.95&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;One Kiss (with Dua Lipa)&#39;/&gt;\n   &lt;circle cx=&#39;209.2&#39; cy=&#39;141.79&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Dandelions&#39;/&gt;\n   &lt;circle cx=&#39;401.48&#39; cy=&#39;80.31&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bad Decisions (with BTS &amp;amp;amp; Snoop Dogg)&#39;/&gt;\n   &lt;circle cx=&#39;159.31&#39; cy=&#39;188.72&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;First Class&#39;/&gt;\n   &lt;circle cx=&#39;373.08&#39; cy=&#39;115.6&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Woman&#39;/&gt;\n   &lt;circle cx=&#39;218.41&#39; cy=&#39;115.6&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;STAY (with Justin Bieber)&#39;/&gt;\n   &lt;circle cx=&#39;165.07&#39; cy=&#39;159.98&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;WAIT FOR U (feat. Drake &amp;amp;amp; Tems)&#39;/&gt;\n   &lt;circle cx=&#39;396.49&#39; cy=&#39;103.23&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Cold Heart - PNAU Remix&#39;/&gt;\n   &lt;circle cx=&#39;238.76&#39; cy=&#39;202.54&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Heat Waves&#39;/&gt;\n   &lt;circle cx=&#39;153.94&#39; cy=&#39;142.52&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Under The Influence&#39;/&gt;\n   &lt;circle cx=&#39;204.21&#39; cy=&#39;123.96&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Ghost&#39;/&gt;\n   &lt;circle cx=&#39;67.55&#39; cy=&#39;270.21&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;traitor&#39;/&gt;\n   &lt;circle cx=&#39;85.24&#39; cy=&#39;198.18&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Another Love&#39;/&gt;\n   &lt;circle cx=&#39;248.73&#39; cy=&#39;96.68&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Watermelon Sugar&#39;/&gt;\n   &lt;circle cx=&#39;241.06&#39; cy=&#39;68.67&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bad Habits&#39;/&gt;\n   &lt;circle cx=&#39;244.51&#39; cy=&#39;85.77&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;THATS WHAT I WANT&#39;/&gt;\n   &lt;circle cx=&#39;350.44&#39; cy=&#39;81.04&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Shivers&#39;/&gt;\n   &lt;circle cx=&#39;196.92&#39; cy=&#39;103.59&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Belly Dancer&#39;/&gt;\n   &lt;circle cx=&#39;94.45&#39; cy=&#39;125.42&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;I Was Never There&#39;/&gt;\n   &lt;circle cx=&#39;87.54&#39; cy=&#39;236.74&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;drivers license&#39;/&gt;\n   &lt;circle cx=&#39;103.28&#39; cy=&#39;170.89&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;deja vu&#39;/&gt;\n   &lt;circle cx=&#39;102.13&#39; cy=&#39;177.8&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Call Out My Name&#39;/&gt;\n   &lt;circle cx=&#39;257.56&#39; cy=&#39;112.69&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Betty (Get Money)&#39;/&gt;\n   &lt;circle cx=&#39;150.1&#39; cy=&#39;197.09&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;In The Stars&#39;/&gt;\n   &lt;circle cx=&#39;202.3&#39; cy=&#39;184.72&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Kesariya (From &amp;amp;quot;Brahmastra&amp;amp;quot;)&#39;/&gt;\n   &lt;circle cx=&#39;247.97&#39; cy=&#39;108.69&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Enemy (with JID) - from the series Arcane League of Legends&#39;/&gt;\n   &lt;circle cx=&#39;176.97&#39; cy=&#39;204.36&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Night Changes&#39;/&gt;\n   &lt;circle cx=&#39;109.04&#39; cy=&#39;199.27&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Don’t Blame Me&#39;/&gt;\n   &lt;circle cx=&#39;171.98&#39; cy=&#39;133.42&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Music For a Sushi Restaurant&#39;/&gt;\n   &lt;circle cx=&#39;240.29&#39; cy=&#39;104.32&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Everybody Wants To Rule The World&#39;/&gt;\n   &lt;circle cx=&#39;151.64&#39; cy=&#39;71.58&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Only Love Can Hurt Like This&#39;/&gt;\n   &lt;circle cx=&#39;221.48&#39; cy=&#39;179.99&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Starboy&#39;/&gt;\n   &lt;circle cx=&#39;379.99&#39; cy=&#39;138.88&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;MAMIII&#39;/&gt;\n   &lt;circle cx=&#39;204.6&#39; cy=&#39;114.87&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Pepas&#39;/&gt;\n   &lt;circle cx=&#39;213.04&#39; cy=&#39;115.96&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;The Motto&#39;/&gt;\n   &lt;circle cx=&#39;81.02&#39; cy=&#39;285.85&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;lovely (with Khalid)&#39;/&gt;\n   &lt;circle cx=&#39;194.24&#39; cy=&#39;197.09&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;abcdefu&#39;/&gt;\n   &lt;circle cx=&#39;290.57&#39; cy=&#39;109.78&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Believer&#39;/&gt;\n   &lt;circle cx=&#39;144.34&#39; cy=&#39;153.07&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Yellow&#39;/&gt;\n   &lt;circle cx=&#39;277.52&#39; cy=&#39;111.96&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Numb&#39;/&gt;\n   &lt;circle cx=&#39;104.43&#39; cy=&#39;225.82&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;STAYING ALIVE (feat. Drake &amp;amp;amp; Lil Baby)&#39;/&gt;\n   &lt;circle cx=&#39;80.64&#39; cy=&#39;307.67&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;TV&#39;/&gt;\n   &lt;circle cx=&#39;124&#39; cy=&#39;170.89&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Boyfriend&#39;/&gt;\n   &lt;circle cx=&#39;295.94&#39; cy=&#39;61.76&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Afraid To Feel&#39;/&gt;\n   &lt;circle cx=&#39;303.61&#39; cy=&#39;213.82&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bad Habit&#39;/&gt;\n   &lt;circle cx=&#39;218.41&#39; cy=&#39;115.6&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;STAY (with Justin Bieber)&#39;/&gt;\n   &lt;circle cx=&#39;251.8&#39; cy=&#39;237.46&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;cómo dormiste?&#39;/&gt;\n   &lt;circle cx=&#39;230.7&#39; cy=&#39;202.54&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Die For You&#39;/&gt;\n   &lt;circle cx=&#39;229.16&#39; cy=&#39;96.32&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;House of Memories&#39;/&gt;\n   &lt;circle cx=&#39;292.87&#39; cy=&#39;137.06&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Wait a Minute!&#39;/&gt;\n   &lt;circle cx=&#39;116.71&#39; cy=&#39;219.28&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Atlantis&#39;/&gt;\n   &lt;circle cx=&#39;176.97&#39; cy=&#39;186.9&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Softcore&#39;/&gt;\n   &lt;circle cx=&#39;87.54&#39; cy=&#39;188.35&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;The Hills&#39;/&gt;\n   &lt;circle cx=&#39;213.04&#39; cy=&#39;134.15&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Crazy What Love Can Do&#39;/&gt;\n   &lt;circle cx=&#39;186.94&#39; cy=&#39;125.78&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Envolver&#39;/&gt;\n   &lt;circle cx=&#39;378.07&#39; cy=&#39;137.42&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;INDUSTRY BABY (feat. Jack Harlow)&#39;/&gt;\n   &lt;circle cx=&#39;247.2&#39; cy=&#39;116.33&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Circles&#39;/&gt;\n   &lt;circle cx=&#39;213.04&#39; cy=&#39;140.34&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Peaches (feat. Daniel Caesar &amp;amp;amp; Giveon)&#39;/&gt;\n   &lt;circle cx=&#39;224.56&#39; cy=&#39;148.7&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Infinity&#39;/&gt;\n   &lt;circle cx=&#39;206.13&#39; cy=&#39;246.2&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Someone You Loved&#39;/&gt;\n   &lt;circle cx=&#39;261.01&#39; cy=&#39;102.5&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Beggin&amp;amp;#39;&#39;/&gt;\n   &lt;circle cx=&#39;138.59&#39; cy=&#39;238.92&#39; r=&#39;3.07pt&#39; fill=&#39;#0F7BA2&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#0F7BA2&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Heather&#39;/&gt;\n   &lt;circle cx=&#39;254.11&#39; cy=&#39;123.6&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Bones&#39;/&gt;\n   &lt;circle cx=&#39;367.71&#39; cy=&#39;139.61&#39; r=&#39;3.07pt&#39; fill=&#39;#DD5129&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#DD5129&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Locked out of Heaven&#39;/&gt;\n   &lt;circle cx=&#39;125.54&#39; cy=&#39;62.12&#39; r=&#39;3.07pt&#39; fill=&#39;#43B284&#39; fill-opacity=&#39;0.75&#39; stroke=&#39;#43B284&#39; stroke-opacity=&#39;0.75&#39; stroke-width=&#39;0.71&#39; stroke-linejoin=&#39;round&#39; stroke-linecap=&#39;round&#39; title=&#39;Mr. Brightside&#39;/&gt;\n  &lt;\/g&gt;\n  &lt;g clip-path=&#39;url(#svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c1)&#39;&gt;\n   &lt;text x=&#39;23.41&#39; y=&#39;251.99&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;40%&lt;\/text&gt;\n   &lt;text x=&#39;23.64&#39; y=&#39;179.24&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;60%&lt;\/text&gt;\n   &lt;text x=&#39;23.72&#39; y=&#39;106.48&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;80%&lt;\/text&gt;\n   &lt;text x=&#39;120.88&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;25%&lt;\/text&gt;\n   &lt;text x=&#39;216.73&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;50%&lt;\/text&gt;\n   &lt;text x=&#39;312.78&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;75%&lt;\/text&gt;\n   &lt;text x=&#39;406.08&#39; y=&#39;334.2&#39; font-size=&#39;8.4pt&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#4D4D4D&#39;&gt;100%&lt;\/text&gt;\n   &lt;text x=&#39;212.08&#39; y=&#39;350.04&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;valence&lt;\/text&gt;\n   &lt;text transform=&#39;translate(16.93,207.49) rotate(-90.00)&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;energy&lt;\/text&gt;\n   &lt;text x=&#39;6.97&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;Clustered&lt;\/text&gt;\n   &lt;text x=&#39;72.85&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;into&lt;\/text&gt;\n   &lt;text x=&#39;102.64&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#DD5129&#39;&gt;zesty&lt;\/text&gt;\n   &lt;text x=&#39;141.53&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#DD5129&#39;&gt;bops&lt;\/text&gt;\n   &lt;text x=&#39;174.96&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;,&lt;\/text&gt;\n   &lt;text x=&#39;181.19&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#43B284&#39;&gt;dark&lt;\/text&gt;\n   &lt;text x=&#39;214.64&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#43B284&#39;&gt;bangers&lt;\/text&gt;\n   &lt;text x=&#39;269.08&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;,&lt;\/text&gt;\n   &lt;text x=&#39;275.32&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-family=&#39;Roboto Slab&#39;&gt;and&lt;\/text&gt;\n   &lt;text x=&#39;304.04&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#0F7BA2&#39;&gt;mellow&lt;\/text&gt;\n   &lt;text x=&#39;355.37&#39; y=&#39;39.5&#39; font-size=&#39;10.5pt&#39; font-weight=&#39;bold&#39; font-family=&#39;Roboto Slab&#39; fill=&#39;#0F7BA2&#39;&gt;jams&lt;\/text&gt;\n   &lt;text x=&#39;6.97&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;New&lt;\/text&gt;\n   &lt;text x=&#39;47.85&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;songs,&lt;\/text&gt;\n   &lt;text x=&#39;101.82&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;same&lt;\/text&gt;\n   &lt;text x=&#39;148.56&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;old&lt;\/text&gt;\n   &lt;text x=&#39;177.3&#39; y=&#39;18.92&#39; font-size=&#39;12.6pt&#39; font-family=&#39;Roboto Slab&#39;&gt;clusters&lt;\/text&gt;\n  &lt;\/g&gt;\n &lt;\/g&gt;\n&lt;\/svg&gt;&#34;,&#34;js&#34;:null,&#34;uid&#34;:&#34;svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8&#34;,&#34;ratio&#34;:1.2,&#34;settings&#34;:{&#34;tooltip&#34;:{&#34;css&#34;:&#34;.tooltip_SVGID_ { color:white;padding:2px;border-radius:2px;font-family:Roboto Slab; ; position:absolute;pointer-events:none;z-index:999;}&#34;,&#34;placement&#34;:&#34;doc&#34;,&#34;offx&#34;:10,&#34;offy&#34;:0,&#34;use_cursor_pos&#34;:true,&#34;opacity&#34;:0.8,&#34;usefill&#34;:true,&#34;usestroke&#34;:false,&#34;delay&#34;:{&#34;over&#34;:200,&#34;out&#34;:500}},&#34;hover&#34;:{&#34;css&#34;:&#34;.hover_SVGID_ { fill:#1279BF;stroke:#1279BF;cursor:pointer; }&#34;,&#34;reactive&#34;:false},&#34;hoverkey&#34;:{&#34;css&#34;:&#34;.hover_key_SVGID_ { stroke:red; }&#34;,&#34;reactive&#34;:false},&#34;hovertheme&#34;:{&#34;css&#34;:&#34;.hover_theme_SVGID_ { fill:green; }&#34;,&#34;reactive&#34;:false},&#34;hoverinv&#34;:{&#34;css&#34;:&#34;&#34;},&#34;zoom&#34;:{&#34;min&#34;:1,&#34;max&#34;:1},&#34;capture&#34;:{&#34;css&#34;:&#34;.selected_SVGID_ { fill:red;stroke:gray; }&#34;,&#34;type&#34;:&#34;multiple&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;capturekey&#34;:{&#34;css&#34;:&#34;.selected_key_SVGID_ { stroke:gray; }&#34;,&#34;type&#34;:&#34;single&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;capturetheme&#34;:{&#34;css&#34;:&#34;.selected_theme_SVGID_ { stroke:gray; }&#34;,&#34;type&#34;:&#34;single&#34;,&#34;only_shiny&#34;:true,&#34;selected&#34;:[]},&#34;toolbar&#34;:{&#34;position&#34;:&#34;topright&#34;,&#34;saveaspng&#34;:true,&#34;pngname&#34;:&#34;diagram&#34;},&#34;sizing&#34;:{&#34;rescale&#34;:true,&#34;width&#34;:1}}},&#34;evals&#34;:[],&#34;jsHooks&#34;:[]}&lt;/script&gt;
+&lt;p&gt;Nice! It looks like the new songs are far more broad than the original playlist, but we can look at just the songs in the first cluster with the biggest vibe.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;new_songs_clustered %&amp;gt;%
+  filter(.pred_cluster == &amp;quot;Cluster_1&amp;quot;) %&amp;gt;%
+  arrange(desc(vibe)) %&amp;gt;%
+  slice_head(n = 10) %&amp;gt;%
+  knitr::kable()&lt;/code&gt;&lt;/pre&gt;
+&lt;table&gt;
+&lt;colgroup&gt;
+&lt;col width=&#34;52%&#34; /&gt;
+&lt;col width=&#34;10%&#34; /&gt;
+&lt;col width=&#34;9%&#34; /&gt;
+&lt;col width=&#34;19%&#34; /&gt;
+&lt;col width=&#34;8%&#34; /&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr class=&#34;header&#34;&gt;
+&lt;th align=&#34;left&#34;&gt;track_name&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;valence&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;energy&lt;/th&gt;
+&lt;th align=&#34;left&#34;&gt;.pred_cluster&lt;/th&gt;
+&lt;th align=&#34;right&#34;&gt;vibe&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Bad Decisions (with BTS &amp;amp; Snoop Dogg)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.955&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.861&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.816&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Cold Heart - PNAU Remix&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.942&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.798&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.740&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Shivers&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.822&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.859&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.681&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Woman&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.881&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.764&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.645&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Late Night Talking&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.901&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.728&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.629&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;I Ain’t Worried&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.825&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.797&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.622&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;MAMIII&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.899&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.700&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.599&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;INDUSTRY BABY (feat. Jack Harlow)&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.894&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.704&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.598&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;odd&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Afraid To Feel&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.680&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.912&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.592&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr class=&#34;even&#34;&gt;
+&lt;td align=&#34;left&#34;&gt;Locked out of Heaven&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.867&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;0.698&lt;/td&gt;
+&lt;td align=&#34;left&#34;&gt;Cluster_1&lt;/td&gt;
+&lt;td align=&#34;right&#34;&gt;1.565&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Now for the true vibe check — do these songs &lt;em&gt;belong&lt;/em&gt; on the playlist?&lt;/p&gt;
+
+
+
+&lt;iframe src=&#34;https://open.spotify.com/embed/track/0xzI1KAr0Yd9tv8jlIk3sn&#34;
+    width=&#34;100%&#34;
+    height=&#34;380&#34;
+    frameborder=&#34;0&#34;
+    allowtransparency=&#34;true&#34;
+    allow=&#34;encrypted-media&#34;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;Oh &lt;strong&gt;&lt;em&gt;hell&lt;/em&gt; yeah!&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;Some notes&lt;/strong&gt;: this analysis was done on Aug. 8th, 2022 — spotify’s featured playlists and tracks change on on a regular basis and may also depend on unique user data.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/div&gt;
+</description>
+    </item>
     
     <item>
       <title>Introducing {nplyr}</title>

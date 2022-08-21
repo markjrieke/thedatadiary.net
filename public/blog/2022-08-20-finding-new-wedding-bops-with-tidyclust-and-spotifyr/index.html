@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Source Themes Academia 4.3.1">
+  <meta name="generator" content="Hugo 0.88.1" />
+
+  
+
+  
+  
+  
+  
+  
+    
+    
+    
+  
+  
+
+  <meta name="author" content="Mark Rieke">
+
+  
+  
+  
+    
+  
+  <meta name="description" content="Last November, I (finally) popped the big question and proposed! Since then, my fiance and I have been diligently planning our wedding. While we have most of the big-ticket items checked off (venue, catering, photography, etc.">
+
+  
+  <link rel="alternate" hreflang="en-us" href="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/">
+
+  
+
+
+  
+
+  
+  
+  
+  <meta name="theme-color" content="#fc6f5c">
+  
+
+  
+  
+  
+  
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.8.6/css/academicons.min.css" integrity="sha256-uFVgMKfistnJAfoCUQigIl+JfUaP47GrRKjf6CTPVmw=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.0/css/all.css" integrity="sha384-aOkxzJ5uQz7WBObEZcHvV5JvRW3TUc2rNPA7pe3AwnsUohiw1Vj2Rgx2KSOkF5+h" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.css" integrity="sha256-ygkqlh3CYSUri3LhQxzdcm0n1EQvH2Y+U5S2idbLtxs=" crossorigin="anonymous">
+
+    
+    
+    
+      
+    
+    
+      
+      
+        
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/github.min.css" crossorigin="anonymous" title="hl-light">
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/styles/dracula.min.css" crossorigin="anonymous" title="hl-dark" disabled>
+        
+      
+    
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css" integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ==" crossorigin="anonymous">
+    
+
+    
+
+  
+
+  
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Open+Sans|Roboto+Mono&display=swap">
+  
+
+  
+  
+  
+  <link rel="stylesheet" href="/css/academia.min.84fde4bbd64cc9b4e40ee4ad0a0d9576.css">
+
+  
+
+  
+  
+  
+    <script>
+      window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+      ga('create', 'G-QM3KW2TS7Q', 'auto');
+      
+      ga('require', 'eventTracker');
+      ga('require', 'outboundLinkTracker');
+      ga('require', 'urlChangeTracker');
+      ga('send', 'pageview');
+    </script>
+    <script async src="//www.google-analytics.com/analytics.js"></script>
+    
+    <script async src="https://cdnjs.cloudflare.com/ajax/libs/autotrack/2.4.1/autotrack.js" integrity="sha512-HUmooslVKj4m6OBu0OgzjXXr+QuFYy/k7eLI5jdeEy/F4RSgMn6XRWRGkFi5IFaFgy7uFTkegp3Z0XnJf3Jq+g==" crossorigin="anonymous"></script>
+    
+  
+  
+
+  
+
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" type="image/png" href="/img/icon.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/icon-192.png">
+
+  <link rel="canonical" href="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/">
+
+  
+  
+  
+  
+    
+  
+  <meta property="twitter:card" content="summary_large_image">
+  
+  <meta property="twitter:site" content="@markjrieke">
+  <meta property="twitter:creator" content="@markjrieke">
+  
+  <meta property="og:site_name" content="the data diary">
+  <meta property="og:url" content="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/">
+  <meta property="og:title" content="Finding new wedding bops with {tidyclust} and {spotifyr} | the data diary">
+  <meta property="og:description" content="Last November, I (finally) popped the big question and proposed! Since then, my fiance and I have been diligently planning our wedding. While we have most of the big-ticket items checked off (venue, catering, photography, etc."><meta property="og:image" content="https://www.thedatadiary.net/img/background.png">
+  <meta property="twitter:image" content="https://www.thedatadiary.net/img/background.png"><meta property="og:locale" content="en-us">
+  
+  <meta property="article:published_time" content="2022-08-20T00:00:00&#43;00:00">
+  
+  <meta property="article:modified_time" content="2022-08-20T16:20:44-05:00">
+  
+
+  
+
+
+  
+
+
+
+
+
+  <title>Finding new wedding bops with {tidyclust} and {spotifyr} | the data diary</title>
+
+</head>
+
+
+<body id="top" data-spy="scroll" data-target="#TableOfContents" data-offset="71" >
+
+  <aside class="search-results" id="search">
+  <div class="container">
+    <section class="search-header">
+
+      <div class="row no-gutters justify-content-between mb-3">
+        <div class="col-6">
+          <h1>Search</h1>
+        </div>
+        <div class="col-6 col-search-close">
+          <a class="js-search" href="#"><i class="fas fa-times-circle text-muted" aria-hidden="true"></i></a>
+        </div>
+      </div>
+
+      <div id="search-box">
+        
+        
+        
+      </div>
+
+    </section>
+    <section class="section-search-results">
+
+      <div id="search-hits">
+        
+      </div>
+
+    </section>
+  </div>
+</aside>
+
+
+  
+<nav class="navbar navbar-light fixed-top navbar-expand-lg py-0" id="navbar-main">
+  <div class="container">
+
+    
+      <a class="navbar-brand" href="/">the data diary</a>
+      
+      <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation"><span><i class="fas fa-bars"></i></span>
+      </button>
+      
+
+    
+    <div class="collapse navbar-collapse" id="navbar">
+      
+      
+      <ul class="navbar-nav ml-auto">
+        
+
+        
+
+        
+        
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link  active" href="/blog"><span>Blog</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/about"><span>About</span></a>
+        </li>
+
+        
+        
+
+        
+
+        
+        
+        
+          
+        
+
+        
+        
+        
+        
+        
+        
+
+        <li class="nav-item">
+          <a class="nav-link " href="/resume"><span>Resume</span></a>
+        </li>
+
+        
+        
+
+      
+
+        
+
+        
+
+        
+
+        
+        <li class="nav-item">
+          <a class="nav-link js-dark-toggle" href="#"><i class="fas fa-moon" aria-hidden="true"></i></a>
+        </li>
+        
+
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+  <article class="article py-5" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    
+    
+    
+    <div class="article-container py-3">
+      <h1 itemprop="name">Finding new wedding bops with {tidyclust} and {spotifyr}</h1>
+
+      
+
+      
+      
+
+
+
+<meta content="2022-08-20 00:00:00 &#43;0000 UTC" itemprop="datePublished">
+<meta content="2022-08-20 16:20:44 -0500 CDT" itemprop="dateModified">
+
+<div class="article-metadata">
+
+  
+  
+
+  
+  <span class="article-date">
+    
+    
+      
+          Last updated on
+      
+    
+    <time>Aug 20, 2022</time>
+  </span>
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+  <span class="middot-divider"></span>
+  <span class="article-categories">
+    <i class="fas fa-folder"></i>
+    <a href="/categories/rstats/">rstats</a>, <a href="/categories/tidymodels/">tidymodels</a></span>
+  
+
+  
+    
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://twitter.com/intent/tweet?url=https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/&amp;text=Finding%20new%20wedding%20bops%20with%20%7btidyclust%7d%20and%20%7bspotifyr%7d" target="_blank" rel="noopener" class="share-btn-twitter">
+          <i class="fab fa-twitter"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.facebook.com/sharer.php?u=https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/&amp;t=Finding%20new%20wedding%20bops%20with%20%7btidyclust%7d%20and%20%7bspotifyr%7d" target="_blank" rel="noopener" class="share-btn-facebook">
+          <i class="fab fa-facebook-f"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="mailto:?subject=Finding%20new%20wedding%20bops%20with%20%7btidyclust%7d%20and%20%7bspotifyr%7d&amp;body=https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/" target="_blank" rel="noopener" class="share-btn-email">
+          <i class="fas fa-envelope"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://www.linkedin.com/shareArticle?url=https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/&amp;title=Finding%20new%20wedding%20bops%20with%20%7btidyclust%7d%20and%20%7bspotifyr%7d" target="_blank" rel="noopener" class="share-btn-linkedin">
+          <i class="fab fa-linkedin-in"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://web.whatsapp.com/send?text=Finding%20new%20wedding%20bops%20with%20%7btidyclust%7d%20and%20%7bspotifyr%7d%20https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/" target="_blank" rel="noopener" class="share-btn-whatsapp">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+      </li>
+    
+      
+      
+      
+        
+      
+      
+      
+      <li>
+        <a href="https://service.weibo.com/share/share.php?url=https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/&amp;title=Finding%20new%20wedding%20bops%20with%20%7btidyclust%7d%20and%20%7bspotifyr%7d" target="_blank" rel="noopener" class="share-btn-weibo">
+          <i class="fab fa-weibo"></i>
+        </a>
+      </li>
+    
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+      
+    </div>
+  </div>
+</div>
+
+  <div class="article-container">
+
+    <div class="article-style" itemprop="articleBody">
+      
+<script src="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/htmlwidgets/htmlwidgets.js"></script>
+<script src="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/d3-bundle/d3-bundle.min.js"></script>
+<script src="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/d3-lasso/d3-lasso.min.js"></script>
+<script src="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/save-svg-as-png/save-svg-as-png.min.js"></script>
+<link href="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/ggiraphjs/ggiraphjs.min.css" rel="stylesheet" />
+<script src="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/ggiraphjs/ggiraphjs.min.js"></script>
+<script src="https://www.thedatadiary.net/blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index_files/girafe-binding/girafe.js"></script>
+
+
+<p>Last November, I (finally) popped the big question and <a href="https://www.instagram.com/p/Cc6ReimO2tH/?igshid=YmMyMTA2M2Y=">proposed</a>! Since then, my fiance and I have been diligently planning our wedding. While we have most of the big-ticket items checked off (venue, catering, photography, etc.), one area we still have more work to do is on the wedding playlist. We’ve <a href="https://open.spotify.com/playlist/66saUDfW5ggYD6JDAHbxyV">started putting together a playlist on spotify</a>, but it feels like it’s come to a bit of a stand-still. Currently, there’s a mix of zesty bops and tame songs on the playlist (we need to accommodate both our college friends and our grandparents!), but spotify’s track recommender only wants to suggest tamer songs right now. Our goal is to have a full dance floor the entire night — to achieve this, we can use <a href="https://www.rcharlie.com/spotifyr/index.html">spotifyr</a> and the new <a href="https://emilhvitfeldt.github.io/tidyclust/index.html">tidyclust</a> package to pull in the current playlist, cluster the songs based on their features, and find new songs based on the bop cluster.</p>
+<pre class="r"><code>library(tidymodels)
+library(tidyclust)
+library(spotifyr)</code></pre>
+<p>If you’d like to follow along, I’d recommend installing the development versions of <a href="https://github.com/tidymodels/parsnip">parsnip</a> and <a href="https://github.com/tidymodels/workflows">workflows</a>, as some of the functionality that interacts with tidyclust <a href="https://emilhvitfeldt.github.io/tidyclust/articles/k_means.html#setup">isn’t yet on CRAN</a>.</p>
+<div id="pulling-in-the-playlist" class="section level2">
+<h2>Pulling in the playlist</h2>
+<p><a href="https://www.rcharlie.com/spotifyr/index.html">spotifyr</a> is an R interface to spotify’s web API and gives access to a host of track features (you can follow <a href="https://msmith7161.github.io/what-is-speechiness/">this tutorial</a> to get it setup). I’ll use the functions <code>get_user_playlists()</code> and <code>get_playlist_tracks()</code> to pull in songs that are currently on our wedding playlist (appropriately named “Ding dong”).</p>
+<pre class="r"><code># get the songs that are currently on the wedding playlist
+ding_dong &lt;- 
+  get_user_playlists(&quot;12130039175&quot;) %&gt;%
+  filter(name == &quot;Ding dong&quot;) %&gt;%
+  pull(id) %&gt;%
+  get_playlist_tracks() %&gt;% 
+  as_tibble() %&gt;%
+  select(track.id, track.name, track.popularity) %&gt;%
+  rename_with(~stringr::str_replace(.x, &quot;\\.&quot;, &quot;_&quot;))</code></pre>
+<table>
+<colgroup>
+<col width="31%" />
+<col width="45%" />
+<col width="23%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">track_id</th>
+<th align="left">track_name</th>
+<th align="right">track_popularity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">5jkFvD4UJrmdoezzT1FRoP</td>
+<td align="left">Rasputin</td>
+<td align="right">65</td>
+</tr>
+<tr class="even">
+<td align="left">1D066zixBwqFYqBhKgdPzp</td>
+<td align="left">Fergalicious</td>
+<td align="right">71</td>
+</tr>
+<tr class="odd">
+<td align="left">12jjuxN1gxlm29cqL5M6MW</td>
+<td align="left">I Got You</td>
+<td align="right">65</td>
+</tr>
+<tr class="even">
+<td align="left">2grjqo0Frpf2okIBiifQKs</td>
+<td align="left">September</td>
+<td align="right">81</td>
+</tr>
+<tr class="odd">
+<td align="left">2RlgNHKcydI9sayD2Df2xp</td>
+<td align="left">Mr. Blue Sky</td>
+<td align="right">80</td>
+</tr>
+<tr class="even">
+<td align="left">6x4tKaOzfNJpEJHySoiJcs</td>
+<td align="left">Mambo No. 5 (a Little Bit of…)</td>
+<td align="right">77</td>
+</tr>
+<tr class="odd">
+<td align="left">3n3Ppam7vgaVa1iaRUc9Lp</td>
+<td align="left">Mr. Brightside</td>
+<td align="right">66</td>
+</tr>
+<tr class="even">
+<td align="left">7Cp69rNBwU0gaFT8zxExlE</td>
+<td align="left">Ymca</td>
+<td align="right">50</td>
+</tr>
+<tr class="odd">
+<td align="left">3Gf5nttwcX9aaSQXRWidEZ</td>
+<td align="left">Ride Wit Me</td>
+<td align="right">76</td>
+</tr>
+<tr class="even">
+<td align="left">3wMUvT6eIw2L5cZFG1yH9j</td>
+<td align="left">Country Grammar (Hot Shit)</td>
+<td align="right">70</td>
+</tr>
+</tbody>
+</table>
+<p>Spotify estimates quite a few <a href="https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features">features</a> for each song in their catalog: speechiness (the presence of words on a track), acousticness (whether or not a song includes acoustic instruments), liveness (estimates whether or not the track is live or studio-recorded), etc. We can use <code>get_track_audio_features()</code> to get the features for each song based on its <code>track_id</code>.</p>
+<pre class="r"><code># pull in track features of songs on the playlist
+track_features &lt;- 
+  ding_dong %&gt;%
+  pull(track_id) %&gt;%
+  get_track_audio_features()
+
+# join together
+ding_dong &lt;- 
+  ding_dong %&gt;%
+  left_join(track_features, by = c(&quot;track_id&quot; = &quot;id&quot;))</code></pre>
+<p>In my case, I’m interested in the energy and valence (positivity) of each song, so I’ll select these variables to use in the cluster analysis.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">track_name</th>
+<th align="right">valence</th>
+<th align="right">energy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Rasputin</td>
+<td align="right">0.966</td>
+<td align="right">0.893</td>
+</tr>
+<tr class="even">
+<td align="left">Fergalicious</td>
+<td align="right">0.829</td>
+<td align="right">0.583</td>
+</tr>
+<tr class="odd">
+<td align="left">I Got You</td>
+<td align="right">0.544</td>
+<td align="right">0.399</td>
+</tr>
+<tr class="even">
+<td align="left">September</td>
+<td align="right">0.979</td>
+<td align="right">0.832</td>
+</tr>
+<tr class="odd">
+<td align="left">Mr. Blue Sky</td>
+<td align="right">0.478</td>
+<td align="right">0.338</td>
+</tr>
+<tr class="even">
+<td align="left">Mambo No. 5 (a Little Bit of…)</td>
+<td align="right">0.892</td>
+<td align="right">0.807</td>
+</tr>
+<tr class="odd">
+<td align="left">Mr. Brightside</td>
+<td align="right">0.240</td>
+<td align="right">0.918</td>
+</tr>
+<tr class="even">
+<td align="left">Ymca</td>
+<td align="right">0.671</td>
+<td align="right">0.951</td>
+</tr>
+<tr class="odd">
+<td align="left">Ride Wit Me</td>
+<td align="right">0.722</td>
+<td align="right">0.700</td>
+</tr>
+<tr class="even">
+<td align="left">Country Grammar (Hot Shit)</td>
+<td align="right">0.565</td>
+<td align="right">0.664</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="clustering-with-tidyclust" class="section level2">
+<h2>Clustering with <code>tidyclust</code></h2>
+<p>Currently, the playlist covers a wide spectrum of of songs. For new songs on the playlist, I’m really just interested in songs similar to others in the top right corner of the below chart with high energy and valence.</p>
+<div id="htmlwidget-1" style="width:4500px;height:3000px;" class="girafe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"html":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd' viewBox='0 0 432 360'>\n <defs>\n  <clipPath id='svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c1'>\n   <rect x='0' y='0' width='432' height='360'/>\n  <\/clipPath>\n  <clipPath id='svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c2'>\n   <rect x='55.03' y='49.4' width='370' height='270.57'/>\n  <\/clipPath>\n <\/defs>\n <g>\n  <g clip-path='url(#svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c1)'>\n   <rect x='0' y='0' width='432' height='360' fill='#FFFFFF' stroke='#FFFFFF' stroke-width='0.75' stroke-linejoin='round' stroke-linecap='round'/>\n   <rect x='0' y='0' width='432' height='360' fill='#FFFFFF' stroke='#FFFFFF' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c2)'>\n   <polyline points='55.03,245.02 425.03,245.02' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,167.67 425.03,167.67' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,90.32 425.03,90.32' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='155.20,319.97 155.20,49.40' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='259.92,319.97 259.92,49.40' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='364.64,319.97 364.64,49.40' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,283.69 425.03,283.69' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,206.34 425.03,206.34' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,128.99 425.03,128.99' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,51.64 425.03,51.64' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='102.84,319.97 102.84,49.40' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='207.56,319.97 207.56,49.40' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='312.28,319.97 312.28,49.40' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='417.00,319.97 417.00,49.40' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <circle cx='402.76' cy='93.02' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Rasputin'/>\n   <circle cx='345.38' cy='212.92' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Fergalicious'/>\n   <circle cx='225.99' cy='284.08' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='I Got You'/>\n   <circle cx='408.21' cy='116.62' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='September'/>\n   <circle cx='198.35' cy='307.67' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Mr. Blue Sky'/>\n   <circle cx='371.77' cy='126.28' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Mambo No. 5 (a Little Bit of...)'/>\n   <circle cx='98.65' cy='83.35' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Mr. Brightside'/>\n   <circle cx='279.19' cy='70.59' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Ymca'/>\n   <circle cx='300.56' cy='167.67' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Ride Wit Me'/>\n   <circle cx='234.79' cy='181.59' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Country Grammar (Hot Shit)'/>\n   <circle cx='172.38' cy='103.47' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Shout, Pts. 1 &amp;amp; 2'/>\n   <circle cx='125.46' cy='202.86' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Low (feat. T-Pain)'/>\n   <circle cx='325.27' cy='183.91' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Come On Eileen'/>\n   <circle cx='259.92' cy='178.5' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Gold Digger'/>\n   <circle cx='330.71' cy='76.01' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Fireball (feat. John Ryan)'/>\n   <circle cx='312.7' cy='134.41' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Bang Bang'/>\n   <circle cx='352.92' cy='81.81' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Can&amp;#39;t Hold Us (feat. Ray Dalton)'/>\n   <circle cx='249.87' cy='103.85' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Don&amp;#39;t Stop Me Now - Remastered 2011'/>\n   <circle cx='365.06' cy='89.54' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Take on Me'/>\n   <circle cx='350.82' cy='143.69' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Uncertain Smile'/>\n   <circle cx='205.47' cy='61.7' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Everytime We Touch'/>\n   <circle cx='400.67' cy='146.78' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='It&amp;#39;s Tricky'/>\n   <circle cx='272.49' cy='211.76' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Brass Monkey'/>\n   <circle cx='263.69' cy='282.53' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Wagon Wheel'/>\n   <circle cx='270.81' cy='148.72' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Love On Top'/>\n   <circle cx='391.87' cy='158.77' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='I Think We&amp;#39;re Alone Now'/>\n   <circle cx='361.29' cy='119.71' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='I Wanna Dance with Somebody (Who Loves Me)'/>\n   <circle cx='386.84' cy='202.86' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Uptown Funk (feat. Bruno Mars)'/>\n   <circle cx='112.06' cy='212.53' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Single Ladies (Put a Ring on It)'/>\n   <circle cx='392.71' cy='128.99' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Shake It Off'/>\n   <circle cx='340.77' cy='163.8' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Jump Around'/>\n   <circle cx='315.63' cy='119.71' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Hips Don&amp;#39;t Lie (feat. Wyclef Jean)'/>\n   <circle cx='241.91' cy='142.91' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Body (feat. Brando)'/>\n   <circle cx='285.89' cy='115.84' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Jackie Chan'/>\n   <circle cx='151.85' cy='214.85' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Wake Up in the Sky'/>\n   <circle cx='187.46' cy='228' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Summer, Highland Falls - Live at the Bayou, Washington, D.C. - July 1980'/>\n   <circle cx='297.2' cy='108.11' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Magic Dance'/>\n   <circle cx='315.22' cy='95.73' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Dancing with Myself - 2001 Remaster'/>\n   <circle cx='271.65' cy='71.37' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Waterloo'/>\n   <circle cx='231.02' cy='90.7' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Potential Breakup Song'/>\n   <circle cx='381.4' cy='119.32' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Levitating (feat. DaBaby)'/>\n   <circle cx='184.52' cy='121.64' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Forever'/>\n   <circle cx='344.54' cy='135.95' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='White Walls (feat. ScHoolboy Q &amp;amp; Hollis)'/>\n   <circle cx='253.22' cy='85.68' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Rose Tattoo'/>\n   <circle cx='197.09' cy='85.68' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Kiss Me I&amp;#39;m #!@&amp;#39;faced'/>\n   <circle cx='162.32' cy='137.89' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='All Night (feat. Knox Fortune)'/>\n   <circle cx='282.54' cy='131.7' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Don&amp;#39;t Start Now'/>\n   <circle cx='380.56' cy='106.56' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='The Legend of Chavo Guerrero'/>\n   <circle cx='398.57' cy='168.83' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Bam Bam (feat. Ed Sheeran)'/>\n   <circle cx='228.51' cy='142.14' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='The Spins'/>\n   <circle cx='167.77' cy='188.16' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Hung Up'/>\n   <circle cx='355.43' cy='95.34' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='BREAK MY SOUL'/>\n   <circle cx='270.81' cy='190.1' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Post Malone (feat. RANI)'/>\n   <circle cx='218.87' cy='181.98' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Take Me Out'/>\n   <circle cx='200.86' cy='90.32' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Sk8er Boi'/>\n   <circle cx='328.2' cy='65.95' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Timber (feat. Ke$ha)'/>\n   <circle cx='301.39' cy='128.22' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Time of Our Lives'/>\n   <circle cx='192.48' cy='94.57' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Levels - Radio Edit'/>\n   <circle cx='285.89' cy='157.61' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Body On My'/>\n   <circle cx='402.34' cy='61.7' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Hey Ya!'/>\n   <circle cx='297.2' cy='114.68' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='TiK ToK'/>\n   <circle cx='401.92' cy='212.92' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='SexyBack (feat. Timbaland)'/>\n   <circle cx='315.63' cy='86.84' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Nice For What'/>\n   <circle cx='341.19' cy='130.93' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Up'/>\n   <circle cx='71.84' cy='136.34' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Clarity'/>\n   <circle cx='286.31' cy='181.59' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='good 4 u'/>\n   <circle cx='373.44' cy='147.17' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Cake By The Ocean'/>\n   <circle cx='124.21' cy='134.02' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Titanium (feat. Sia)'/>\n   <circle cx='229.34' cy='99.6' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Where Them Girls At (feat. Nicki Minaj &amp;amp; Flo Rida)'/>\n   <circle cx='330.3' cy='155.68' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='I Know You Want Me (Calle Ocho)'/>\n   <circle cx='196.25' cy='102.31' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Club Can&amp;#39;t Handle Me (feat. David Guetta)'/>\n   <circle cx='343.28' cy='88' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='I Love It (feat. Charli XCX)'/>\n   <circle cx='390.61' cy='170.76' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Treasure'/>\n   <circle cx='357.52' cy='70.98' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='She Bangs - English Version'/>\n   <circle cx='327.78' cy='77.94' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Magic (feat. Rivers Cuomo)'/>\n   <circle cx='385.17' cy='114.29' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Toxic'/>\n   <circle cx='220.13' cy='75.23' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Give Me Everything (feat. Ne-Yo, Afrojack &amp;amp; Nayer)'/>\n   <circle cx='342.44' cy='206.34' r='3.07pt' fill='#000000' fill-opacity='0.5' stroke='#000000' stroke-opacity='0.5' title='Temperature'/>\n  <\/g>\n  <g clip-path='url(#svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd_c1)'>\n   <text x='27.91' y='287.67' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>40%<\/text>\n   <text x='28.14' y='210.32' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>60%<\/text>\n   <text x='28.22' y='132.97' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>80%<\/text>\n   <text x='23.41' y='55.62' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>100%<\/text>\n   <text x='92.81' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>25%<\/text>\n   <text x='197.43' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>50%<\/text>\n   <text x='302.26' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>75%<\/text>\n   <text x='404.33' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>100%<\/text>\n   <text x='214.33' y='350.04' font-size='10.5pt' font-family='Roboto Slab'>valence<\/text>\n   <text transform='translate(16.93,207.45) rotate(-90.00)' font-size='10.5pt' font-family='Roboto Slab'>energy<\/text>\n   <text x='6.97' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>Hover<\/text>\n   <text x='50.24' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>over<\/text>\n   <text x='82.72' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>each<\/text>\n   <text x='117.45' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>point<\/text>\n   <text x='155.42' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>to<\/text>\n   <text x='171.57' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>see<\/text>\n   <text x='196.5' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>the<\/text>\n   <text x='221.19' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>song's<\/text>\n   <text x='266.55' y='39.44' font-size='10.5pt' font-family='Roboto Slab'>name!<\/text>\n   <text x='6.97' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>The<\/text>\n   <text x='42.15' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>current<\/text>\n   <text x='104.99' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>wedding<\/text>\n   <text x='178.64' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>playlist<\/text>\n  <\/g>\n <\/g>\n<\/svg>","js":null,"uid":"svg_0c0f112f-51ff-4c6d-a75a-6f0602a30fcd","ratio":1.2,"settings":{"tooltip":{"css":".tooltip_SVGID_ { background-color:gray;color:white;padding:2px;border-radius:2px;font-family:Roboto Slab; ; position:absolute;pointer-events:none;z-index:999;}","placement":"doc","offx":10,"offy":0,"use_cursor_pos":true,"opacity":0.8,"usefill":false,"usestroke":false,"delay":{"over":200,"out":500}},"hover":{"css":".hover_SVGID_ { fill:#1279BF;stroke:#1279BF;cursor:pointer; }","reactive":false},"hoverkey":{"css":".hover_key_SVGID_ { stroke:red; }","reactive":false},"hovertheme":{"css":".hover_theme_SVGID_ { fill:green; }","reactive":false},"hoverinv":{"css":""},"zoom":{"min":1,"max":1},"capture":{"css":".selected_SVGID_ { fill:red;stroke:gray; }","type":"multiple","only_shiny":true,"selected":[]},"capturekey":{"css":".selected_key_SVGID_ { stroke:gray; }","type":"single","only_shiny":true,"selected":[]},"capturetheme":{"css":".selected_theme_SVGID_ { stroke:gray; }","type":"single","only_shiny":true,"selected":[]},"toolbar":{"position":"topright","saveaspng":true,"pngname":"diagram"},"sizing":{"rescale":true,"width":1}}},"evals":[],"jsHooks":[]}</script>
+<p>Broadly, there are three generic categories that the songs on the current playlist fall into: high energy and valence, low energy, or low valence (songs with low energy and valence will fall into one of the “low” categories). Rather than manually assign categories, we can use tidyclust to cluster the songs into three groups using the <a href="https://en.wikipedia.org/wiki/K-means_clustering">kmeans</a> algorithm.</p>
+<p>There’s some <a href="https://emilhvitfeldt.github.io/tidyclust/articles/k_means.html">great documentation on the package site</a>, but to get started, we’ll categorize the songs on the current playlist by “fitting” a kmeans model (using the <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html">stats</a> engine under the hood).</p>
+<pre class="r"><code># create a clustering obj
+set.seed(918)
+ding_dong_clusters &lt;- 
+  k_means(num_clusters = 3) %&gt;%
+  fit(~ valence + energy,
+      data = ding_dong) </code></pre>
+<div id="htmlwidget-2" style="width:4500px;height:3000px;" class="girafe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"html":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6' viewBox='0 0 432 360'>\n <defs>\n  <clipPath id='svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c1'>\n   <rect x='0' y='0' width='432' height='360'/>\n  <\/clipPath>\n  <clipPath id='svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c2'>\n   <rect x='55.03' y='49.46' width='370' height='270.51'/>\n  <\/clipPath>\n <\/defs>\n <g>\n  <g clip-path='url(#svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c1)'>\n   <rect x='0' y='0' width='432' height='360' fill='#FFFFFF' stroke='#FFFFFF' stroke-width='0.75' stroke-linejoin='round' stroke-linecap='round'/>\n   <rect x='0' y='0' width='432' height='360' fill='#FFFFFF' stroke='#FFFFFF' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c2)'>\n   <polyline points='55.03,245.04 425.03,245.04' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,167.70 425.03,167.70' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,90.37 425.03,90.37' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='155.20,319.97 155.20,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='259.92,319.97 259.92,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='364.64,319.97 364.64,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,283.70 425.03,283.70' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,206.37 425.03,206.37' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,129.04 425.03,129.04' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='55.03,51.70 425.03,51.70' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='102.84,319.97 102.84,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='207.56,319.97 207.56,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='312.28,319.97 312.28,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='417.00,319.97 417.00,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <circle cx='402.76' cy='93.08' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Rasputin'/>\n   <circle cx='345.38' cy='212.94' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Fergalicious'/>\n   <circle cx='225.99' cy='284.09' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Got You'/>\n   <circle cx='408.21' cy='116.66' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='September'/>\n   <circle cx='198.35' cy='307.67' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Mr. Blue Sky'/>\n   <circle cx='371.77' cy='126.33' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Mambo No. 5 (a Little Bit of...)'/>\n   <circle cx='98.65' cy='83.41' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Mr. Brightside'/>\n   <circle cx='279.19' cy='70.65' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Ymca'/>\n   <circle cx='300.56' cy='167.7' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Ride Wit Me'/>\n   <circle cx='234.79' cy='181.62' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Country Grammar (Hot Shit)'/>\n   <circle cx='172.38' cy='103.52' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Shout, Pts. 1 &amp;amp; 2'/>\n   <circle cx='125.46' cy='202.89' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Low (feat. T-Pain)'/>\n   <circle cx='325.27' cy='183.94' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Come On Eileen'/>\n   <circle cx='259.92' cy='178.53' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Gold Digger'/>\n   <circle cx='330.71' cy='76.06' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Fireball (feat. John Ryan)'/>\n   <circle cx='312.7' cy='134.45' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bang Bang'/>\n   <circle cx='352.92' cy='81.86' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Can&amp;#39;t Hold Us (feat. Ray Dalton)'/>\n   <circle cx='249.87' cy='103.9' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Don&amp;#39;t Stop Me Now - Remastered 2011'/>\n   <circle cx='365.06' cy='89.6' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Take on Me'/>\n   <circle cx='350.82' cy='143.73' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Uncertain Smile'/>\n   <circle cx='205.47' cy='61.76' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Everytime We Touch'/>\n   <circle cx='400.67' cy='146.82' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='It&amp;#39;s Tricky'/>\n   <circle cx='272.49' cy='211.78' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Brass Monkey'/>\n   <circle cx='263.69' cy='282.54' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Wagon Wheel'/>\n   <circle cx='270.81' cy='148.76' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Love On Top'/>\n   <circle cx='391.87' cy='158.81' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Think We&amp;#39;re Alone Now'/>\n   <circle cx='361.29' cy='119.76' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Wanna Dance with Somebody (Who Loves Me)'/>\n   <circle cx='386.84' cy='202.89' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Uptown Funk (feat. Bruno Mars)'/>\n   <circle cx='112.06' cy='212.56' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Single Ladies (Put a Ring on It)'/>\n   <circle cx='392.71' cy='129.04' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Shake It Off'/>\n   <circle cx='340.77' cy='163.84' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Jump Around'/>\n   <circle cx='315.63' cy='119.76' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Hips Don&amp;#39;t Lie (feat. Wyclef Jean)'/>\n   <circle cx='241.91' cy='142.96' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Body (feat. Brando)'/>\n   <circle cx='285.89' cy='115.89' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Jackie Chan'/>\n   <circle cx='151.85' cy='214.88' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Wake Up in the Sky'/>\n   <circle cx='187.46' cy='228.02' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Summer, Highland Falls - Live at the Bayou, Washington, D.C. - July 1980'/>\n   <circle cx='297.2' cy='108.16' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Magic Dance'/>\n   <circle cx='315.22' cy='95.78' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Dancing with Myself - 2001 Remaster'/>\n   <circle cx='271.65' cy='71.42' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Waterloo'/>\n   <circle cx='231.02' cy='90.76' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Potential Breakup Song'/>\n   <circle cx='381.4' cy='119.37' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Levitating (feat. DaBaby)'/>\n   <circle cx='184.52' cy='121.69' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Forever'/>\n   <circle cx='344.54' cy='136' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='White Walls (feat. ScHoolboy Q &amp;amp; Hollis)'/>\n   <circle cx='253.22' cy='85.73' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Rose Tattoo'/>\n   <circle cx='197.09' cy='85.73' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Kiss Me I&amp;#39;m #!@&amp;#39;faced'/>\n   <circle cx='162.32' cy='137.93' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='All Night (feat. Knox Fortune)'/>\n   <circle cx='282.54' cy='131.74' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Don&amp;#39;t Start Now'/>\n   <circle cx='380.56' cy='106.61' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='The Legend of Chavo Guerrero'/>\n   <circle cx='398.57' cy='168.86' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bam Bam (feat. Ed Sheeran)'/>\n   <circle cx='228.51' cy='142.18' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='The Spins'/>\n   <circle cx='167.77' cy='188.2' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Hung Up'/>\n   <circle cx='355.43' cy='95.4' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='BREAK MY SOUL'/>\n   <circle cx='270.81' cy='190.13' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Post Malone (feat. RANI)'/>\n   <circle cx='218.87' cy='182.01' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Take Me Out'/>\n   <circle cx='200.86' cy='90.37' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Sk8er Boi'/>\n   <circle cx='328.2' cy='66.01' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Timber (feat. Ke$ha)'/>\n   <circle cx='301.39' cy='128.26' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Time of Our Lives'/>\n   <circle cx='192.48' cy='94.62' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Levels - Radio Edit'/>\n   <circle cx='285.89' cy='157.65' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Body On My'/>\n   <circle cx='402.34' cy='61.76' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Hey Ya!'/>\n   <circle cx='297.2' cy='114.73' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='TiK ToK'/>\n   <circle cx='401.92' cy='212.94' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='SexyBack (feat. Timbaland)'/>\n   <circle cx='315.63' cy='86.89' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Nice For What'/>\n   <circle cx='341.19' cy='130.97' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Up'/>\n   <circle cx='71.84' cy='136.38' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Clarity'/>\n   <circle cx='286.31' cy='181.62' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='good 4 u'/>\n   <circle cx='373.44' cy='147.21' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Cake By The Ocean'/>\n   <circle cx='124.21' cy='134.06' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Titanium (feat. Sia)'/>\n   <circle cx='229.34' cy='99.65' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Where Them Girls At (feat. Nicki Minaj &amp;amp; Flo Rida)'/>\n   <circle cx='330.3' cy='155.72' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Know You Want Me (Calle Ocho)'/>\n   <circle cx='196.25' cy='102.36' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Club Can&amp;#39;t Handle Me (feat. David Guetta)'/>\n   <circle cx='343.28' cy='88.05' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Love It (feat. Charli XCX)'/>\n   <circle cx='390.61' cy='170.8' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Treasure'/>\n   <circle cx='357.52' cy='71.04' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='She Bangs - English Version'/>\n   <circle cx='327.78' cy='78' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Magic (feat. Rivers Cuomo)'/>\n   <circle cx='385.17' cy='114.34' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Toxic'/>\n   <circle cx='220.13' cy='75.29' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Give Me Everything (feat. Ne-Yo, Afrojack &amp;amp; Nayer)'/>\n   <circle cx='342.44' cy='206.37' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Temperature'/>\n  <\/g>\n  <g clip-path='url(#svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6_c1)'>\n   <text x='27.91' y='287.68' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>40%<\/text>\n   <text x='28.14' y='210.35' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>60%<\/text>\n   <text x='28.22' y='133.02' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>80%<\/text>\n   <text x='23.41' y='55.68' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>100%<\/text>\n   <text x='92.81' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>25%<\/text>\n   <text x='197.43' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>50%<\/text>\n   <text x='302.26' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>75%<\/text>\n   <text x='404.33' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>100%<\/text>\n   <text x='214.33' y='350.04' font-size='10.5pt' font-family='Roboto Slab'>valence<\/text>\n   <text transform='translate(16.93,207.49) rotate(-90.00)' font-size='10.5pt' font-family='Roboto Slab'>energy<\/text>\n   <text x='6.97' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>Clustered<\/text>\n   <text x='72.85' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>into<\/text>\n   <text x='102.64' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#DD5129'>zesty<\/text>\n   <text x='141.53' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#DD5129'>bops<\/text>\n   <text x='174.96' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>,<\/text>\n   <text x='181.19' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#43B284'>dark<\/text>\n   <text x='214.64' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#43B284'>bangers<\/text>\n   <text x='269.08' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>,<\/text>\n   <text x='275.32' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>and<\/text>\n   <text x='304.04' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#0F7BA2'>mellow<\/text>\n   <text x='355.37' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#0F7BA2'>jams<\/text>\n   <text x='6.97' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>Clusters<\/text>\n   <text x='75.74' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>in<\/text>\n   <text x='96.28' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>the<\/text>\n   <text x='125.92' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>current<\/text>\n   <text x='188.75' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>playlist<\/text>\n  <\/g>\n <\/g>\n<\/svg>","js":null,"uid":"svg_601cff31-88a0-46b6-969f-6bcc8fa5e9b6","ratio":1.2,"settings":{"tooltip":{"css":".tooltip_SVGID_ { color:white;padding:2px;border-radius:2px;font-family:Roboto Slab; ; position:absolute;pointer-events:none;z-index:999;}","placement":"doc","offx":10,"offy":0,"use_cursor_pos":true,"opacity":0.8,"usefill":true,"usestroke":false,"delay":{"over":200,"out":500}},"hover":{"css":".hover_SVGID_ { fill:#1279BF;stroke:#1279BF;cursor:pointer; }","reactive":false},"hoverkey":{"css":".hover_key_SVGID_ { stroke:red; }","reactive":false},"hovertheme":{"css":".hover_theme_SVGID_ { fill:green; }","reactive":false},"hoverinv":{"css":""},"zoom":{"min":1,"max":1},"capture":{"css":".selected_SVGID_ { fill:red;stroke:gray; }","type":"multiple","only_shiny":true,"selected":[]},"capturekey":{"css":".selected_key_SVGID_ { stroke:gray; }","type":"single","only_shiny":true,"selected":[]},"capturetheme":{"css":".selected_theme_SVGID_ { stroke:gray; }","type":"single","only_shiny":true,"selected":[]},"toolbar":{"position":"topright","saveaspng":true,"pngname":"diagram"},"sizing":{"rescale":true,"width":1}}},"evals":[],"jsHooks":[]}</script>
+<p>As expected, the majority of songs in the current playlist fall into the bop cluster. Let’s explore this cluster using in more detail with the custom metric <code>vibe</code>.</p>
+<pre class="r"><code># assign to clusters
+ding_dong_vibes &lt;- 
+  ding_dong_clusters %&gt;%
+  augment(ding_dong) %&gt;%
+  select(track_name,
+         valence, 
+         energy, 
+         .pred_cluster) %&gt;%
+  mutate(vibe = valence + energy)
+
+# what are songs with the biggest vibe?
+ding_dong_vibes %&gt;%
+  arrange(desc(vibe)) %&gt;%
+  slice_head(n = 10) %&gt;%
+  knitr::kable()</code></pre>
+<table style="width:100%;">
+<colgroup>
+<col width="48%" />
+<col width="11%" />
+<col width="10%" />
+<col width="20%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">track_name</th>
+<th align="right">valence</th>
+<th align="right">energy</th>
+<th align="left">.pred_cluster</th>
+<th align="right">vibe</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Hey Ya!</td>
+<td align="right">0.965</td>
+<td align="right">0.974</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.939</td>
+</tr>
+<tr class="even">
+<td align="left">Rasputin</td>
+<td align="right">0.966</td>
+<td align="right">0.893</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.859</td>
+</tr>
+<tr class="odd">
+<td align="left">September</td>
+<td align="right">0.979</td>
+<td align="right">0.832</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.811</td>
+</tr>
+<tr class="even">
+<td align="left">She Bangs - English Version</td>
+<td align="right">0.858</td>
+<td align="right">0.950</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.808</td>
+</tr>
+<tr class="odd">
+<td align="left">Take on Me</td>
+<td align="right">0.876</td>
+<td align="right">0.902</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.778</td>
+</tr>
+<tr class="even">
+<td align="left">The Legend of Chavo Guerrero</td>
+<td align="right">0.913</td>
+<td align="right">0.858</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.771</td>
+</tr>
+<tr class="odd">
+<td align="left">Can’t Hold Us (feat. Ray Dalton)</td>
+<td align="right">0.847</td>
+<td align="right">0.922</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.769</td>
+</tr>
+<tr class="even">
+<td align="left">Toxic</td>
+<td align="right">0.924</td>
+<td align="right">0.838</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.762</td>
+</tr>
+<tr class="odd">
+<td align="left">Timber (feat. Ke$ha)</td>
+<td align="right">0.788</td>
+<td align="right">0.963</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.751</td>
+</tr>
+<tr class="even">
+<td align="left">Shake It Off</td>
+<td align="right">0.942</td>
+<td align="right">0.800</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.742</td>
+</tr>
+</tbody>
+</table>
+<p>As expected, when arranging by <code>vibe</code>, the top songs are all a part of the first cluster. And they are, indeed, <em>a vibe</em>:</p>
+
+
+
+<iframe src="https://open.spotify.com/embed/track/1uPrIHgYztXSkkcts9jet8"
+    width="100%"
+    height="380"
+    frameborder="0"
+    allowtransparency="true"
+    allow="encrypted-media"></iframe>
+
+<p>Compare that with the second cluster, which are generally lower energy (I’d personally disagree with spotify ranking Mr. Blue Sky and Single Ladies as “low energy,” but most others make sense).</p>
+<pre class="r"><code>ding_dong_vibes %&gt;%
+  filter(.pred_cluster == &quot;Cluster_2&quot;) %&gt;%
+  arrange(vibe) %&gt;%
+  slice_head(n = 10) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<colgroup>
+<col width="67%" />
+<col width="7%" />
+<col width="6%" />
+<col width="12%" />
+<col width="5%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">track_name</th>
+<th align="right">valence</th>
+<th align="right">energy</th>
+<th align="left">.pred_cluster</th>
+<th align="right">vibe</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Mr. Blue Sky</td>
+<td align="right">0.478</td>
+<td align="right">0.338</td>
+<td align="left">Cluster_2</td>
+<td align="right">0.816</td>
+</tr>
+<tr class="even">
+<td align="left">Single Ladies (Put a Ring on It)</td>
+<td align="right">0.272</td>
+<td align="right">0.584</td>
+<td align="left">Cluster_2</td>
+<td align="right">0.856</td>
+</tr>
+<tr class="odd">
+<td align="left">Low (feat. T-Pain)</td>
+<td align="right">0.304</td>
+<td align="right">0.609</td>
+<td align="left">Cluster_2</td>
+<td align="right">0.913</td>
+</tr>
+<tr class="even">
+<td align="left">I Got You</td>
+<td align="right">0.544</td>
+<td align="right">0.399</td>
+<td align="left">Cluster_2</td>
+<td align="right">0.943</td>
+</tr>
+<tr class="odd">
+<td align="left">Wake Up in the Sky</td>
+<td align="right">0.367</td>
+<td align="right">0.578</td>
+<td align="left">Cluster_2</td>
+<td align="right">0.945</td>
+</tr>
+<tr class="even">
+<td align="left">Summer, Highland Falls - Live at the Bayou, Washington, D.C. - July 1980</td>
+<td align="right">0.452</td>
+<td align="right">0.544</td>
+<td align="left">Cluster_2</td>
+<td align="right">0.996</td>
+</tr>
+<tr class="odd">
+<td align="left">Wagon Wheel</td>
+<td align="right">0.634</td>
+<td align="right">0.403</td>
+<td align="left">Cluster_2</td>
+<td align="right">1.037</td>
+</tr>
+<tr class="even">
+<td align="left">Hung Up</td>
+<td align="right">0.405</td>
+<td align="right">0.647</td>
+<td align="left">Cluster_2</td>
+<td align="right">1.052</td>
+</tr>
+<tr class="odd">
+<td align="left">Take Me Out</td>
+<td align="right">0.527</td>
+<td align="right">0.663</td>
+<td align="left">Cluster_2</td>
+<td align="right">1.190</td>
+</tr>
+<tr class="even">
+<td align="left">Country Grammar (Hot Shit)</td>
+<td align="right">0.565</td>
+<td align="right">0.664</td>
+<td align="left">Cluster_2</td>
+<td align="right">1.229</td>
+</tr>
+</tbody>
+</table>
+
+
+
+<iframe src="https://open.spotify.com/embed/track/12jjuxN1gxlm29cqL5M6MW"
+    width="100%"
+    height="380"
+    frameborder="0"
+    allowtransparency="true"
+    allow="encrypted-media"></iframe>
+
+<p>Finally, the third cluster mostly contains songs with low valence but relatively high energy.</p>
+<pre class="r"><code>ding_dong_vibes %&gt;%
+  filter(.pred_cluster == &quot;Cluster_3&quot;) %&gt;%
+  arrange(vibe) %&gt;%
+  slice_head(n = 10) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<colgroup>
+<col width="54%" />
+<col width="10%" />
+<col width="9%" />
+<col width="18%" />
+<col width="7%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">track_name</th>
+<th align="right">valence</th>
+<th align="right">energy</th>
+<th align="left">.pred_cluster</th>
+<th align="right">vibe</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Clarity</td>
+<td align="right">0.176</td>
+<td align="right">0.781</td>
+<td align="left">Cluster_3</td>
+<td align="right">0.957</td>
+</tr>
+<tr class="even">
+<td align="left">Titanium (feat. Sia)</td>
+<td align="right">0.301</td>
+<td align="right">0.787</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.088</td>
+</tr>
+<tr class="odd">
+<td align="left">Mr. Brightside</td>
+<td align="right">0.240</td>
+<td align="right">0.918</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.158</td>
+</tr>
+<tr class="even">
+<td align="left">All Night (feat. Knox Fortune)</td>
+<td align="right">0.392</td>
+<td align="right">0.777</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.169</td>
+</tr>
+<tr class="odd">
+<td align="left">Forever</td>
+<td align="right">0.445</td>
+<td align="right">0.819</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.264</td>
+</tr>
+<tr class="even">
+<td align="left">Shout, Pts. 1 &amp; 2</td>
+<td align="right">0.416</td>
+<td align="right">0.866</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.282</td>
+</tr>
+<tr class="odd">
+<td align="left">The Spins</td>
+<td align="right">0.550</td>
+<td align="right">0.766</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.316</td>
+</tr>
+<tr class="even">
+<td align="left">Club Can’t Handle Me (feat. David Guetta)</td>
+<td align="right">0.473</td>
+<td align="right">0.869</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.342</td>
+</tr>
+<tr class="odd">
+<td align="left">Body (feat. Brando)</td>
+<td align="right">0.582</td>
+<td align="right">0.764</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.346</td>
+</tr>
+<tr class="even">
+<td align="left">Levels - Radio Edit</td>
+<td align="right">0.464</td>
+<td align="right">0.889</td>
+<td align="left">Cluster_3</td>
+<td align="right">1.353</td>
+</tr>
+</tbody>
+</table>
+
+
+
+<iframe src="https://open.spotify.com/embed/track/3n3Ppam7vgaVa1iaRUc9Lp"
+    width="100%"
+    height="380"
+    frameborder="0"
+    allowtransparency="true"
+    allow="encrypted-media"></iframe>
+
+<p>Now that I have the songs in the current playlist sorted by cluster, let’s pull in some new songs and assign them to the appropriate cluster!</p>
+</div>
+<div id="adding-new-songs" class="section level2">
+<h2>Adding new songs</h2>
+<p>To go searching for new songs, we’ll start by casting a wide net then narrow the search with some of the <code>get_*()</code> functions from spotifyr. I’ll start by using <code>get_categories()</code> to explore the categories available in spotify.</p>
+<pre class="r"><code>get_categories() %&gt;%
+  as_tibble() %&gt;%
+  select(id, name) %&gt;%
+  slice_head(n = 10) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">name</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">toplists</td>
+<td align="left">Top Lists</td>
+</tr>
+<tr class="even">
+<td align="left">hiphop</td>
+<td align="left">Hip-Hop</td>
+</tr>
+<tr class="odd">
+<td align="left">pop</td>
+<td align="left">Pop</td>
+</tr>
+<tr class="even">
+<td align="left">country</td>
+<td align="left">Country</td>
+</tr>
+<tr class="odd">
+<td align="left">0JQ5DAqbMKFxXaXKP7zcDp</td>
+<td align="left">Latin</td>
+</tr>
+<tr class="even">
+<td align="left">rock</td>
+<td align="left">Rock</td>
+</tr>
+<tr class="odd">
+<td align="left">summer</td>
+<td align="left">Summer</td>
+</tr>
+<tr class="even">
+<td align="left">0JQ5DAqbMKFAXlCG6QvYQ4</td>
+<td align="left">Workout</td>
+</tr>
+<tr class="odd">
+<td align="left">0JQ5DAqbMKFEZPnFQSFB1T</td>
+<td align="left">R&amp;B</td>
+</tr>
+<tr class="even">
+<td align="left">edm_dance</td>
+<td align="left">Dance/Electronic</td>
+</tr>
+</tbody>
+</table>
+<p>I don’t really want to play country music or R&amp;B during the wedding, so I’ll filter to a few categories before using <code>get_category_playlists()</code> to pull in the featured playlists available in each category.</p>
+<pre class="r"><code># pull in playlist ids
+playlists &lt;- 
+  get_categories() %&gt;%
+  as_tibble() %&gt;%
+  filter(id %in% c(&quot;toplists&quot;, &quot;hiphop&quot;, &quot;pop&quot;, &quot;rock&quot;, &quot;summer&quot;)) %&gt;%
+  pull(id) %&gt;%
+  map_dfr(get_category_playlists) %&gt;%
+  as_tibble() %&gt;%
+  select(id, name, description) %&gt;%
+  distinct(id, .keep_all = TRUE)
+
+playlists %&gt;%
+  slice_head(n = 10) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<colgroup>
+<col width="18%" />
+<col width="14%" />
+<col width="67%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">id</th>
+<th align="left">name</th>
+<th align="left">description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">37i9dQZF1DXcBWIGoYBM5M</td>
+<td align="left">Today’s Top Hits</td>
+<td align="left">Steve Lacy is on top of the Hottest 50!</td>
+</tr>
+<tr class="even">
+<td align="left">37i9dQZF1DX0XUsuxWHRQd</td>
+<td align="left">RapCaviar</td>
+<td align="left">Music from Drake, Offset and 42 Dugg.</td>
+</tr>
+<tr class="odd">
+<td align="left">37i9dQZF1DXcF6B6QPhFDv</td>
+<td align="left">Rock This</td>
+<td align="left">The latest from Panic! At The Disco along with the Rock songs you need to hear today.</td>
+</tr>
+<tr class="even">
+<td align="left">37i9dQZF1DX4dyzvuaRJ0n</td>
+<td align="left">mint</td>
+<td align="left">The world’s biggest dance hits. Cover: Zedd &amp; Maren Morris</td>
+</tr>
+<tr class="odd">
+<td align="left">37i9dQZF1DX1lVhptIYRda</td>
+<td align="left">Hot Country</td>
+<td align="left">Today’s top country hits of the week, worldwide! Cover: Tyler Hubbard</td>
+</tr>
+<tr class="even">
+<td align="left">37i9dQZF1DX10zKzsJ2jva</td>
+<td align="left">Viva Latino</td>
+<td align="left">Today’s top Latin hits, elevando nuestra música. Cover: Anitta, Maluma.</td>
+</tr>
+<tr class="odd">
+<td align="left">37i9dQZF1DX4SBhb3fqCJd</td>
+<td align="left">Are &amp; Be</td>
+<td align="left">The pulse of R&amp;B music today. Cover: Tink</td>
+</tr>
+<tr class="even">
+<td align="left">37i9dQZEVXbLRQDuF5jeBp</td>
+<td align="left">Top 50 - USA</td>
+<td align="left">Your daily update of the most played tracks right now - USA.</td>
+</tr>
+<tr class="odd">
+<td align="left">37i9dQZEVXbMDoHDwVN2tF</td>
+<td align="left">Top 50 - Global</td>
+<td align="left">Your daily update of the most played tracks right now - Global.</td>
+</tr>
+<tr class="even">
+<td align="left">37i9dQZEVXbLiRSasKsNU9</td>
+<td align="left">Viral 50 - Global</td>
+<td align="left">Your daily update of the most viral tracks right now - Global.</td>
+</tr>
+</tbody>
+</table>
+<p>There’s a lot of playlists in <code>playlists</code>, so I’ve gone through and selected a few that I’m interested in exploring further.</p>
+<pre class="r"><code>selected_playlists &lt;-
+  c(&quot;Today&#39;s Top Hits&quot;,
+    &quot;mint&quot;,
+    &quot;Top 50 - US&quot;,
+    &quot;Top 50 - Global&quot;,
+    &quot;Viral 50 - US&quot;,
+    &quot;Viral 50 - Global&quot;,
+    &quot;New Music Friday&quot;,
+    &quot;Most Necessary&quot;,
+    &quot;Internet People&quot;,
+    &quot;Gold School&quot;,
+    &quot;Hot Hits USA&quot;,
+    &quot;Pop Rising&quot;,
+    &quot;teen beats&quot;,
+    &quot;big on the internet&quot;,
+    &quot;Party Hits&quot;,
+    &quot;Mega Hit Mix&quot;,
+    &quot;Pumped Pop&quot;,
+    &quot;Hit Rewind&quot;,
+    &quot;The Ultimate Hit Mix&quot;,
+    &quot;00s Rock Anthems&quot;,
+    &quot;Summer Hits&quot;,
+    &quot;Barack Obama&#39;s Summer 2022 Playlist&quot;,
+    &quot;Summer Hits of the 10s&quot;,
+    &quot;Family Road Trip&quot;)</code></pre>
+<p>With this shorter list of playlists, I can pull in the all the songs that appear on each with <code>get_playlist_tracks()</code>. Some songs may appear on multiple playlists, so we’ll only look at unique songs by <code>track_id</code>. I’ve already pulled in features for songs currently on the playlist, so we can filter those out as well. Finally, <code>get_track_audio_features()</code> limits queries to a maximum of 100 songs, so we’ll select the top 100 most popular songs within the sample.</p>
+<pre class="r"><code>new_songs &lt;- 
+  playlists %&gt;%
+  filter(name %in% selected_playlists) %&gt;%
+  pull(id) %&gt;%
+  map_dfr(get_playlist_tracks) %&gt;%
+  as_tibble()
+
+new_songs &lt;- 
+  new_songs %&gt;%
+  select(track.id,
+         track.name,
+         track.popularity) %&gt;%
+  rename_with(~stringr::str_replace(.x, &quot;\\.&quot;, &quot;_&quot;)) %&gt;%
+  distinct(track_id, .keep_all = TRUE) %&gt;%
+  arrange(desc(track_popularity)) %&gt;%
+  filter(!track_id %in% ding_dong$track_id) %&gt;%
+  slice_head(n = 100)</code></pre>
+<table>
+<colgroup>
+<col width="28%" />
+<col width="50%" />
+<col width="21%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">track_id</th>
+<th align="left">track_name</th>
+<th align="right">track_popularity</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">2tTmW7RDtMQtBk7m2rYeSw</td>
+<td align="left">Quevedo: Bzrp Music Sessions, Vol. 52</td>
+<td align="right">100</td>
+</tr>
+<tr class="even">
+<td align="left">6Sq7ltF9Qa7SNFBsV5Cogx</td>
+<td align="left">Me Porto Bonito</td>
+<td align="right">99</td>
+</tr>
+<tr class="odd">
+<td align="left">6xGruZOHLs39ZbVccQTuPZ</td>
+<td align="left">Glimpse of Us</td>
+<td align="right">97</td>
+</tr>
+<tr class="even">
+<td align="left">1IHWl5LamUGEuP4ozKQSXZ</td>
+<td align="left">Tití Me Preguntó</td>
+<td align="right">97</td>
+</tr>
+<tr class="odd">
+<td align="left">4LRPiXqCikLlN15c3yImP7</td>
+<td align="left">As It Was</td>
+<td align="right">96</td>
+</tr>
+<tr class="even">
+<td align="left">5Eax0qFko2dh7Rl2lYs3bx</td>
+<td align="left">Efecto</td>
+<td align="right">96</td>
+</tr>
+<tr class="odd">
+<td align="left">3k3NWokhRRkEPhCzPmV8TW</td>
+<td align="left">Ojitos Lindos</td>
+<td align="right">96</td>
+</tr>
+<tr class="even">
+<td align="left">75FEaRjZTKLhTrFGsfMUXR</td>
+<td align="left">Running Up That Hill (A Deal With God)</td>
+<td align="right">95</td>
+</tr>
+<tr class="odd">
+<td align="left">6Xom58OOXk2SoU711L2IXO</td>
+<td align="left">Moscow Mule</td>
+<td align="right">95</td>
+</tr>
+<tr class="even">
+<td align="left">0mBP9X2gPCuapvpZ7TGDk3</td>
+<td align="left">Left and Right (Feat. Jung Kook of BTS)</td>
+<td align="right">94</td>
+</tr>
+</tbody>
+</table>
+<p>Now let’s assign these 100 news songs to the clusters we found earlier based on their valence and energy!</p>
+<pre class="r"><code>new_song_features &lt;- 
+  new_songs %&gt;%
+  pull(track_id) %&gt;%
+  get_track_audio_features()
+
+new_songs &lt;- 
+  new_songs %&gt;%
+  left_join(new_song_features, by = c(&quot;track_id&quot; = &quot;id&quot;))
+
+new_songs_clustered &lt;- 
+  ding_dong_clusters %&gt;%
+  augment(new_songs) %&gt;%
+  select(track_name,
+         valence,
+         energy,
+         .pred_cluster) %&gt;%
+  mutate(vibe = valence + energy)</code></pre>
+<div id="htmlwidget-3" style="width:4500px;height:3000px;" class="girafe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"html":"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' id='svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8' viewBox='0 0 432 360'>\n <defs>\n  <clipPath id='svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c1'>\n   <rect x='0' y='0' width='432' height='360'/>\n  <\/clipPath>\n  <clipPath id='svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c2'>\n   <rect x='50.53' y='49.46' width='374.5' height='270.51'/>\n  <\/clipPath>\n <\/defs>\n <g>\n  <g clip-path='url(#svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c1)'>\n   <rect x='0' y='0' width='432' height='360' fill='#FFFFFF' stroke='#FFFFFF' stroke-width='0.75' stroke-linejoin='round' stroke-linecap='round'/>\n   <rect x='0' y='0' width='432' height='360' fill='#FFFFFF' stroke='#FFFFFF' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='round'/>\n  <\/g>\n  <g clip-path='url(#svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c2)'>\n   <polyline points='50.53,284.39 425.03,284.39' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='50.53,211.64 425.03,211.64' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='50.53,138.88 425.03,138.88' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='50.53,66.12 425.03,66.12' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='82.94,319.97 82.94,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='178.88,319.97 178.88,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='274.83,319.97 274.83,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='370.78,319.97 370.78,49.46' fill='none' stroke='#EBEBEB' stroke-width='0.68' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='50.53,248.01 425.03,248.01' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='50.53,175.26 425.03,175.26' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='50.53,102.50 425.03,102.50' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='130.91,319.97 130.91,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='226.86,319.97 226.86,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='322.80,319.97 322.80,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <polyline points='418.75,319.97 418.75,49.46' fill='none' stroke='#EBEBEB' stroke-width='1.36' stroke-linejoin='round' stroke-linecap='butt'/>\n   <circle cx='246.05' cy='109.05' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Quevedo: Bzrp Music Sessions, Vol. 52'/>\n   <circle cx='198.07' cy='134.51' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Me Porto Bonito'/>\n   <circle cx='137.82' cy='278.21' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Glimpse of Us'/>\n   <circle cx='106.73' cy='133.42' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Tití Me Preguntó'/>\n   <circle cx='289.03' cy='127.6' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='As It Was'/>\n   <circle cx='124.77' cy='220.73' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Efecto'/>\n   <circle cx='137.82' cy='143.97' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Ojitos Lindos'/>\n   <circle cx='110.57' cy='194.54' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Running Up That Hill (A Deal With God)'/>\n   <circle cx='147.03' cy='148.34' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Moscow Mule'/>\n   <circle cx='310.91' cy='178.17' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Left and Right (Feat. Jung Kook of BTS)'/>\n   <circle cx='332.4' cy='166.89' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='DESPECHÁ'/>\n   <circle cx='238.37' cy='205.82' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='PROVENZA'/>\n   <circle cx='351.59' cy='103.59' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Ain&amp;#39;t Worried'/>\n   <circle cx='380.75' cy='128.69' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Late Night Talking'/>\n   <circle cx='361.18' cy='146.52' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='La Bachata'/>\n   <circle cx='289.03' cy='127.6' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='As It Was'/>\n   <circle cx='195.77' cy='144.7' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Tarot'/>\n   <circle cx='255.64' cy='162.16' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Te Felicito'/>\n   <circle cx='312.06' cy='123.24' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='About Damn Time'/>\n   <circle cx='215.73' cy='102.87' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Party'/>\n   <circle cx='216.11' cy='149.79' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Like You (A Happier Song) (with Doja Cat)'/>\n   <circle cx='358.11' cy='133.79' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Sunroof'/>\n   <circle cx='408' cy='185.08' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Doja'/>\n   <circle cx='69.47' cy='171.26' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='MIDDLE OF THE NIGHT'/>\n   <circle cx='175.43' cy='148.7' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Jimmy Cooks (feat. 21 Savage)'/>\n   <circle cx='257.18' cy='107.59' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='La Corriente'/>\n   <circle cx='299.78' cy='209.09' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bad Habit'/>\n   <circle cx='88.31' cy='199.63' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Running Up That Hill (A Deal With God) - 2018 Remaster'/>\n   <circle cx='318.97' cy='174.89' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Vegas (From the Original Motion Picture Soundtrack ELVIS)'/>\n   <circle cx='135.52' cy='162.16' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Where Are You Now'/>\n   <circle cx='300.54' cy='142.52' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Ferrari'/>\n   <circle cx='122.09' cy='208.73' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Until I Found You'/>\n   <circle cx='187.71' cy='99.96' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Sweater Weather'/>\n   <circle cx='163.15' cy='127.97' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Blinding Lights'/>\n   <circle cx='354.27' cy='194.17' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Una Noche en Medellín'/>\n   <circle cx='262.17' cy='79.95' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='One Kiss (with Dua Lipa)'/>\n   <circle cx='209.2' cy='141.79' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Dandelions'/>\n   <circle cx='401.48' cy='80.31' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bad Decisions (with BTS &amp;amp; Snoop Dogg)'/>\n   <circle cx='159.31' cy='188.72' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='First Class'/>\n   <circle cx='373.08' cy='115.6' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Woman'/>\n   <circle cx='218.41' cy='115.6' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='STAY (with Justin Bieber)'/>\n   <circle cx='165.07' cy='159.98' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='WAIT FOR U (feat. Drake &amp;amp; Tems)'/>\n   <circle cx='396.49' cy='103.23' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Cold Heart - PNAU Remix'/>\n   <circle cx='238.76' cy='202.54' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Heat Waves'/>\n   <circle cx='153.94' cy='142.52' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Under The Influence'/>\n   <circle cx='204.21' cy='123.96' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Ghost'/>\n   <circle cx='67.55' cy='270.21' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='traitor'/>\n   <circle cx='85.24' cy='198.18' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Another Love'/>\n   <circle cx='248.73' cy='96.68' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Watermelon Sugar'/>\n   <circle cx='241.06' cy='68.67' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bad Habits'/>\n   <circle cx='244.51' cy='85.77' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='THATS WHAT I WANT'/>\n   <circle cx='350.44' cy='81.04' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Shivers'/>\n   <circle cx='196.92' cy='103.59' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Belly Dancer'/>\n   <circle cx='94.45' cy='125.42' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='I Was Never There'/>\n   <circle cx='87.54' cy='236.74' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='drivers license'/>\n   <circle cx='103.28' cy='170.89' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='deja vu'/>\n   <circle cx='102.13' cy='177.8' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Call Out My Name'/>\n   <circle cx='257.56' cy='112.69' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Betty (Get Money)'/>\n   <circle cx='150.1' cy='197.09' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='In The Stars'/>\n   <circle cx='202.3' cy='184.72' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Kesariya (From &amp;quot;Brahmastra&amp;quot;)'/>\n   <circle cx='247.97' cy='108.69' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Enemy (with JID) - from the series Arcane League of Legends'/>\n   <circle cx='176.97' cy='204.36' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Night Changes'/>\n   <circle cx='109.04' cy='199.27' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Don’t Blame Me'/>\n   <circle cx='171.98' cy='133.42' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Music For a Sushi Restaurant'/>\n   <circle cx='240.29' cy='104.32' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Everybody Wants To Rule The World'/>\n   <circle cx='151.64' cy='71.58' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Only Love Can Hurt Like This'/>\n   <circle cx='221.48' cy='179.99' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Starboy'/>\n   <circle cx='379.99' cy='138.88' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='MAMIII'/>\n   <circle cx='204.6' cy='114.87' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Pepas'/>\n   <circle cx='213.04' cy='115.96' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='The Motto'/>\n   <circle cx='81.02' cy='285.85' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='lovely (with Khalid)'/>\n   <circle cx='194.24' cy='197.09' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='abcdefu'/>\n   <circle cx='290.57' cy='109.78' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Believer'/>\n   <circle cx='144.34' cy='153.07' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Yellow'/>\n   <circle cx='277.52' cy='111.96' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Numb'/>\n   <circle cx='104.43' cy='225.82' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='STAYING ALIVE (feat. Drake &amp;amp; Lil Baby)'/>\n   <circle cx='80.64' cy='307.67' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='TV'/>\n   <circle cx='124' cy='170.89' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Boyfriend'/>\n   <circle cx='295.94' cy='61.76' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Afraid To Feel'/>\n   <circle cx='303.61' cy='213.82' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bad Habit'/>\n   <circle cx='218.41' cy='115.6' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='STAY (with Justin Bieber)'/>\n   <circle cx='251.8' cy='237.46' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='cómo dormiste?'/>\n   <circle cx='230.7' cy='202.54' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Die For You'/>\n   <circle cx='229.16' cy='96.32' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='House of Memories'/>\n   <circle cx='292.87' cy='137.06' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Wait a Minute!'/>\n   <circle cx='116.71' cy='219.28' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Atlantis'/>\n   <circle cx='176.97' cy='186.9' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Softcore'/>\n   <circle cx='87.54' cy='188.35' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='The Hills'/>\n   <circle cx='213.04' cy='134.15' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Crazy What Love Can Do'/>\n   <circle cx='186.94' cy='125.78' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Envolver'/>\n   <circle cx='378.07' cy='137.42' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='INDUSTRY BABY (feat. Jack Harlow)'/>\n   <circle cx='247.2' cy='116.33' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Circles'/>\n   <circle cx='213.04' cy='140.34' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Peaches (feat. Daniel Caesar &amp;amp; Giveon)'/>\n   <circle cx='224.56' cy='148.7' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Infinity'/>\n   <circle cx='206.13' cy='246.2' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Someone You Loved'/>\n   <circle cx='261.01' cy='102.5' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Beggin&amp;#39;'/>\n   <circle cx='138.59' cy='238.92' r='3.07pt' fill='#0F7BA2' fill-opacity='0.75' stroke='#0F7BA2' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Heather'/>\n   <circle cx='254.11' cy='123.6' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Bones'/>\n   <circle cx='367.71' cy='139.61' r='3.07pt' fill='#DD5129' fill-opacity='0.75' stroke='#DD5129' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Locked out of Heaven'/>\n   <circle cx='125.54' cy='62.12' r='3.07pt' fill='#43B284' fill-opacity='0.75' stroke='#43B284' stroke-opacity='0.75' stroke-width='0.71' stroke-linejoin='round' stroke-linecap='round' title='Mr. Brightside'/>\n  <\/g>\n  <g clip-path='url(#svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8_c1)'>\n   <text x='23.41' y='251.99' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>40%<\/text>\n   <text x='23.64' y='179.24' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>60%<\/text>\n   <text x='23.72' y='106.48' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>80%<\/text>\n   <text x='120.88' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>25%<\/text>\n   <text x='216.73' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>50%<\/text>\n   <text x='312.78' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>75%<\/text>\n   <text x='406.08' y='334.2' font-size='8.4pt' font-family='Roboto Slab' fill='#4D4D4D'>100%<\/text>\n   <text x='212.08' y='350.04' font-size='10.5pt' font-family='Roboto Slab'>valence<\/text>\n   <text transform='translate(16.93,207.49) rotate(-90.00)' font-size='10.5pt' font-family='Roboto Slab'>energy<\/text>\n   <text x='6.97' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>Clustered<\/text>\n   <text x='72.85' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>into<\/text>\n   <text x='102.64' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#DD5129'>zesty<\/text>\n   <text x='141.53' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#DD5129'>bops<\/text>\n   <text x='174.96' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>,<\/text>\n   <text x='181.19' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#43B284'>dark<\/text>\n   <text x='214.64' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#43B284'>bangers<\/text>\n   <text x='269.08' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>,<\/text>\n   <text x='275.32' y='39.5' font-size='10.5pt' font-family='Roboto Slab'>and<\/text>\n   <text x='304.04' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#0F7BA2'>mellow<\/text>\n   <text x='355.37' y='39.5' font-size='10.5pt' font-weight='bold' font-family='Roboto Slab' fill='#0F7BA2'>jams<\/text>\n   <text x='6.97' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>New<\/text>\n   <text x='47.85' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>songs,<\/text>\n   <text x='101.82' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>same<\/text>\n   <text x='148.56' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>old<\/text>\n   <text x='177.3' y='18.92' font-size='12.6pt' font-family='Roboto Slab'>clusters<\/text>\n  <\/g>\n <\/g>\n<\/svg>","js":null,"uid":"svg_dfb0e27c-dcd6-496a-830b-9e5e9368f9b8","ratio":1.2,"settings":{"tooltip":{"css":".tooltip_SVGID_ { color:white;padding:2px;border-radius:2px;font-family:Roboto Slab; ; position:absolute;pointer-events:none;z-index:999;}","placement":"doc","offx":10,"offy":0,"use_cursor_pos":true,"opacity":0.8,"usefill":true,"usestroke":false,"delay":{"over":200,"out":500}},"hover":{"css":".hover_SVGID_ { fill:#1279BF;stroke:#1279BF;cursor:pointer; }","reactive":false},"hoverkey":{"css":".hover_key_SVGID_ { stroke:red; }","reactive":false},"hovertheme":{"css":".hover_theme_SVGID_ { fill:green; }","reactive":false},"hoverinv":{"css":""},"zoom":{"min":1,"max":1},"capture":{"css":".selected_SVGID_ { fill:red;stroke:gray; }","type":"multiple","only_shiny":true,"selected":[]},"capturekey":{"css":".selected_key_SVGID_ { stroke:gray; }","type":"single","only_shiny":true,"selected":[]},"capturetheme":{"css":".selected_theme_SVGID_ { stroke:gray; }","type":"single","only_shiny":true,"selected":[]},"toolbar":{"position":"topright","saveaspng":true,"pngname":"diagram"},"sizing":{"rescale":true,"width":1}}},"evals":[],"jsHooks":[]}</script>
+<p>Nice! It looks like the new songs are far more broad than the original playlist, but we can look at just the songs in the first cluster with the biggest vibe.</p>
+<pre class="r"><code>new_songs_clustered %&gt;%
+  filter(.pred_cluster == &quot;Cluster_1&quot;) %&gt;%
+  arrange(desc(vibe)) %&gt;%
+  slice_head(n = 10) %&gt;%
+  knitr::kable()</code></pre>
+<table>
+<colgroup>
+<col width="52%" />
+<col width="10%" />
+<col width="9%" />
+<col width="19%" />
+<col width="8%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">track_name</th>
+<th align="right">valence</th>
+<th align="right">energy</th>
+<th align="left">.pred_cluster</th>
+<th align="right">vibe</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Bad Decisions (with BTS &amp; Snoop Dogg)</td>
+<td align="right">0.955</td>
+<td align="right">0.861</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.816</td>
+</tr>
+<tr class="even">
+<td align="left">Cold Heart - PNAU Remix</td>
+<td align="right">0.942</td>
+<td align="right">0.798</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.740</td>
+</tr>
+<tr class="odd">
+<td align="left">Shivers</td>
+<td align="right">0.822</td>
+<td align="right">0.859</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.681</td>
+</tr>
+<tr class="even">
+<td align="left">Woman</td>
+<td align="right">0.881</td>
+<td align="right">0.764</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.645</td>
+</tr>
+<tr class="odd">
+<td align="left">Late Night Talking</td>
+<td align="right">0.901</td>
+<td align="right">0.728</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.629</td>
+</tr>
+<tr class="even">
+<td align="left">I Ain’t Worried</td>
+<td align="right">0.825</td>
+<td align="right">0.797</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.622</td>
+</tr>
+<tr class="odd">
+<td align="left">MAMIII</td>
+<td align="right">0.899</td>
+<td align="right">0.700</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.599</td>
+</tr>
+<tr class="even">
+<td align="left">INDUSTRY BABY (feat. Jack Harlow)</td>
+<td align="right">0.894</td>
+<td align="right">0.704</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.598</td>
+</tr>
+<tr class="odd">
+<td align="left">Afraid To Feel</td>
+<td align="right">0.680</td>
+<td align="right">0.912</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.592</td>
+</tr>
+<tr class="even">
+<td align="left">Locked out of Heaven</td>
+<td align="right">0.867</td>
+<td align="right">0.698</td>
+<td align="left">Cluster_1</td>
+<td align="right">1.565</td>
+</tr>
+</tbody>
+</table>
+<p>Now for the true vibe check — do these songs <em>belong</em> on the playlist?</p>
+
+
+
+<iframe src="https://open.spotify.com/embed/track/0xzI1KAr0Yd9tv8jlIk3sn"
+    width="100%"
+    height="380"
+    frameborder="0"
+    allowtransparency="true"
+    allow="encrypted-media"></iframe>
+
+<p>Oh <strong><em>hell</em> yeah!</strong></p>
+<blockquote>
+<p><strong>Some notes</strong>: this analysis was done on Aug. 8th, 2022 — spotify’s featured playlists and tracks change on on a regular basis and may also depend on unique user data.</p>
+</blockquote>
+</div>
+
+    </div>
+
+    
+
+
+
+    
+      
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+  
+  
+    
+  
+  
+  <div class="media author-card" itemscope itemtype="http://schema.org/Person">
+    
+      
+      <img class="portrait mr-3" src="/authors/admin/avatar_hu566f88036a32ad6519e34d2b60700d41_471828_250x250_fill_q90_lanczos_center.jpg" itemprop="image" alt="Avatar">
+    
+
+    <div class="media-body">
+      <h5 class="card-title" itemprop="name"><a href="https://www.thedatadiary.net/">Mark Rieke</a></h5>
+      <h6 class="card-subtitle">Senior CX Analyst</h6>
+      <p class="card-text" itemprop="description">I&rsquo;m a mechanical engineer by education, data analyst by practice. I love machine learning and communicating complex topics clearly with simple and beautiful charts.</p>
+      <ul class="network-icon" aria-hidden="true">
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://twitter.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-twitter"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://github.com/markjrieke" target="_blank" rel="noopener">
+              <i class="fab fa-github"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener">
+              <i class="fab fa-stack-overflow"></i>
+            </a>
+          </li>
+        
+          
+          
+          
+            
+          
+          
+          
+          
+          
+            
+          
+          <li>
+            <a itemprop="sameAs" href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener">
+              <i class="fab fa-linkedin"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+
+
+      
+      
+    
+
+    
+
+    
+
+
+  </div>
+</article>
+
+      
+
+    
+    
+
+    
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.4/imagesloaded.pkgd.min.js" integrity="sha256-lqvxZrPLtfffUl2G/e7szqSvPBILGbwmsGE1MKlOi0Q=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.isotope/3.0.6/isotope.pkgd.min.js" integrity="sha256-CBrpuqrMhXwcLLUd5tvQ4euBHCdh7wGlDfNz8vbu/iI=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.2.5/jquery.fancybox.min.js" integrity="sha256-X5PoE3KU5l+JcX+w09p/wHl9AzK333C4hJ2I9S5mD4M=" crossorigin="anonymous"></script>
+
+      
+
+      
+        
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.6/highlight.min.js" integrity="sha256-aYTdUrn6Ow1DDgh5JTc3aDGnnju48y/1c8s1dgkYPQ8=" crossorigin="anonymous"></script>
+        
+      
+
+      
+      
+    
+
+    
+    
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js" integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log==" crossorigin="anonymous"></script>
+    
+
+    
+    
+    
+
+    
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+
+    
+    
+
+    
+
+    
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <script src="/js/academia.min.e40e230d9b3dfeac86994156b6388764.js"></script>
+
+    
+
+
+
+
+
+
+  
+  <div class="container">
+    <footer class="site-footer">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-md-6 mb-4 mb-md-0">
+        
+        <p class="mb-0">
+          © Mark Rieke 2022 &middot; 
+          Powered by
+          <a href="https://gethugothemes.com" target="_blank" rel="noopener">Gethugothemes</a>
+        </p>
+      </div>
+      <div class="col-md-6">
+        <ul class="list-inline network-icon text-right mb-0">
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://twitter.com/markjrieke" target="_blank" rel="noopener" title="Follow me on twitter!"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://github.com/markjrieke" target="_blank" rel="noopener" title="Find my work on GitHub!"><i class="fab fa-github" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://stackoverflow.com/users/16307782/mark-rieke" target="_blank" rel="noopener" title="Help me out on Stack Overflow!"><i class="fab fa-stack-overflow" aria-hidden="true"></i></a>
+          </li>
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          
+          <li class="list-inline-item">
+            <a href="https://www.linkedin.com/in/mark-rieke-ab4b0ab4/" target="_blank" rel="noopener" title="Connect with me on LinkedIn!"><i class="fab fa-linkedin" aria-hidden="true"></i></a>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </div>
+</footer>
+  </div>
+  
+
+  
+<div id="modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Cite</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <pre><code class="tex hljs"></code></pre>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-primary my-1 js-copy-cite" href="#" target="_blank">
+          <i class="fas fa-copy"></i> Copy
+        </a>
+        <a class="btn btn-outline-primary my-1 js-download-cite" href="#" target="_blank">
+          <i class="fas fa-download"></i> Download
+        </a>
+        <div id="modal-error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
