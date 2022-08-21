@@ -98,7 +98,7 @@ ding_dong %>%
 
 ## Clustering with `tidyclust` 
 
-Currently, the playlist covers a wide spectrum of of songs. For new songs on the playlist, I'm really just interested in songs similar to others in the top right corner of the below chart with high energy and valence.
+Currently, the playlist covers a wide spectrum of songs. For new songs on the playlist, I'm really just interested in songs similar to others in the top right corner of the below chart with high energy and valence.
 
 ```{r, echo=FALSE}
 # how are valence/energy related?
@@ -125,7 +125,7 @@ ggiraph::girafe(
 
 Broadly, there are three generic categories that the songs on the current playlist fall into: high energy and valence, low energy, or low valence (songs with low energy and valence will fall into one of the "low" categories). Rather than manually assign categories, we can use tidyclust to cluster the songs into three groups using the [kmeans](https://en.wikipedia.org/wiki/K-means_clustering) algorithm. 
 
-There's some [great documentation on the package site](https://emilhvitfeldt.github.io/tidyclust/articles/k_means.html), but to get started, we'll categorize the songs on the current playlist by "fitting" a kmeans model (using the [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html) engine under the hood).
+There's some [great documentation on the tidyclust site](https://emilhvitfeldt.github.io/tidyclust/articles/k_means.html), but to get started, we'll categorize the songs on the current playlist by "fitting" a kmeans model (using the [stats](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/00Index.html) engine under the hood). 
 
 ```{r}
 # create a clustering obj
@@ -153,7 +153,7 @@ obj <-
   labs(title = "Clusters in the current playlist",
        subtitle = glue::glue("Clustered into",
                              "**{riekelib::color_text('zesty bops',pal[1])}**,",
-                             "**{riekelib::color_text('dark bangers', pal[3])}**,",
+                             "**{riekelib::color_text('angsty bangers', pal[3])}**,",
                              "and",
                              "**{riekelib::color_text('mellow jams', pal[2])}**",
                              .sep = " ")) +
@@ -351,7 +351,7 @@ obj <-
   labs(title = "New songs, same old clusters",
        subtitle = glue::glue("Clustered into",
                              "**{riekelib::color_text('zesty bops',pal[1])}**,",
-                             "**{riekelib::color_text('dark bangers', pal[3])}**,",
+                             "**{riekelib::color_text('angsty bangers', pal[3])}**,",
                              "and",
                              "**{riekelib::color_text('mellow jams', pal[2])}**",
                              .sep = " ")) +
@@ -386,4 +386,5 @@ blogdown::shortcode_html("spotify", type = "track", id = "0xzI1KAr0Yd9tv8jlIk3sn
 
 Oh ***hell* yeah!**
 
->**Some notes**: this analysis was done on Aug. 8th, 2022 --- spotify's featured playlists and tracks change on on a regular basis and may also depend on unique user data. 
+>**Some notes**: this analysis was done on Aug. 20th, 2022 --- spotify's featured playlists and tracks change on on a regular basis and may also depend on unique user data. 
+
