@@ -30,7 +30,11 @@ knitr::opts_chunk$set(
 )
 
 # setup themes
-extrafont::loadfonts(device = "win")
+#extrafont::loadfonts(device = "win")
+sysfonts::font_add_google("Roboto Slab")
+
+showtext::showtext_auto()
+
 ggplot2::theme_set(
   ggplot2::theme_minimal(base_family = "Roboto Slab", 
                          base_size = 14) +
@@ -387,4 +391,3 @@ blogdown::shortcode_html("spotify", type = "track", id = "0xzI1KAr0Yd9tv8jlIk3sn
 Oh ***hell* yeah!**
 
 >**Some notes**: this analysis was done on Aug. 20th, 2022 --- spotify's featured playlists and tracks change on on a regular basis and may also depend on unique user data. 
-
