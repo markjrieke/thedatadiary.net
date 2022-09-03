@@ -1,0 +1,443 @@
+---
+output: html_document
+widget: "blank"
+active: true
+weight: 60
+
+title: "2022 Senate Forecast"
+subtitle: ""
+
+design.background:
+  image: ""
+  image_darken: 0.6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  dpi = 500,
+  fig.width = 9,
+  fig.height = 6
+)
+
+# setup themes
+site_color <- "#F7F7F7"
+sysfonts::font_add_google("Roboto Slab")
+showtext::showtext_auto()
+ggplot2::theme_set(
+  ggplot2::theme_minimal(base_family = "Roboto Slab") +
+    ggplot2::theme(plot.title.position = "plot",
+                   plot.background = ggplot2::element_rect(fill = site_color, color = site_color),
+                   plot.title = ggtext::element_markdown(size = 14, hjust = 0.5),
+                   plot.subtitle = ggtext::element_markdown(size = 10, hjust = 0.5),
+                   axis.text.x = ggtext::element_markdown())
+)
+
+library(tidyverse)
+library(riekelib)
+library(patchwork)
+library(ggiraph)
+
+dem_blu <- MetBrewer::MetPalettes$Benedictus[[1]][13]
+rep_red <- MetBrewer::MetPalettes$Benedictus[[1]][1]
+purple <- MetBrewer::MetPalettes$Renoir[[1]][3]
+
+# format date
+run_date <- read_rds("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/run_date.rds")
+format_date <- function(date) {
+  
+  month_day <- lubridate::day(date)
+  day_append <- case_when(month_day %in% c(1, 21, 31) ~ "st",
+                          month_day %in% c(2, 22) ~ "nd",
+                          month_day %in% c(3, 23) ~ "rd",
+                          TRUE ~ "th")
+  
+  date_formatted <- paste0(lubridate::month(date, label = TRUE),
+                           " ", month_day, day_append)
+  
+  return(date_formatted)
+  
+}
+
+last_run <- format_date(run_date)
+
+```
+
+```{r helper-functions, echo=FALSE}
+# format race winner title
+format_title <- function(p, race, dem = "Democrats", rep = "Republicans") {
+  
+  plural <- if(dem == "Democrats") "are" else "is"
+  
+  title <- 
+    case_when(p > 0.35 & p < 0.65 ~ paste("***It's a toss-up*** in ", race),
+              p > 0.50 & p < 0.85 ~ paste0("**", color_text(dem, dem_blu), "** ", plural, " **likely** to win ", race),
+              p > 0.50            ~ paste0("**", color_text(dem, dem_blu), "** ", plural, " **very likely** to win ", race),
+              p < 0.50 & p > 0.15 ~ paste0("**", color_text(rep, rep_red), "** ", plural, " **likely** to win ", race),
+              p < 0.50            ~ paste0("**", color_text(rep, rep_red), "** ", plural, " **very likely** to win ", race))
+  
+  return(title)
+  
+}
+
+# format subtitle
+format_subtitle <- function(p, race, dem = "Democrats", rep = "Republicans") {
+  
+  plural <- if(dem == "Democrats") "win" else "win"
+  winner <- if(p >= 0.5) dem else rep
+  winner_color <- if(winner == dem) dem_blu else rep_red
+  
+  prob <- if(p >= 0.5) p else 1 - p
+  prob <- paste0(round(prob * 100), "%")
+  
+  subtitle <-
+    paste0("Of the model's 10,000 simulations of ",
+           race,
+           ", <br>**",
+           color_text(winner, winner_color),
+           "** ",
+           plural,
+           " about **",
+           prob,
+           "** of the time")
+  
+  return(subtitle)
+  
+}
+
+# prep an interactive histogram to be passed to ggiraph
+prep_histogram <- function(.data, 
+                           max_seats, 
+                           plot_title, 
+                           plot_subtitle,
+                           dem_color = dem_blu,
+                           rep_color = rep_red,
+                           split_color = purple) {
+  
+  col_border <- if(max_seats == 100) site_color else NA
+
+  .data %>%
+    rename(dem_seats = n) %>%
+    mutate(rep_seats = max_seats - dem_seats,
+           control = case_when(dem_seats > max_seats/2 ~ dem_color,
+                               dem_seats < max_seats/2 ~ rep_color,
+                               TRUE ~ split_color)) %>%
+    count(dem_seats, rep_seats, control) %>%
+    rename(pct = n) %>%
+    arrange(desc(dem_seats)) %>%
+    mutate(pct = pct/10000,
+           pct_raw = pct,
+           pct_dem = cumsum(pct_raw)) %>%
+    arrange(desc(rep_seats)) %>%
+    mutate(pct_rep = cumsum(pct_raw),
+           across(c(pct, pct_dem, pct_rep), ~round(.x * 100)),
+           pct_text = case_when(control == dem_color & pct_dem < 1 ~ glue::glue("Democrats have a < 1% chance \nof controlling at least {dem_seats} seats"),
+                                control == dem_color ~ glue::glue("Democrats have a {pct_dem}% chance\nof controlling at least {dem_seats} seats"),
+                                control == split_color ~ glue::glue("Democrats have a {pct_dem}% chance \nof controlling at least 50 seats \nand a {pct}% chance of controlling\nexactly 50 seats"),
+                                control == rep_color & pct_rep < 1 ~ glue::glue("Republicans have a < 1% chance \nof controlling at least {rep_seats} seats"),
+                                control == rep_color ~ glue::glue("Republicans have a {pct_rep}% chance \nof controlling at least {rep_seats} seats"))) %>%
+    ggplot(aes(x = rep_seats,
+               y = pct_raw,
+               fill = control,
+               tooltip = pct_text)) +
+    geom_col_interactive(alpha = 0.75,
+                         width = 1,
+                         color = col_border) +
+    scale_fill_identity() +
+    theme(legend.position = "none",
+          axis.title = element_blank(),
+          axis.text.y = element_blank()) +
+    labs(title = plot_title,
+         subtitle = plot_subtitle,
+         caption = glue::glue("Last updated on {last_run}\nData courtesy of FiveThirtyEight"))
+  
+}
+
+```
+
+
+```{r headers, echo=FALSE}
+# get current toplines 
+senate_topline <- 
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/senate_topline.csv")
+
+senate_title_topline <- 
+  senate_topline %>%
+  filter(model_date == max(model_date)) %>%
+  pull(p_dem_win)
+
+house_topline <- 
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/house_topline.csv")
+
+house_title_topline <-
+  house_topline %>%
+  filter(model_date == max(model_date)) %>%
+  pull(p_dem_win)
+
+senate_title <- format_title(senate_title_topline, "the Senate")
+senate_subtitle <- format_subtitle(senate_title_topline, "the Senate elections")
+
+house_title <- format_title(house_title_topline, "the House")
+house_subtitle <- format_subtitle(house_title_topline, "the House elections")
+```
+
+
+```{r senate-histogram, echo=FALSE}
+senate_distribution <- 
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/current_senate_distribution.csv")
+
+senate_axis <- 
+  tibble(breaks = seq(35, 65, 5)) %>%
+  mutate(color = case_when(breaks > 50 ~ rep_red,
+                           breaks < 50 ~ dem_blu,
+                           TRUE ~ purple),
+         labels = case_when(breaks >= 50 ~ breaks, 
+                            breaks < 50 ~ 100 - breaks),
+         labels = color_text(labels, color))
+
+senate_breaks <- senate_axis$breaks
+senate_labels <- senate_axis$labels
+
+senate_histogram <-
+  senate_distribution %>%
+  prep_histogram(100, senate_title, senate_subtitle) +
+  scale_x_continuous(breaks = senate_breaks,
+                     labels = senate_labels)
+
+girafe(
+  ggobj = senate_histogram,
+  options = list(
+    ggiraph::opts_tooltip(use_fill = TRUE),
+    ggiraph::opts_sizing(width = 0.7)
+  )
+)
+```
+
+```{r senate-probability, echo=FALSE}
+
+nudge_days <- 6
+interpolate_fill <- function(x) {
+  
+  color_rgb <- colorRamp(c(rep_red, dem_blu))
+  rgb_vals <- color_rgb(x)
+  hex <- rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
+  
+  return(hex)
+
+}
+
+senate_probability <- 
+  senate_topline %>%
+  mutate(color_ramp = map_chr(p_dem_win, interpolate_fill)) %>%
+  select(model_date, 
+         color_ramp,
+         dem = p_dem_win) %>%
+  mutate(rep = 1 - dem,
+         date_format = format_date(model_date),
+         dem_format = paste0(round(dem*100), "%"),
+         rep_format = paste0(round(rep*100), "%"),
+         tooltip_text = glue::glue("{date_format}:\nDem: {dem_format}\nRep: {rep_format}"),
+         dem_final = if_else(model_date == max(model_date), dem, as.numeric(NA)),
+         rep_final = if_else(model_date == max(model_date), rep, as.numeric(NA)),
+         dem_final_format = if_else(model_date == max(model_date), dem_format, NA_character_),
+         rep_final_format = if_else(model_date == max(model_date), rep_format, NA_character_)) %>%  
+  ggplot(aes(x = model_date)) +
+  geom_line(aes(y = rep),
+            size = 3.25,
+            color = site_color) +
+  geom_line(aes(y = rep),
+            size = 1.25,
+            color = rep_red,
+            alpha = 0.75) +
+  geom_point(aes(y = rep_final),
+             size = 3,
+             alpha = 1,
+             color = rep_red,
+             fill = NA,
+             na.rm = TRUE) +
+  geom_text(aes(y = rep_final,
+                label = rep_final_format),
+            nudge_x = nudge_days,
+            color = rep_red,
+            family = "Roboto Slab",
+            fontface = "bold",
+            alpha = 0.75,
+            na.rm = TRUE) +
+  geom_line(aes(y = dem),
+            size = 3.25,
+            color = site_color) +
+  geom_line(aes(y = dem),
+            size = 1.25,
+            color = dem_blu,
+            alpha = 0.75) +
+  geom_point(aes(y = dem_final),
+             size = 3,
+             alpha = 1,
+             color = dem_blu,
+             fill = NA,
+             na.rm = TRUE) +
+  geom_text(aes(y = dem_final,
+                label = dem_final_format),
+            nudge_x = nudge_days,
+            color = dem_blu,
+            family = "Roboto Slab",
+            fontface = "bold",
+            alpha = 0.75,
+            na.rm = TRUE) +
+  geom_tile_interactive(aes(y = 0.5,
+                            tooltip = tooltip_text,
+                            fill = color_ramp),
+                        width = 1,
+                        height = 1,
+                        size = 3,
+                        alpha = 0.005) +
+  scale_fill_identity() +
+  expand_limits(x = c(lubridate::mdy("7/1/22"), lubridate::mdy("11/8/22")),
+                y = c(0, 1)) +
+  theme(plot.subtitle = ggtext::element_markdown(size = 10, hjust = 0)) +
+  labs(subtitle = "**Chances of controlling the Senate**",
+       x = NULL,
+       y = NULL) +
+  scale_y_continuous(labels = scales::label_percent())
+
+senate_seats <- 
+  senate_topline %>%
+  mutate(color_ramp = map_chr(p_dem_win, interpolate_fill)) %>%
+  select(model_date, 
+         color_ramp,
+         starts_with("seat")) %>%
+  rename_with(.cols = starts_with("seat"),
+              .fn = ~paste0(.x, "_dem")) %>%
+  mutate(seats_rep = 100 - seats_dem,
+         seats_lower_rep = 100 - seats_upper_dem,
+         seats_upper_rep = 100 - seats_lower_dem,
+         date_format = format_date(model_date),
+         dem_format = round(seats_dem, digits = 1),
+         rep_format = round(seats_rep, digits = 1),
+         tooltip_text = glue::glue("{date_format}:\nDem: {dem_format}\nRep: {rep_format}"),
+         dem_final = if_else(model_date == max(model_date), seats_dem, as.numeric(NA)),
+         rep_final = if_else(model_date == max(model_date), seats_rep, as.numeric(NA)),
+         dem_final_format = if_else(model_date == max(model_date), dem_format, as.numeric(NA)),
+         rep_final_format = if_else(model_date == max(model_date), rep_format, as.numeric(NA))) %>%
+  ggplot(aes(x = model_date)) +
+  geom_ribbon(aes(ymin = seats_lower_rep,
+                  ymax = seats_upper_rep),
+              fill = rep_red,
+              alpha = 0.25) +
+  geom_ribbon(aes(ymin = seats_lower_dem,
+                  ymax = seats_upper_dem),
+              fill = dem_blu,
+              alpha = 0.25) +
+  geom_line(aes(y = seats_rep),
+            size = 3.25,
+            color = site_color) +
+  geom_line(aes(y = seats_rep),
+            size = 1.25,
+            color = rep_red,
+            alpha = 0.75) +
+  geom_point(aes(y = rep_final),
+             size = 3,
+             alpha = 1,
+             color = rep_red,
+             fill = NA,
+             na.rm = TRUE) +
+  geom_line(aes(y = seats_dem),
+            size = 3.25,
+            color = site_color) +
+  geom_line(aes(y = seats_dem),
+            size = 1.25,
+            color = dem_blu,
+            alpha = 0.75) +
+  geom_point(aes(y = dem_final),
+             size = 3, 
+             alpha = 1,
+             color = dem_blu,
+             fill = NA,
+             na.rm = TRUE) +
+  geom_text(aes(y = rep_final,
+                label = rep_final_format),
+            nudge_x = nudge_days,
+            color = rep_red,
+            family = "Roboto Slab",
+            fontface = "bold",
+            alpha = 0.75,
+            na.rm = TRUE) +
+  geom_text(aes(y = dem_final,
+                label = dem_final_format),
+            nudge_x = nudge_days,
+            color = dem_blu,
+            family = "Roboto Slab",
+            fontface = "bold",
+            alpha = 0.75,
+            na.rm = TRUE) +
+  geom_tile_interactive(aes(y = 50,
+                            tooltip = tooltip_text,
+                            fill = color_ramp),
+                        width = 1,
+                        height = 14,
+                        size = 3,
+                        alpha = 0.005) +
+  scale_fill_identity() + 
+  expand_limits(x = c(lubridate::mdy("7/1/22"), lubridate::mdy("11/8/22")),
+                y = c(43, 57)) +
+  theme(plot.subtitle = ggtext::element_markdown(size = 10, hjust = 0)) +
+  labs(subtitle = "**Average seats controlled by party**",
+       x = NULL,
+       y = NULL) +
+  scale_y_continuous(labels = scales::label_number(1))
+
+senate_patch <- 
+  (senate_probability / senate_seats) +
+  plot_annotation(title = "**How the Senate foreast has changed**",
+                  subtitle = paste0("See how each party's forecasted seat total and chance of controlling <br>the Senate have changed over time. The forecast is updated daily."))
+
+ggiraph::girafe(
+  ggobj = senate_patch,
+  height_svg = 8,
+  options = list(
+    ggiraph::opts_tooltip(use_fill = TRUE),
+    ggiraph::opts_sizing(width = 0.7)
+  )
+)
+
+```
+
+
+
+```{r house-interactive, echo=FALSE}
+house_distribution <- 
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/current_house_distribution.csv")
+
+# get axis formatting
+house_axis <-
+  tibble(breaks = seq(100, 350, 25)) %>%
+  mutate(color = if_else(breaks > 217.5, rep_red, dem_blu),
+         labels = if_else(breaks > 217.5, breaks, 435 - breaks),
+         labels = color_text(labels, color))
+
+house_breaks <- house_axis$breaks
+house_labels <- house_axis$labels
+
+# create ggplot object of house
+house_histogram <-
+  house_distribution %>%
+  prep_histogram(435, house_title, house_subtitle) +
+  scale_x_continuous(breaks = house_breaks,
+                     labels = house_labels)
+
+# display interactive
+ggiraph::girafe(
+  ggobj = house_histogram,
+  options = list(
+    ggiraph::opts_tooltip(use_fill = TRUE),
+    ggiraph::opts_sizing(width = 0.7)
+  )
+)
+```
+
+
+
+
+

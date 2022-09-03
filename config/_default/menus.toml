@@ -4,6 +4,33 @@
 #   The weight parameter defines the order that the links will appear in.
 
 [[main]]
+  identifier = "midterms"
+  name = "2022 Midterm Forecast"
+  url = "2022_midterms"
+  weight = 5
+  
+[[main]]
+  identifier = "senate"
+  name = "Senate"
+  url = "senate"
+  parent = "midterms"
+  weight = 1
+  
+[[main]]
+  identifier = "house"
+  name = "House"
+  url = "house"
+  parent = "midterms"
+  weight = 2
+  
+[[main]]
+  identifier = "governor"
+  name = "Governor"
+  url = "governor"
+  parent = "midterms"
+  weight = 3
+  
+[[main]]
   name = "Blog"
   url = "blog"
   weight = 10
