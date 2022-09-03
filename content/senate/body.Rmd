@@ -10,7 +10,18 @@ subtitle: ""
 design.background:
   image: ""
   image_darken: 0.6
+  
 ---
+
+```{css custom-width, echo=FALSE}
+.interactive_width {
+  max-width: 760px;
+  padding: 0 20px 0 20px;
+  margin: 0 auto 0 auto;
+}
+```
+
+<div class="interactive_width">
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
@@ -210,7 +221,7 @@ girafe(
   ggobj = senate_histogram,
   options = list(
     ggiraph::opts_tooltip(use_fill = TRUE),
-    ggiraph::opts_sizing(width = 0.7)
+    ggiraph::opts_sizing(width = 1)
   )
 )
 ```
@@ -390,7 +401,7 @@ senate_seats <-
 
 senate_patch <- 
   (senate_probability / senate_seats) +
-  plot_annotation(title = "**How the Senate foreast has changed**",
+  plot_annotation(title = "**How the Senate forecast has changed**",
                   subtitle = paste0("See how each party's forecasted seat total and chance of controlling <br>the Senate have changed over time. The forecast is updated daily."))
 
 ggiraph::girafe(
@@ -398,7 +409,7 @@ ggiraph::girafe(
   height_svg = 8,
   options = list(
     ggiraph::opts_tooltip(use_fill = TRUE),
-    ggiraph::opts_sizing(width = 0.7)
+    ggiraph::opts_sizing(width = 1)
   )
 )
 
@@ -432,12 +443,12 @@ ggiraph::girafe(
   ggobj = house_histogram,
   options = list(
     ggiraph::opts_tooltip(use_fill = TRUE),
-    ggiraph::opts_sizing(width = 0.7)
+    ggiraph::opts_sizing(width = 1)
   )
 )
 ```
 
-
+</div>
 
 
 
