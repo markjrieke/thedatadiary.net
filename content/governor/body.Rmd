@@ -1,0 +1,129 @@
+---
+output: html_document
+widget: "blank"
+active: true
+weight: 60
+
+title: "2022 Governors Forecast"
+subtitle: ""
+
+design.background:
+  image: ""
+  image_darken: 0.6
+  
+---
+
+```{css custom-width, echo=FALSE}
+.interactive_width {
+  max-width: 760px;
+  padding: 0 20px 0 20px;
+  margin: 0 auto 0 auto;
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE,
+  dpi = 500,
+  fig.width = 9,
+  fig.height = 6
+)
+
+# setup
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/setup.R")
+
+# helper functions
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/formatting.R")
+
+# interactive charts
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/interactive_charts.R")
+
+# interactive table
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/interactive_table.R")
+```
+
+<div class="interactive_width">
+
+```{r date, include=FALSE}
+# setup run date
+run_date <- read_rds("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/run_date.rds")
+last_run <- format_date(run_date)
+```
+
+```{r load-data, include=FALSE}
+candidates <-
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/candidate_predictions.csv",
+           locale = locale(encoding = "latin1"))
+
+us_geo <- 
+  tigris::states(class = "sf", cb = TRUE) %>%
+  tigris::shift_geometry()
+```
+
+```{r governor-prep, include=FALSE}
+us_geo <- 
+  tigris::states(class = "sf", cb = TRUE) %>%
+  tigris::shift_geometry() %>%
+  filter(GEOID < 60)
+
+governors <- 
+  candidates %>%
+  filter(race == "Governor",
+         model_date == max(model_date)) %>%
+  select(state, 
+         starts_with("candidate"),
+         p_dem_win,
+         .pred) %>%
+  rowwise() %>%
+  mutate(candidate_name_DEM = paste(candidate_name_DEM, "(D)"),
+         candidate_name_REP = paste(candidate_name_REP, "(R)"),
+         fill_color = interpolate_fill(p_dem_win),
+         dem_format = paste0(round(p_dem_win * 100), "%"),
+         rep_format = paste0(round((1-p_dem_win)*100), "%"),
+         tooltip_text = glue::glue("{candidate_name_DEM}: {dem_format}\n{candidate_name_REP}: {rep_format}")) %>%
+  ungroup()
+```
+
+```{r governor-map}
+governor_map <- 
+  us_geo %>%
+  left_join(governors, by = c("NAME" = "state")) %>%
+  mutate(fill_color = replace_na(fill_color, "gray"),
+         tooltip_text = replace_na(tooltip_text, "Not up for election")) %>%
+  ggplot() +
+  geom_sf_interactive(aes(fill = fill_color,
+                          tooltip = tooltip_text),
+                      color = site_color,
+                      alpha = 0.75) +
+  scale_fill_identity() +
+  theme_void(base_family = "Roboto Slab") +
+  theme(plot.background = element_rect(fill = site_color, color = site_color),
+        plot.title = ggtext::element_markdown(size = 14, hjust = 0.5),
+        plot.subtitle = ggtext::element_markdown(size = 10, hjust = 0.5)) +
+  labs(title = "**2022 Governor's Map**",
+       subtitle = "Probability of winning in each race")
+
+girafe(
+  ggobj = governor_map,
+  height_svg = 4.1125,
+  options = list(
+    opts_tooltip(use_fill = TRUE)
+  )
+)
+```
+
+
+<br>
+
+```{r candidates, echo=FALSE}
+candidates %>%
+  arrange(state) %>%
+  prep_table("Governor")
+```
+
+</div>
+
+
+
