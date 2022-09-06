@@ -123,7 +123,7 @@ house_seats <-
 house_patch <- 
   (house_probability / house_seats) +
   plot_annotation(title = "**How the House forecast has changed**",
-                  subtitle = paste0("See how each party's forecasted seat total and chance of controlling <br>the Senate have changed over time. The forecast is updated daily."))
+                  subtitle = paste0("See how each party's forecasted seat total and chance of controlling <br>the House have changed over time. The forecast is updated daily."))
 
 ggiraph::girafe(
   ggobj = house_patch,
