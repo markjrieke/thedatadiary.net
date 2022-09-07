@@ -54,8 +54,7 @@ last_run <- format_date(run_date)
 
 ```{r load-data, include=FALSE}
 candidates <-
-  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/candidate_predictions.csv",
-           locale = locale(encoding = "latin1"))
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/candidate_predictions.csv")
 
 us_geo <- 
   tigris::states(class = "sf", cb = TRUE) %>%
