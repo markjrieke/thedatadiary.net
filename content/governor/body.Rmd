@@ -46,6 +46,36 @@ source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpe
 
 <div class="interactive_width">
 
+```{r overwrite-fill-function, include=FALSE}
+interpolate_fill <- function(x) {
+  
+  mid_color <- "white"
+  
+  if (x < 0.5) {
+    
+    fill_lower <- rep_red
+    fill_upper <- mid_color
+    search_col <- x/0.5
+    
+  } else {
+    
+    fill_lower <- mid_color
+    fill_upper <- dem_blu
+    search_col <- (x - 0.5)/0.5
+    
+  }
+  
+  color_rgb <- colorRamp(c(fill_lower, fill_upper))
+  rgb_vals <- color_rgb(search_col)
+  hex <- rgb(rgb_vals[1], rgb_vals[2], rgb_vals[3], maxColorValue = 255)
+  
+  return(hex)
+  
+  
+}
+```
+
+
 ```{r date, include=FALSE}
 # setup run date
 run_date <- read_rds("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/run_date.rds")
