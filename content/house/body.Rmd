@@ -61,8 +61,7 @@ house_distribution <-
   read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/current_house_distribution.csv")
 
 candidates <-
-  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/candidate_predictions.csv",
-           locale = locale(encoding = "latin1"))
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/candidate_predictions.csv")
 ```
 
 
