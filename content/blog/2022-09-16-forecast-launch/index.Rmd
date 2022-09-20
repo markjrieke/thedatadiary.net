@@ -1,0 +1,126 @@
+---
+title: Forecast Launch!
+author: ''
+date: '2022-09-19'
+slug: []
+categories: 
+- politics
+tags: []
+subtitle: 'A look under the hood of the 2022 Midterm Model'
+summary: ''
+authors: []
+lastmod: '2022-09-16T09:05:00-05:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+math: true
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  dpi = 500,
+  fig.width = 9,
+  fig.height = 6
+)
+
+# setup themes
+sysfonts::font_add_google("Roboto Slab")
+showtext::showtext_auto()
+
+ggplot2::theme_set(
+  ggplot2::theme_minimal(base_family = "Roboto Slab", 
+                         base_size = 14) +
+    ggplot2::theme(plot.title.position = "plot",
+                   plot.background = ggplot2::element_rect(fill = "white", color = "white"),
+                   plot.title = ggtext::element_markdown(),
+                   plot.subtitle = ggtext::element_markdown())
+)
+```
+
+For those who aren't glued to electoral politics, Labor Day typically marks the beginning of election season. Primaries are settled, pollsters stop sampling all adults to prioritize [likely voters](https://www.aapor.org/Education-Resources/Election-Polling-Resources/Likely-Voters.aspx), and campaigns kick into high-gear. Labor Day *also* marks the release of my 2022 midterm forecast:
+
+```{r, echo=FALSE}
+blogdown::shortcode("tweet", "1566971975821565953")
+```
+
+At the time of this writing, Democrats are favored to keep the senate while Republicans are favored to flip the House:
+
+![](pics/senate.png)
+
+![](pics/house.png)
+
+The most up-to-date information for each chamber (as well as individual races) can be found on the respective pages for the [Senate](https://www.thedatadiary.net/senate/) and [House](https://www.thedatadiary.net/house/). There is also a forecast for each [Governor's race](https://www.thedatadiary.net/governor/). 
+
+In this post, I'll walk through how the model works and point out some of its shortcomings. I'll cover the broad strokes here, but for those who are interested in digging into the source code, I've [released the model publicly on github](https://github.com/markjrieke/2022-midterm-forecasts/tree/main/models). 
+
+> Hi! I'll put extra math-y details in *note blocks*, like this. You can skip over these without missing out on any of the important stuff, this just gives some extra details for dorks like me.
+
+## How this works
+
+### Filter down candidates/races
+
+The first step taken is to filter out non-competitive races and candidates. Non-competitive, used here, doesn't mean "races that aren't close" but instead means "races that *literally* don't have any competition." In each race, only the chances of the top democrat/republican (or independent that would caucus with one of the major parties) are modeled. In uncontested races or races between two members of the same party, the controlling party's probability of winning is set to **100%**.
+
+> Removing third parties and intra-party races allows us to model each candidate's projected voteshare via a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution), which is useful for modeling proportional data of binary outcomes. 
+
+### Estimate the polling average 
+
+The next step is to estimate the polling average in each race. For races with polls, this can be done directly, but most races (especially in the House), aren't polled. For these races, the poll average is constructed from the [generic congressional ballot (GCB)](https://github.com/markjrieke/2022-midterm-forecasts#generic-ballot-average) and the seat's [partisan voter index (PVI)](https://en.wikipedia.org/wiki/Cook_Partisan_Voting_Index). For example, for a **R+5** seat, if the GCB is at **D+1** the seats poll average will be **R+4**. 
+
+> The poll model is really simple, but does increase slightly with complexity as more polls come in/as election day draws nearer. When there are three or fewer polls, a simple average is used. When there are between 4 and 6 polls, a linear model is used (i.e., `lm(pct ~ date)`). When there are more than 6 polls, a [loess model](https://en.wikipedia.org/wiki/Local_regression) is used (`loess(pct ~ date, span = span)`). The `span` parameter is scaled by the number of days between the polling period and election day --- as election day approaches, `span` moves from `1` to `0.75`. 
+
+### Train the model
+
+Polls are a great tool and the most reliable predictor, but not the only one! With the polling average in each seat, the model is trained to estimate the outcome based on polls, partisanship (via PVI), incumbency, and a blend of demographics. 
+
+```{r, eval=FALSE}
+# here's the actual model itself!
+# estimate: poll average, 
+# poll_bucket: has this race been polled, y/n?
+# incumbent: incumbent party - democrat/republican/neither?
+elections_model <-
+  gamlss(result ~ estimate * poll_bucket + pvi + incumbent + white + black + hispanic + aapi,
+         sigma.formula = ~ log10(num_polls + 2),
+         family = BE(),
+         data = elections_train)
+```
+
+### Simulate outcomes
+
+The final step is to simulate! To do so, 10,000 possible voteshare outcomes are generated each day for each race. The probability of any candidate winning is simply the percentage of simulations where the candidate has the greater voteshare. Similarly, the probability that each party controls each chamber is simply the percentage of simulations where that party controls a majority of seats (though Democrats only need 50 seats for control of the Senate, as Vice-President Harris serves as the tie-breaking vote). 
+
+> In each of the simulations, a bit of polling error is introduced. This introduced error is normally distributed around 0. There's been [quite a bit of debate recently](https://www.nytimes.com/2022/09/12/upshot/polling-midterms-warning.html) regarding the direction of that error (some folks think we should assume polls are undercounting Republicans, given the errors in 2016 and 2020), but the consensus amongst the modeling at [FiveThirtyEight](https://fivethirtyeight.com/features/will-the-polls-overestimate-democrats-again/) and the [Economist](https://view.e.economist.com/?qs=980de34bada73fb1f5767459e48642c20c34dfccef6dad91c748d669b73a4c92ca237844f246d0f7cc9f5a2203fd3a181a6537f5518d8a0e16d85b617621bec21db1f84f5467b484172439a85e63eee6) is to set the average polling bias to 0. Each prediction is a single draw from one of the 10,000 possible distributions --- when aggregated for each candidate we can estimate the 80% quantile range for their expected voteshare.
+
+## Model shortcomings
+
+While I'd love to believe that my model is professional quality, the truth is that this is represents my best (amateur) attempt at putting together a forecast in my limited free time. Of the model's shortcomings, the three most egregious (in my opinion) are listed below:
+
+1. **The poll model is probably too simple**. I'd spent a lot of time putting together a custom poll models for the [generic ballot average](https://github.com/markjrieke/2022-midterm-forecasts#generic-ballot-average) and [presidential approval average](https://github.com/markjrieke/2022-midterm-forecasts#presidential-approval-average), both of which are fairly complex and adjust for pollster bias, survey size, sample population, and recency. While these are good enough poll models on their own, they take quite a bit of time to update. Extending this out to all the races in the midterms would mean that daily updates may take *hours*, which is a non-starter. So instead, I've opted for the simpler poll aggregate described above. This simplicity means that it's a bit jumpy and a bit too bullish on recent polls. 
+
+2. **This is a "now-cast"**. Some models allow poll averages to drift between the current day and election day via [random walks](https://www.geophysik.uni-muenchen.de/~igel/downloads/inviimontecarlo.pdf). This model, however, doesn't do so --- the forecast can really be thought of as the chance each party has *if elections were held today with the information available today*.
+
+3. **This is neither a Bayesian, nor a hierarchical model**. In this model, the poll average and voteshare forecast are actually two separate models --- ideally, these should both be roped-up in an overarching Bayesian model since they are both part of the same [data generation process](https://en.wikipedia.org/wiki/Data_generating_process#:~:text=In%20statistics%20and%20in%20empirical,real%20models%20have%20observable%20consequences.). Furthermore, this model assumes that all races are fully independent, which is wrong. House races in Georgia, for example, are not independent from other house races in Georgia. Ideally, we'd partially pool information across different races --- this model doesn't do that.
+
+Despite all this, I believe this relatively simple model results in an overall *directionally correct* forecast --- you should view it in concert with a host of other reputable forecasts (listed below). I'd encourage you to check back intermittently to see how the race for each chamber progresses!
+
+#### Other midterm forecasts
+
+* [**FiveThirtyEight**](https://fivethirtyeight.com/): [Senate](https://projects.fivethirtyeight.com/2022-election-forecast/senate/), [House](https://projects.fivethirtyeight.com/2022-election-forecast/house/), [Governor](https://projects.fivethirtyeight.com/2022-election-forecast/governor/)
+* [**The Economist**](https://www.economist.com/): [Senate](https://www.economist.com/interactive/us-midterms-2022/forecast/senate), [House](https://www.economist.com/interactive/us-midterms-2022/forecast/house)
+* [**Decision Desk HQ**](https://decisiondeskhq.com/): [Senate](https://forecast.decisiondeskhq.com/senate), [House](https://forecast.decisiondeskhq.com/house)
+* [**Split Ticket**](https://split-ticket.org/): [Senate](https://www.270towin.com/2022-senate-election/split-ticket-2022-senate-ratings), [House](https://www.270towin.com/2022-house-election/split-ticket-2022-house-ratings),  [Governor](https://www.270towin.com/2022-governor-election/split-ticket-2022-governor-ratings) 
+* [**JHK Forecasts**](https://jhkforecasts.com/): [Senate](https://projects.jhkforecasts.com/2022-midterms/senate-forecast/), [House](https://projects.jhkforecasts.com/2022-midterms/house-forecast/)
+* [**Race to the WH**](https://www.racetothewh.com/): [Senate](https://www.racetothewh.com/senate/2022), [House](https://www.racetothewh.com/house), [Governor](https://www.racetothewh.com/governor)
+* [**CNalysis**](https://cnalysis.com/): [Senate](https://projects.cnalysis.com/21-22/senate), [House](https://projects.cnalysis.com/21-22/house), [Governor](https://projects.cnalysis.com/21-22/governor)
+
+
+
+
+
+
