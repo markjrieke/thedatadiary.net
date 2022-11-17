@@ -119,7 +119,7 @@ satisfaction %>%
   knitr::kable()
 ```
 
-This unit level variation is important! Even though units within certain hospitals tend to perform worse than units in others, individual units at lower-rated hospitals can still outperform highly-rated hospitals! An easier way to see both the hospital-level and unit-level variation is to place all on the same plot.
+This unit level variation is important! Even though units within certain hospitals tend to perform worse than units in others, individual units at lower-rated hospitals can still outperform units at highly-rated hospitals! An easier way to see both the hospital-level and unit-level variation is to place all on the same plot.
 
 ```{r}
 satisfaction %>%
@@ -141,7 +141,7 @@ satisfaction %>%
        y = NULL)
 ```
 
-Here, each point represents an individual unit within a hospital --- larger points indicate units with more responses. There's clearly variation *across* hospitals, but also variation *within* each hospital. We can generally trust that the satisfaction score for units with lots of responses is accurate, but units with only few responses can be misleading --- some have scores of 100%! I don't think that these units are actually perfect, it's likelier that they got lucky. 
+Here, each point represents an individual unit within a hospital --- larger points indicate units with more responses. There's clearly variation *across* hospitals, but also variation *within* each hospital. We can generally trust that the satisfaction score for a unit with lots of responses is accurate, but a unit with few responses can provide misleading scores --- some have scores of 100%! I don't think that these units are actually perfect, it's likelier that they got lucky. 
 
 A hierarchical model will allow us to pool all this information together --- when a unit has lots of responses, the model's estimate of their true score will land pretty close to their raw score. When a unit only has a few responses, however, the model will shrink the estimate of their true score towards the hospital group-level average. 
 
@@ -153,6 +153,7 @@ $$
 \begin{gather}
 y_{unit} \sim Binomial(\pi_{unit}, n_{unit}) \\
 logit(\pi_{unit}) = \mu + \beta_{hospital} + \beta_{unit} \\
+\mu \sim Normal(0, 2) \\
 \beta_{hospital} \sim Normal(0, 2) \\
 \beta_{unit} \sim Normal(0, 2)
 \end{gather}
