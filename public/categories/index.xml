@@ -7,17 +7,44 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Sat, 20 Aug 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 14 Nov 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>healthcare</title>
+      <link>https://www.thedatadiary.net/categories/healthcare/</link>
+      <pubDate>Mon, 14 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/categories/healthcare/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>rstats</title>
       <link>https://www.thedatadiary.net/categories/rstats/</link>
-      <pubDate>Sat, 20 Aug 2022 00:00:00 +0000</pubDate>
+      <pubDate>Mon, 14 Nov 2022 00:00:00 +0000</pubDate>
       
       <guid>https://www.thedatadiary.net/categories/rstats/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>stan</title>
+      <link>https://www.thedatadiary.net/categories/stan/</link>
+      <pubDate>Mon, 14 Nov 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/categories/stan/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>politics</title>
+      <link>https://www.thedatadiary.net/categories/politics/</link>
+      <pubDate>Mon, 19 Sep 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/categories/politics/</guid>
       <description></description>
     </item>
     
@@ -54,15 +81,6 @@
       <pubDate>Sun, 12 Jun 2022 00:00:00 +0000</pubDate>
       
       <guid>https://www.thedatadiary.net/categories/bayes-theorem/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>politics</title>
-      <link>https://www.thedatadiary.net/categories/politics/</link>
-      <pubDate>Wed, 06 Apr 2022 00:00:00 +0000</pubDate>
-      
-      <guid>https://www.thedatadiary.net/categories/politics/</guid>
       <description></description>
     </item>
     
