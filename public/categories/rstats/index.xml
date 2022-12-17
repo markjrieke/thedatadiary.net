@@ -7,10 +7,84 @@
     <generator>Source Themes academia (https://sourcethemes.com/academic/)</generator>
     <language>en-us</language>
     <copyright>&amp;copy; Mark Rieke {year}</copyright>
-    <lastBuildDate>Mon, 14 Nov 2022 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 16 Dec 2022 00:00:00 +0000</lastBuildDate>
     
 	    <atom:link href="https://www.thedatadiary.net/categories/rstats/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Chief Twit</title>
+      <link>https://www.thedatadiary.net/blog/2022-12-16-chief-twit/</link>
+      <pubDate>Fri, 16 Dec 2022 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.thedatadiary.net/blog/2022-12-16-chief-twit/</guid>
+      <description>
+
+
+&lt;p&gt;Umm… twitter is a weird place right now. Since &lt;a href=&#34;https://www.nytimes.com/2022/10/27/technology/elon-musk-twitter-deal-complete.html&#34;&gt;Elon Musk’s $44 billion deal to take over twitter closed in late October&lt;/a&gt;, there have been &lt;a href=&#34;https://www.nytimes.com/2022/11/03/technology/twitter-layoffs-elon-musk.html&#34;&gt;mass layoffs&lt;/a&gt;, a &lt;a href=&#34;https://www.washingtonpost.com/technology/2022/11/22/twitter-advertiser-exodus-musk/&#34;&gt;floodgate of advertisers leaving the platform&lt;/a&gt;, and a &lt;a href=&#34;https://www.platformer.news/p/inside-the-twitter-meltdown&#34;&gt;near-daily deluge of disasters&lt;/a&gt; (for in depth coverage, I recommend visiting &lt;a href=&#34;https://www.platformer.news/&#34;&gt;Platformer&lt;/a&gt;). It feels like the ship is going down, but it’s been pretty funny to watch everything unfold.&lt;/p&gt;
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;being on Twitter right now is like playing the violin on the titanic except we are also making fun of the iceberg and the iceberg is getting genuinely mad&lt;/p&gt;&amp;mdash; 🌻✨️Lauren Dombrowski🏴‍☠️🍊 (@callmekitto) &lt;a href=&#34;https://twitter.com/callmekitto/status/1589407148462964736?ref_src=twsrc%5Etfw&#34;&gt;November 6, 2022&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+&lt;p&gt;Folks who are invested in Tesla may find the situation somewhat less humorous — Tesla’s stock price has dropped 18% over the past month. That’s a lot to lose, but can it really be causally linked to Musk’s antics on twitter?&lt;/p&gt;
+&lt;p&gt;As it turns out, yes, it can. Following the approach taken by &lt;a href=&#34;https://www.alexpghayes.com/post/2020-05-01_elon-musk-send-tweet/&#34;&gt;Alex Hayes&lt;/a&gt; and &lt;a href=&#34;https://fabiandablander.com/r/Causal-Doge.html&#34;&gt;Fabian Dablander&lt;/a&gt;, we can use the &lt;a href=&#34;https://google.github.io/CausalImpact/CausalImpact.html&#34;&gt;&lt;code&gt;{CausalImpact}&lt;/code&gt;&lt;/a&gt; package to compare Tesla’s stock price pre/post Musk’s takeover of twitter, using the S&amp;amp;P500 as a synthetic control.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;library(tidyverse)
+library(riingo)
+library(CausalImpact)
+
+# pull in stock from tiingo
+stonks &amp;lt;- 
+  bind_rows(
+    riingo_prices(&amp;quot;TSLA&amp;quot;), 
+    riingo_prices(&amp;quot;SPY&amp;quot;)
+  )
+
+# adjust for tesla 3-1 stock split in aug
+stonks &amp;lt;- 
+  stonks %&amp;gt;%
+  select(ticker, date, close) %&amp;gt;%
+  mutate(close = if_else(date &amp;lt; lubridate::mdy(&amp;quot;8/25/22&amp;quot;) &amp;amp; ticker == &amp;quot;TSLA&amp;quot;,
+                         close/3,
+                         close))&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Looking at the two tickers side by side, Tesla seems to follow the index’s movement until the takeover.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;stonks %&amp;gt;% 
+  mutate(date = lubridate::as_date(date)) %&amp;gt;%
+  ggplot(aes(x = date,
+             y = close,
+             color = ticker)) + 
+  geom_line(linewidth = 1) + 
+  scale_color_brewer(palette = &amp;quot;Dark2&amp;quot;) + 
+  facet_wrap(~ticker, 
+             scales = &amp;quot;free_y&amp;quot;,
+             ncol = 1) +
+  geom_vline(xintercept = lubridate::mdy(&amp;quot;10/27/22&amp;quot;),
+             linetype = &amp;quot;dashed&amp;quot;) +
+  scale_x_date(labels = scales::label_date(format = &amp;quot;%b&amp;quot;)) +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  theme(legend.position = &amp;quot;none&amp;quot;) +
+  labs(title = &amp;quot;STONKS: Tesla&amp;#39;s and S&amp;amp;P500&amp;#39;s daily close over the past year&amp;quot;,
+       x = NULL,
+       y = NULL,
+       caption = &amp;quot;Data from Dec 16, &amp;#39;21 -- Dec 16, &amp;#39;22&amp;quot;)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-12-16-chief-twit/index_files/figure-html/unnamed-chunk-4-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Plugging this in blindly to &lt;code&gt;CausalImpact()&lt;/code&gt; shows that Musk’s twitter antics have had an effect on Tesla’s price.&lt;/p&gt;
+&lt;pre class=&#34;r&#34;&gt;&lt;code&gt;stonks &amp;lt;- 
+  stonks %&amp;gt;%
+  pivot_wider(names_from = ticker,
+              values_from = close)
+
+fit &amp;lt;- 
+  CausalImpact(
+    zoo(cbind(stonks$TSLA, stonks$SPY), stonks$date), 
+    stonks$date[c(1, 217)],  # 12/16/21 - 10/26/22
+    stonks$date[c(218, 253)] # 10/27/22 - 12/16/22
+  )
+
+fit %&amp;gt;% plot()&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;img src=&#34;https://www.thedatadiary.net/blog/2022-12-16-chief-twit/index_files/figure-html/unnamed-chunk-5-1.png&#34; width=&#34;4500&#34; /&gt;&lt;/p&gt;
+&lt;p&gt;Prior to Musk’s twitter takeover, Tesla’s shares could be reliably estimated by the S&amp;amp;P500. After the takeover, however, Tesla’s share price has fallen outside of what the model would expect based on S&amp;amp;P500 data. The implied cost to Tesla shareholders is about &lt;strong&gt;$77 per share&lt;/strong&gt; on average, though the credible interval could put the true cost anywhere between &lt;strong&gt;$17 and $133 per share&lt;/strong&gt;.&lt;/p&gt;
+&lt;p&gt;This makes pretty strong assumptions — that Musk’s antics don’t affect S&amp;amp;P500 prices and that no other event is influencing Tesla’s price but not the S&amp;amp;P500 price. There’s lot’s more worth digging into in the paper (&lt;a href=&#34;https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-1/Inferring-causal-impact-using-Bayesian-structural-time-series-models/10.1214/14-AOAS788.full&#34;&gt;Brodersen, 2015&lt;/a&gt;) that &lt;code&gt;{CausalImpact}&lt;/code&gt; accompanies. Since this was mostly a quick exploration on a Friday afternoon, however, I’ll leave the additional investigating to the reader. For me, it’s back to watching the site crash and burn.&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Hierarchical Hospitals</title>
