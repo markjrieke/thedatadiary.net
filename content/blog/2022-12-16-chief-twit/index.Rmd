@@ -1,0 +1,126 @@
+---
+title: Chief Twit
+author: ''
+date: '2022-12-16'
+slug: []
+categories: 
+- rstats
+tags: []
+subtitle: "A causal look at how Musk's twitter ownership has affected Tesla stock"
+summary: ''
+authors: []
+lastmod: '2022-12-16T21:18:29-06:00'
+featured: no
+image:
+  caption: ''
+  focal_point: ''
+  preview_only: no
+projects: []
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.showtext = TRUE,
+  dpi = 500,
+  fig.width = 9,
+  fig.height = 6
+)
+
+# setup themes
+#extrafont::loadfonts(device = "win")
+sysfonts::font_add_google("Roboto Slab")
+
+showtext::showtext_auto()
+
+ggplot2::theme_set(
+  ggplot2::theme_minimal(base_family = "Roboto Slab",
+                         base_size = 14) +
+    ggplot2::theme(plot.title.position = "plot",
+                   plot.background = ggplot2::element_rect(fill = "white", color = "white"),
+                   plot.title = ggtext::element_markdown(),
+                   plot.subtitle = ggtext::element_markdown(),
+                   plot.caption = ggtext::element_markdown(color = "gray40"))
+)
+```
+
+Umm... twitter is a weird place right now. Since [Elon Musk's $44 billion deal to take over twitter closed in late October](https://www.nytimes.com/2022/10/27/technology/elon-musk-twitter-deal-complete.html), there have been [mass layoffs](https://www.nytimes.com/2022/11/03/technology/twitter-layoffs-elon-musk.html), a [floodgate of advertisers leaving the platform](https://www.washingtonpost.com/technology/2022/11/22/twitter-advertiser-exodus-musk/), and a [near-daily deluge of disasters](https://www.platformer.news/p/inside-the-twitter-meltdown) (for in depth coverage, I recommend visiting [Platformer](https://www.platformer.news/)). It feels like the ship is going down, but it's been pretty funny to watch everything unfold.
+
+```{r, echo=FALSE}
+blogdown::shortcode("tweet", "1589407148462964736")
+```
+
+Folks who are invested in Tesla may find the situation somewhat less humorous --- Tesla's stock price has dropped 18% over the past month. That's a lot to lose, but can it really be causally linked to Musk's antics on twitter?
+
+As it turns out, yes, it can. Following the approach taken by [Alex Hayes](https://www.alexpghayes.com/post/2020-05-01_elon-musk-send-tweet/) and [Fabian Dablander](https://fabiandablander.com/r/Causal-Doge.html), we can use the [`{CausalImpact}`](https://google.github.io/CausalImpact/CausalImpact.html) package to compare Tesla's stock price pre/post Musk's takeover of twitter, using the S&P500 as a synthetic control.  
+
+```{r}
+library(tidyverse)
+library(riingo)
+library(CausalImpact)
+
+# pull in stock from tiingo
+stonks <- 
+  bind_rows(
+    riingo_prices("TSLA"), 
+    riingo_prices("SPY")
+  )
+
+# adjust for tesla 3-1 stock split in aug
+stonks <- 
+  stonks %>%
+  select(ticker, date, close) %>%
+  mutate(close = if_else(date < lubridate::mdy("8/25/22") & ticker == "TSLA",
+                         close/3,
+                         close))
+```
+
+Looking at the two tickers side by side, Tesla seems to follow the index's movement until the takeover.
+
+```{r}
+stonks %>% 
+  mutate(date = lubridate::as_date(date)) %>%
+  ggplot(aes(x = date,
+             y = close,
+             color = ticker)) + 
+  geom_line(linewidth = 1) + 
+  scale_color_brewer(palette = "Dark2") + 
+  facet_wrap(~ticker, 
+             scales = "free_y",
+             ncol = 1) +
+  geom_vline(xintercept = lubridate::mdy("10/27/22"),
+             linetype = "dashed") +
+  scale_x_date(labels = scales::label_date(format = "%b")) +
+  scale_y_continuous(labels = scales::dollar_format()) +
+  theme(legend.position = "none") +
+  labs(title = "STONKS: Tesla's and S&P500's daily close over the past year",
+       x = NULL,
+       y = NULL,
+       caption = "Data from Dec 16, '21 -- Dec 16, '22")
+```
+
+Plugging this in blindly to `CausalImpact()` shows that Musk's twitter antics have had an effect on Tesla's price. 
+
+```{r}
+stonks <- 
+  stonks %>%
+  pivot_wider(names_from = ticker,
+              values_from = close)
+
+fit <- 
+  CausalImpact(
+    zoo(cbind(stonks$TSLA, stonks$SPY), stonks$date), 
+    stonks$date[c(1, 217)],  # 12/16/21 - 10/26/22
+    stonks$date[c(218, 253)] # 10/27/22 - 12/16/22
+  )
+
+fit %>% plot()
+```
+
+Prior to Musk's twitter takeover, Tesla's shares could be reliably estimated by the S&P500. After the takeover, however, Tesla's share price has fallen outside of what the model would expect based on S&P500 data. The implied cost to Tesla shareholders is about **\$77 per share** on average, though the credible interval could put the true cost anywhere between **\$17 and \$133 per share**. 
+
+This makes pretty strong assumptions --- that Musk's antics don't affect S&P500 prices and that no other event is influencing Tesla's price but not the S&P500 price. There's lot's more worth digging into in the paper ([Brodersen, 2015](https://projecteuclid.org/journals/annals-of-applied-statistics/volume-9/issue-1/Inferring-causal-impact-using-Bayesian-structural-time-series-models/10.1214/14-AOAS788.full)) that `{CausalImpact}` accompanies. Since this was mostly a quick exploration on a Friday afternoon, however, I'll leave the additional investigating to the reader. For me, it's back to watching the site crash and burn. 
+
+
