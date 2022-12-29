@@ -1,0 +1,648 @@
+---
+title: "magnum dong (opus)"
+output: html_document
+date: '2022-12-21'
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.showtext = TRUE,
+  dpi = 500,
+  fig.width = 9,
+  fig.height = 6
+)
+
+# setup themes
+sysfonts::font_add_google("Roboto Slab")
+
+showtext::showtext_auto()
+
+ggplot2::theme_set(
+  ggplot2::theme_minimal(base_family = "Roboto Slab",
+                         base_size = 13) +
+    ggplot2::theme(plot.title.position = "plot",
+                   plot.background = ggplot2::element_rect(fill = "white", color = "white"),
+                   plot.title = ggtext::element_markdown(),
+                   plot.subtitle = ggtext::element_markdown(),
+                   plot.caption = ggtext::element_markdown(color = "gray40"))
+)
+```
+
+Over the past few years, the hospital system I work for has transitioned from the old metric for measuring patient satisfaction, Likelihood to Recommend (LTR), to a newer metric, Net Promoter Score (NPS). Both metrics ask the same question --- *how likely are you to recommend this hospital to a friend or relative?* --- but they are measured very differently. The score for LTR is simply the percentage of patients who respond with the "topbox" option of *Very likely* on a scale from *Very likely* to *Very unlikely*. NPS, on the other hand, is a bit more involved. Patients are categorized based on their response on a 0-10 point scale: responses between 0 and 6 are considered *detractors*, 7 and 8s are considered *passives*, while 9 and 10s are considered *promoters*. The score for NPS is then the percentage of promoters *minus* the percentage of detractors.
+
+$$
+\begin{gather}
+\text{NPS} = \text{Promoter %} - \text{Detractor %}
+\end{gather}
+$$
+
+As a metric, NPS is a bit better than the alternative of LTR, since it is somewhat able to take into account the distribution of responses along the 0-10 scale. Consider the following set of responses (and let's just pretend for sake of example that "promoter" here is equivalent to "topbox"). LTR's topbox isn't able to detect a difference in scores since promoters comprise 50% of responses in both sets. NPS, however, *can* detect a difference, since the second set is rewarded for have fewer detractors than the first set.
+
+```{r nps-example}
+tibble::tribble(
+  ~promoters, ~passives, ~detractors, ~topbox, ~nps,
+  "50%", "25%", "25%", "50%", "25%",
+  "50%", "50%", "0%", "50%", "50%"
+) |>
+  knitr::kable()
+```
+
+With only a few sets of responses to compare, this seems like a trivial improvement --- since we have all the data, why don't we just look at the response distribution for every set? In practice, however, I'm often looking at responses for *hundreds* of individual hospital units across the system --- encoding this extra bit of information into a single number allows for a more nuanced comparison *without* any costs to the viewer's cognitive load.
+
+Unfortunately, there's no free lunch here, and the additional nuance that NPS provides comes at the cost of modeling complexity. Relative modeling binary choices like LTR's topbox, the ecosystem for modeling the choice between three or more categories is far smaller. Additionally, the *order* of the categories matters --- a promoter response is better than a passive response, which is better than a detractor response (this adds a layer of complexity over unordered categories, e.g., red, blue, or green). 
+
+Fortunately, I'm not the first person to run into this problem. I've been (slowly) working through [Richard McElreath's](https://xcelab.net/rm/) [Statistical Rethinking](https://www.routledge.com/Statistical-Rethinking-A-Bayesian-Course-with-Examples-in-R-and-STAN/McElreath/p/book/9780367139919), which conveniently covers this sort of problem directly (and comes with the added benefit of utilizing a Bayesian approach via [Stan](https://mc-stan.org/)). 
+
+> *Need to change around this sentence*
+>
+>As a litmus test, a useful exercise is to define a data-generating process, manually fix the parameters in the process, simulate some data, and see if I can recover  the parameters with a model.
+
+## The data generating process (workshop section title)
+
+Let's define a process that we can use to simulate data from.
+
+```{r load-libraries}
+library(tidyverse)
+library(rethinking)
+library(riekelib)
+library(broom.mixed)
+
+# I've been having ~issues~ with cmdstan, so switching default to rstan
+set_ulam_cmdstan(FALSE)
+```
+
+Each patient's response $R_i$ can be described with as a probability $p_i$ of selecting from each of the three available categories:
+
+$$
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+\end{gather}
+$$
+
+There's a useful math trick we can use to enforce the order of the categories. Rather than working with the *individual probability* of each category directly, we can instead define the probabilities in terms of the *cumulative probability* of each category. For example, in the set below, the probability of selecting "passive" is 10%, but the *cumulative probability* of selecting a rating of passive *or lower* is 30%:
+
+```{r cumulative-prob-table}
+probs_example <- 
+  tibble(nps_group = as_factor(c("detractor", "passive", "promoter")),
+         prob = c(0.2, 0.1, 0.7),
+         cumulative_prob = cumsum(prob))
+
+probs_example %>%
+  mutate(across(ends_with("prob"), ~scales::label_percent(accuracy = 1)(.x))) %>%
+  knitr::kable()
+```
+
+With this in mind, any individual probability can be described as the difference between two cumulative probabilities $q_k$. 
+
+```{r cumulative-prob-plot}
+probs_example %>%
+  ggplot(aes(x = nps_group,
+             xend = nps_group)) + 
+  geom_hline(yintercept = c(0.2, 0.3),
+             linetype = "dashed",
+             color = "gray60") + 
+  geom_segment(aes(y = 0,
+                   yend = cumulative_prob)) +
+  geom_point(aes(y = cumulative_prob)) +
+  geom_segment(aes(y = cumulative_prob - prob,
+                   yend = cumulative_prob),
+               color = "blue",
+               position = position_nudge(x = 0.125)) + 
+  geom_point(aes(y = cumulative_prob),
+             color = "blue",
+             position = position_nudge(x = 0.125)) + 
+  geom_text(x = 1 - 0.1,
+            y = 0.1,
+            label = "q1: 20%",
+            hjust = "right") +
+  geom_text(x = 1 + 0.125 + 0.1,
+            y = 0.1,
+            label = "p1: 20%",
+            hjust = "left",
+            color = "blue") + 
+  geom_text(x = 2 - 0.1,
+            y = 0.25,
+            label = "q2: 30%",
+            hjust = "right") +
+  geom_text(x = 2 + 0.125 + 0.1,
+            y = 0.25,
+            label = "p2: 10%",
+            hjust = "left",
+            color = "blue") +
+  geom_text(x = 3 + 0.125 + 0.1,
+            y = 0.625,
+            label = "p3: 70%",
+            color = "blue",
+            hjust = "left") +
+  expand_limits(y = c(0, 1)) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  labs(title = glue::glue("**Cumulative** and 
+                          **{color_text('individual', 'blue')}** 
+                          probabilities of each response"),
+       x = NULL,
+       y = NULL)
+```
+
+The probability of selecting a response less than detractor is 0% and the probability of selecting promoter *or lower* is 100%, so we can rewrite the individual probabilities in terms of just two cumulative probabilities.
+
+$$
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+p_{\text{detractor}[i]} = q_{1, i} \\
+p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i} \\
+\end{gather}
+$$
+
+In the [logit](https://en.wikipedia.org/wiki/Logit) space, these two cumulative probabilities can be represented by a linear model's output $\phi_i$ *relative* to a set of $k = 2$ "cutpoints" $\kappa_k$. 
+
+$$
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+p_{\text{detractor}[i]} = q_{1, i} \\
+p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i} \\
+\text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
+\phi_i = \text{some linear model}
+\end{gather}
+$$
+
+This is all a bit involved but I wouldn't worry about the details too much. The important takeaway is that we now have a linear model $\phi$ that maps to a categorical outcome while preserving the order of the categories. 
+
+## Simulating data
+
+In this case, let's let $\phi$ vary by the patient's age and the hospital unit they visit:
+
+$$
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+p_{\text{detractor}[i]} = q_{1, i} \\
+p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i} \\
+\text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
+\phi_i = \beta_{\text{unit}[i]} + \beta_{\text{age}} \ \text{age}_i
+\end{gather}
+$$
+
+We'll manually fix the $\beta_{\text{unit}}$ term for each unit. Additionally, let's define a sampling weight so that the simulated data ends up with a wide range of response counts.
+
+```{r set-unit-params}
+unit_params <-
+  tribble(
+    ~unit, ~beta, ~weight,
+    "A", 1.00, 2,
+    "B", 0.66, 3,
+    "C", 0.33, 2,
+    "D", 0.00, 4,
+    "E", -0.50, 1
+  )
+
+unit_params %>%
+  knitr::kable()
+```
+
+Here, unit A is likely to have the best scores, while unit E is likely to have the worst. Unit D is likely to have the most returns, while unit E is likely to have the fewest. The randomization/discretization means that the simulated scores won't match the expected scores exactly, but if we set cutpoints in the logit space, we can work backwards through the data-generating process to see the expected score for each unit.
+
+```{r set-cutpoints-expected-unit-nps}
+# set cutpoints in the logit space
+cutpoints <- c(-0.5, -0.15)
+
+# here's how we expect the units to score for an average aged patient
+unit_params %>%
+  mutate(q1 = cutpoints[1] - beta,
+         q2 = cutpoints[2] - beta,
+         detractor = expit(q1),
+         passive = expit(q2) - expit(q1),
+         promoter = 1 - expit(q2)) %>%
+  select(unit, weight, promoter, passive, detractor) %>%
+  mutate(nps = promoter - detractor,
+         across(c(promoter:nps), ~scales::label_percent(accuracy = 1)(.x))) %>%
+  knitr::kable()
+```
+
+Now let's simulate patient visits. We'll have 500 patients return surveys and the number of returns at each unit will be proportional to the `weight` set earlier.
+
+```{r simulate-units}
+n_patients <- 500
+
+# simulate patient visits
+set.seed(30)
+unit_samples <-
+  sample(
+    unit_params$unit,
+    size = n_patients,
+    prob = unit_params$weight,
+    replace = TRUE
+  )
+
+tibble(unit = unit_samples) %>%
+  percent(unit, .keep_n = TRUE) %>%
+  mutate(pct = scales::label_percent(accuracy = 1)(pct)) %>%
+  knitr::kable()
+```
+
+Now let's add in each patient's age. In this case, we won't include any relationship between age and unit; age will just vary randomly across all units. In reality, this often isn't the case --- you can imagine, for example, that patients visiting a Labor & Delivery unit will tend to be younger than patients visiting a Geriatric unit! For our simulated patient population, the ages will vary generally between 25 and 65.
+
+```{r simulate-ages}
+# simulate ages of patients & combine with the unit visited
+set.seed(31)
+patients <-
+  tibble(
+    unit = unit_samples,
+    age = round(rnorm(n_patients, 45, 10))
+  )
+
+patients %>%
+  slice_head(n = 10) %>%
+  knitr::kable()
+```
+
+Finally, we'll set $\beta_{\text{age}}$ such that there is a modest positive relationship between age and the probability of a positive response --- older patients at any unit will be likelier than younger patients to be a promoter!
+
+With all that wrapped up, we can finally simulate individual responses.
+
+```{r simulate-scores}
+beta_age <- 0.35
+
+# simulate individual patient responses 
+set.seed(32)
+responses <- 
+  patients %>%
+  left_join(unit_params) %>%
+  mutate(phi = beta + beta_age * ((age - 45)/10),
+         q1 = cutpoints[1] - phi,
+         q2 = cutpoints[2] - phi,
+         detractor = expit(q1),
+         passive = expit(q2) - expit(q1),
+         promoter = 1 - expit(q2)) %>%
+  select(unit, age, promoter, passive, detractor) %>%
+  rowwise() %>%
+  mutate(response = sample(c("promoter", "passive", "detractor"),
+                           size = 1, 
+                           prob = c(promoter, passive, detractor))) %>%
+  ungroup() %>%
+  select(unit, age, response)
+```
+
+Here's the distribution of responses for each unit --- as expected, unit A has lots of promoters while units D and E have the highest proportion of detractors, and unit D has the most responses while unit E has the fewest.
+
+```{r plot-response-distribution}
+egypt_blu <- MetBrewer::MetPalettes$Egypt[[1]][2]
+egypt_red <- MetBrewer::MetPalettes$Egypt[[1]][1]
+egypt_grn <- MetBrewer::MetPalettes$Egypt[[1]][3]
+
+responses %>%
+  mutate(response = fct_relevel(response, c("detractor", "promoter", "passive"))) %>%
+  ggplot(aes(x = age,
+             fill = response)) + 
+  geom_histogram(position = "identity",
+                 alpha = 0.5) + 
+  facet_wrap(~unit, scales = "free_y") +
+  MetBrewer::scale_fill_met_d("Egypt") +
+  theme(legend.position = "none") +
+  labs(title = glue::glue("Simulated **{color_text('promoters', egypt_blu)}**, 
+                          **{color_text('passives', egypt_grn)}**, and 
+                          **{color_text('detractors', egypt_red)}**"),
+       subtitle = "Distribution of patient responses by age at each unit",
+       x = "Patient age",
+       y = NULL)
+```
+
+Here's how each simulated unit scored for NPS:
+
+```{r table-unit-scores}
+responses %>%
+  group_by(unit) %>%
+  count(response) %>%
+  pivot_wider(names_from = response,
+              values_from = n,
+              values_fill = 0) %>%
+  mutate(n = promoter + passive + detractor,
+         nps = (promoter - detractor)/n,
+         nps = scales::label_percent(accuracy = 1)(nps)) %>%
+  knitr::kable()
+```
+
+Importantly, this differs from the expected outcome at each unit! For smaller sample sizes, each individual patient response has an outsized impact on NPS. Despite this, we should be able to recover the underlying parameters used to simulate the data with a model. 
+
+## Model
+
+Remember the lengthy data-generating process nonsense from beforehand? As is, that'd be a bit of a mess to implement by hand. Luckily for us, however, McElreath's [{`rethinking`}](https://github.com/rmcelreath/rethinking) package contains a useful function, `dordlogit()`, that interfaces nicely with Stan's [ordered logistic model](https://mc-stan.org/docs/stan-users-guide/ordered-logistic.html). This plunks some of the rote computation steps under the hood and leaves us with the most important bits: the linear model $\phi$ and the cutpoints $\kappa$.
+
+$$
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \text{some linear model} \\
+\text{~priors~}
+\end{gather}
+$$
+
+Let's build a series of increasingly complex models using this framework. I'm in a mood for raccoons, so the models are named appropriately:
+
+1. `raccoon_01`: a term-less model that just estimates the cutpoints.
+2. `raccoon_02`: model patient responses in terms of age and unit.
+3. `raccoon_03`: model patient responses in terms of age and a hierarchical term for unit.
+4. `raccoon_04`: model patient responses in terms of age and a non-centered hierarchical term for unit.
+
+Before doing any of that, however, we'll need to prep the data for Stan. Each unit and response category will get assigned a numeric ID and we'll standardize patient ages across the population. 
+
+```{r prep-stan}
+responses <- 
+  responses %>%
+  left_join(tibble(unit = LETTERS[1:5],
+                   unit_id = seq(1:5))) %>%
+  mutate(response_id = case_when(response == "promoter" ~ 3,
+                                 response == "passive" ~ 2,
+                                 response == "detractor" ~ 1),
+         response_id = as.integer(response_id),
+         age_std = (age - mean(age))/sd(age))
+
+responses_stan <- 
+  responses %>%
+  select(response_id,
+         unit_id,
+         age_std) %>%
+  as.list()
+```
+
+### Raccoon #01 
+
+The first model doesn't contain any terms and just estimates the cutpoints from the data. In McElreath's words, this sort of model is little more than the Bayesian representation of a histogram of the data. While it's of little practical use, this will serve as the baseline from which we can build upon. To get started, we just need to provide a prior for the cutpoints $\kappa_k$. 
+
+$$
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = 0 \\
+\kappa_k \sim \text{Normal}(0, 1)
+\end{gather}
+$$
+
+Modeling in Stan via `rethinking::ulam()` is essentially as basic as re-writing the mathematical model and supplying the data.
+
+```{r raccoon-01, eval=FALSE}
+raccoon_01 <-
+  ulam(
+    alist(
+      # model
+      response_id ~ dordlogit(0, cutpoints),
+      
+      # priors
+      cutpoints ~ dnorm(0, 1)
+    ),
+    
+    data = responses_stan,
+    chains = 4,
+    cores = 4
+  )
+```
+
+This initial model doesn't do a good job of recovering the cutpoints:
+
+```{r raccoon-01-output, eval=FALSE}
+precis(raccoon_01, depth = 2)
+```
+
+This is expected! This model doesn't account for the variation by unit/age and instead lumps all the data together. Building on top of this ought to yield more satisfying results.
+
+### Raccoon #02
+
+The second model is where things get a bit more interesting --- now we'll actually include predictors for $\beta_{\text{unit}}$ and $\beta_{\text{age}}$. 
+
+$$
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i \\
+\kappa_k \sim \text{Normal}(0, 1) \\
+\beta_{\text{unit}} \sim \text{Normal}(0, 1) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
+\end{gather}
+$$
+
+I've upped the number of samples for this particular model to avoid a warning from Stan. 
+
+```{r raccoon-02, eval=FALSE}
+raccoon_02 <- 
+  ulam(
+    alist(
+      # model
+      response_id ~ dordlogit(phi, cutpoints),
+      phi <- b[unit_id] + b_age * age_std,
+      
+      # priors
+      cutpoints ~ dnorm(0, 1), 
+      b[unit_id] ~ dnorm(0, 1),
+      b_age ~ dnorm(0, 0.5)
+    ),
+    
+    data = responses_stan,
+    chains = 4,
+    cores = 4,
+    iter = 2000
+  )
+```
+
+This model does a pretty good job! Extracting the parameter estimates shows that all of the parameter values that we set manually fall within the 80% posterior credible range estimated by the model.
+
+```{r raccoon-02-params, eval=FALSE}
+raccoon_02@stanfit %>%
+  
+  # extract & reformat parameter estimates & 80% credible interval
+  tidy(conf.int = 0.8) %>%
+  mutate(term = c(paste0("cutpoints[", 1:2, "]"), 
+                  LETTERS[1:5],
+                  "b_age")) %>%
+  
+  # append with actual values used to simulate data
+  left_join(unit_params, by = c("term" = "unit")) %>%
+  rename(true_value = beta) %>%
+  mutate(true_value = case_when(term == "cutpoints[1]" ~ cutpoints[1],
+                                term == "cutpoints[2]" ~ cutpoints[2],
+                                term == "b_age" ~ beta_age,
+                                TRUE ~ true_value),
+         term = fct_relevel(term, c(paste0("cutpoints[", 1:2, "]"),
+                                    "b_age",
+                                    LETTERS[5:1]))) %>%
+  
+  # plot!
+  ggplot(aes(x = term,
+             y = estimate,
+             ymin = conf.low,
+             ymax = conf.high)) + 
+  geom_pointrange(color = egypt_blu) +
+  geom_point(aes(y = true_value),
+             color = egypt_red,
+             size = 2) + 
+  coord_flip() + 
+  labs(title = "**Raccoon #02** Posterior Fit",
+       subtitle = glue::glue("Comparison of 
+                             **{color_text('true values', egypt_red)}** 
+                             to the 
+                             **{color_text('model\\'s estimate', egypt_blu)}**"),
+       x = NULL,
+       y = NULL,
+       caption = "Pointrange indicates 80% posterior credible interval")
+```
+
+# Haven't done this section yet
+
+
+
+
+
+
+
+
+$$
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i \\
+\kappa_k \sim \text{Normal}(0, 1) \\
+\beta_{\text{unit}} \sim \text{Normal}(\overline{\beta}, \sigma) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
+\overline{\beta} \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Exponential}(1)
+\end{gather}
+$$
+
+```{r raccoon-03, eval=FALSE}
+raccoon_03 <-
+  ulam(
+    alist(
+      # model
+      response_id ~ dordlogit(phi, cutpoints),
+      phi <- b[unit_id] + b_age*age_std,
+      
+      # priors
+      cutpoints ~ dnorm(0, 1),
+      b[unit_id] ~ dnorm(b_bar, sigma),
+      b_age ~ dnorm(0, 0.5),
+      
+      # hyper-priors
+      b_bar ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+    ),
+    
+    data = responses_stan,
+    chains = 4,
+    cores = 4
+  )
+
+precis(raccoon_03, depth = 2)
+```
+
+$$
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \overline{\beta} + z_{\text{unit}} \ \sigma + \beta_{\text{age}} \ \text{age}_i \\
+\kappa_k \sim \text{Normal}(0, 1) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
+\overline{\beta} \sim \text{Normal}(0, 1) \\
+z_{\text{unit}} \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Exponential}(1)
+\end{gather}
+$$
+
+```{r raccoon-04, eval=FALSE}
+raccoon_04 <- 
+  ulam(
+    alist(
+      # model 
+      response_id ~ dordlogit(phi, cutpoints),
+      phi <- b_bar + z[unit_id]*sigma + b_age*age_std,
+      
+      # priors
+      cutpoints ~ dnorm(0, 1),
+      b_age ~ dnorm(0, 0.5),
+      
+      # non-centered parameters
+      b_bar ~ dnorm(0, 1),
+      z[unit_id] ~ dnorm(0, 1),
+      sigma ~ dexp(1)
+    ),
+    
+    data = responses_stan,
+    chains = 4,
+    cores = 4
+  )
+
+precis(raccoon_04, depth = 2)
+```
+
+
+```{r plot-counterfactual, eval=FALSE}
+counterfactual_plot <- function(model) {
+  
+  counterfactual_data <- 
+    crossing(unit_id = 1:5,
+             age_std = seq(-2, 2, length.out = 50))
+  
+  cutpoints <- 
+    extract.samples(
+      model,
+      n = 100,
+      pars = paste0("cutpoints[", 1:2, "]")
+    )
+  
+  cutpoints <- 
+    tibble(
+      sim = seq(1:100),
+      cutpoint1 = cutpoints$`cutpoints[1]`,
+      cutpoint2 = cutpoints$`cutpoints[2]`
+    )
+  
+  model %>%
+    link(as.list(counterfactual_data),
+         post = extract.samples(., n = 100)) %>%
+    t() %>%
+    as_tibble() %>%
+    bind_cols(counterfactual_data, .) %>%
+    rowid_to_column() %>%
+    pivot_longer(starts_with("V"),
+                 names_to = "sim",
+                 values_to = "phi") %>%
+    mutate(sim = as.numeric(str_remove(sim, "V"))) %>%
+    left_join(cutpoints) %>%
+    mutate(q1 = cutpoint1 - phi,
+           q2 = cutpoint2 - phi,
+           detractor = expit(q1),
+           passive = expit(q2) - expit(q1),
+           promoter = 1 - expit(q2)) %>%
+    select(unit_id, age_std, sim, promoter, passive, detractor) %>%
+    pivot_longer(c(promoter, passive, detractor),
+                 names_to = "nps_group",
+                 values_to = "prob") %>%
+    ggplot(aes(x = age_std,
+               y = prob,
+               color = nps_group,
+               group = paste0(sim, nps_group))) +
+    geom_line(alpha = 0.2) +
+    facet_wrap(~unit_id) +
+    scale_y_continuous(labels = scales::label_percent()) + 
+    scale_color_brewer(palette = "Dark2")
+  
+}
+
+raccoon_02 %>% counterfactual_plot()
+raccoon_03 %>% counterfactual_plot()
+raccoon_04 %>% counterfactual_plot()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
