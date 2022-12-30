@@ -805,7 +805,7 @@ With this new parameterization, however, this inference stands on a bit sturdier
 precis(raccoon_04, depth = 2)
 ```
 
-## Eploring the posterior
+## Exploring the posterior
 
 With this finalized model, we can answer interesting [counterfactual](https://bookdown.org/ajkurz/Statistical_Rethinking_recoded/multivariate-linear-models.html#plotting-multivariate-posteriors.) questions even if there isn't data directly in the dataset. For example, what do we expect each unit's score to be across *all ages?*
 
@@ -949,3 +949,4 @@ As mentioned in the opening section, NPS is a difficult metric to model (or, at 
 Each of these is wrong in their own way, but, fundamentally, they all ignore the data-generating process of a patient's experience influencing an ordered response on a 0-10 scale.
 
 Speaking of a 0-10 scale, this ordinal model extends to any number of categories --- we could have have directly modeled the 11 response categories using $k = 10$ cutpoints. While NPS is more granular (and therefore, in my opinion, better) than LTR/topbox, modeling and evaluating the mean response on the 0-10 scale is *even more granular/better* than NPS! That being said, however, it's unlikely that much of my work at the hospital will incorporate that more-granular view. NPS is our chosen metric, so while there are more potential categories, we really only care about the three big buckets of promoter, passive, or detractor. Additionally, from a benchmarking perspective, NPS is more widely available and allows for a quick comparison to [other hospital systems that are picking up the metric](https://www.qualtrics.com/news/leading-healthcare-organizations-choose-qualtrics-to-deliver-ease-and-empathy-to-patients-and-caregivers/) or even [other industries](https://success.qualtrics.com/rs/542-FMF-412/images/Qualtrics_CX_Industry_NPS_Benchmarks_eBook.pdf) where NPS is the standard satisfaction metric.
+
