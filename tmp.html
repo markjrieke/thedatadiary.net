@@ -442,14 +442,17 @@ McElreath’s</a> <a href="https://www.routledge.com/Statistical-Rethinking-A-Ba
 Rethinking</a>, which conveniently covers this sort of problem directly
 (and comes with the added benefit of utilizing a Bayesian approach via
 <a href="https://mc-stan.org/">Stan</a>).</p>
-<blockquote>
-<p><em>Need to change around this sentence</em></p>
-<p>As a litmus test, a useful exercise is to define a data-generating
-process, manually fix the parameters in the process, simulate some data,
-and see if I can recover the parameters with a model.</p>
-</blockquote>
-<div id="the-data-generating-process-workshop-section-title" class="section level2">
-<h2>The data generating process (workshop section title)</h2>
+<p>Let’s test both my understanding of the ordered categorical
+data-generating process and my ability to model it by doing a few
+things:</p>
+<ol style="list-style-type: decimal">
+<li>Define a data-generating process that links a linear model to an
+ordered categorical outcome.</li>
+<li>Manually set model parameters and simulate responses.</li>
+<li>See if I can recover the parameters with a model in Stan.</li>
+</ol>
+<div id="the-data-generating-process" class="section level2">
+<h2>The data generating process</h2>
 <p>Let’s define a process that we can use to simulate data from.</p>
 <pre class="r"><code>library(tidyverse)
 library(rethinking)
@@ -1060,12 +1063,59 @@ data.</p>
     chains = 4,
     cores = 4
   )</code></pre>
-<p>This initial model doesn’t do a good job of recovering the
-cutpoints:</p>
+<p>This initial model doesn’t do a good job of recovering the manually
+set cutpoints:</p>
 <pre class="r"><code>precis(raccoon_01, depth = 2)</code></pre>
 <p>This is expected! This model doesn’t account for the variation by
-unit/age and instead lumps all the data together. Building on top of
-this ought to yield more satisfying results.</p>
+unit/age and instead lumps all the data together. As mentioned before,
+this really can be thought of as a Bayesian histogram — while it doesn’t
+recover the cutpoint parameters, <code>raccoon_01</code> matches the
+overall proportion of promoters, passives, and detractors really
+well.</p>
+<pre class="r"><code>raccoon_01@stanfit %&gt;%
+  
+  # extract posterior draws &amp; convert to tibble
+  posterior::as_draws_df() %&gt;%
+  as_tibble() %&gt;%
+  select(starts_with(&quot;cut&quot;)) %&gt;%
+  rename_with(~str_remove_all(.x, &quot;[:punct:]&quot;)) %&gt;%
+  
+  # summarise each category w/50/80% quantiles
+  mutate(detractor = expit(cutpoints1),
+         passive = expit(cutpoints2) - expit(cutpoints1),
+         promoter = 1 - expit(cutpoints2)) %&gt;%
+  select(-starts_with(&quot;cut&quot;)) %&gt;%
+  pivot_longer(cols = everything(),
+               names_to = &quot;nps&quot;,
+               values_to = &quot;estimate&quot;) %&gt;%
+  group_by(nps) %&gt;%
+  tidybayes::median_qi(estimate, .width = c(0.5, 0.8)) %&gt;%
+  
+  # plot alongside original data
+  ggplot() + 
+  geom_col(data = percent(responses, response),
+           aes(x = response,
+               y = pct),
+           fill = egypt_red,
+           alpha = 0.5,
+           width = 0.5) +
+  ggdist::geom_pointinterval(aes(x = nps,
+                                 y = estimate,
+                                 ymin = .lower,
+                                 ymax = .upper),
+                             color = egypt_blu) +
+  scale_y_continuous(labels = scales::label_percent()) + 
+  labs(title = &quot;**Raccoon #01** Posterior Fit&quot;,
+       subtitle = glue::glue(&quot;Comparison of each category&#39;s 
+                             **{color_text(&#39;true proportion&#39;, egypt_red)}** 
+                             to the 
+                             **{color_text(&#39;model\\&#39;s estimate&#39;, egypt_blu)}**&quot;),
+       x = NULL,
+       y = NULL,
+       caption = &quot;Pointrange indicates 50/80% &lt;br&gt;posterior credible interval&quot;)</code></pre>
+<p>This model isn’t terribly useful since we could have gotten the same
+inference from just plotting the data directly, but this serves as a
+base upon which we can build more complicated and useful models.</p>
 </div>
 <div id="raccoon-02" class="section level3">
 <h3>Raccoon #02</h3>
@@ -1162,7 +1212,7 @@ model</a>, however, can help in both these areas.</p>
 <p>Let’s add a hierarchical term for the unit-level intercept, <span class="math inline">\(\beta_{\text{unit}}\)</span>. To do so, we don’t
 actually need to make any changes to the linear model, just how <span class="math inline">\(\beta_{\text{unit}}\)</span> is defined
 underneath. Rather than estimating each unit intercept directly, this
-new model will allow intercepts to vary around a group mean, <span class="math inline">\(\overline{\beta}\)</span> with a standard
+new model will allow them to vary around a group mean, <span class="math inline">\(\overline{\beta}\)</span> with a standard
 deviation <span class="math inline">\(\sigma\)</span>.</p>
 <p><span class="math display">\[
 \begin{gather}
@@ -1214,6 +1264,8 @@ towards the group mean. In the previous model, we were a bit too
 where we don’t inherently know the parameter value, we’d want to be
 similarly cautious for a unit with few responses.</p>
 <pre class="r"><code>raccoon_03@stanfit %&gt;%
+  
+  # extract posterior parameters and summarise with 50/80% quantiles
   posterior::as_draws_df() %&gt;%
   as_tibble() %&gt;%
   rename_with(~str_remove(.x, &quot;]&quot;)) %&gt;%
@@ -1229,6 +1281,8 @@ similarly cautious for a unit with few responses.</p>
                values_to = &quot;estimate&quot;) %&gt;%
   group_by(term) %&gt;%
   tidybayes::median_qi(estimate, .width = c(0.5, 0.8)) %&gt;%
+  
+  # append with actual values used to simulate data
   mutate(term = if_else(str_detect(term, &quot;cutpoint&quot;), paste0(str_replace(term, &quot;_&quot;, &quot;\\[&quot;), &quot;]&quot;), term)) %&gt;%
   left_join(unit_params, by = c(&quot;term&quot; = &quot;unit&quot;)) %&gt;%
   rename(true_value = beta) %&gt;%
@@ -1239,6 +1293,8 @@ similarly cautious for a unit with few responses.</p>
          term = fct_relevel(term, c(paste0(&quot;cutpoints[&quot;, 1:2, &quot;]&quot;),
                                     &quot;b_age&quot;,
                                     LETTERS[5:1]))) %&gt;%
+  
+  # plot!
   ggplot(aes(x = term,
              y = estimate,
              ymin = .lower,
@@ -1280,6 +1336,17 @@ parameterization</a> for the <span class="math inline">\(\beta_{\text{unit}}\)</
 </div>
 <div id="raccoon-04" class="section level3">
 <h3>Raccoon #04</h3>
+<p>A non-centered parameterization is mathematically equivalent to it’s
+<a href="https://mc-stan.org/docs/stan-users-guide/reparameterization.html#centered-parameterization">centered</a>
+counterpart (which is what was used in the previous model), but makes it
+easier for Stan’s sampler to explore the parameter space. To convert to
+a non-centered parameterization, we need to respecify the model such
+that each parameter is sampled directly, rather than being dependent on
+another parameter.</p>
+<p>In our case, we want each unit’s intercept to be offset from the
+global mean by some amount. We can think of this offset as being <span class="math inline">\(z\)</span> standard deviations away from the mean.
+Because the model is additive, we can simply replace the <span class="math inline">\(\beta_{\text{unit}}\)</span> term in the linear
+model with the mean <span class="math inline">\(\overline{\beta}\)</span> and unit offset <span class="math inline">\(z_{\text{unit}} \ \sigma\)</span>.</p>
 <p><span class="math display">\[
 \begin{gather}
 R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
@@ -1293,6 +1360,9 @@ R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
 \sigma \sim \text{Exponential}(1)}
 \end{gather}
 \]</span></p>
+<p>Again, this is mathematically equivalent to the previous model, but
+the sampler will now complain less about exploring the parameter space
+since each term is sampled directly.</p>
 <pre class="r"><code>raccoon_04 &lt;- 
   ulam(
     alist(
@@ -1313,10 +1383,13 @@ R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
     data = responses_stan,
     chains = 4,
     cores = 4
-  )
-
-precis(raccoon_04, depth = 2)</code></pre>
+  )</code></pre>
+<p>We have to do a bit more work to pull out the unit estimates for this
+model but, as expected, the parameter estimates here are practically
+equivalent to the previous model’s estimates.</p>
 <pre class="r"><code>raccoon_04@stanfit %&gt;%
+  
+  # extract parameters and summarise with 50/80% quantiles
   posterior::as_draws_df() %&gt;%
   as_tibble() %&gt;%
   rename_with(~str_replace(str_remove(.x, &quot;]&quot;), &quot;\\[&quot;, &quot;_&quot;),
@@ -1332,6 +1405,8 @@ precis(raccoon_04, depth = 2)</code></pre>
                values_to = &quot;estimate&quot;) %&gt;%
   group_by(term) %&gt;%
   tidybayes::median_qi(estimate, .width = c(0.5, 0.8)) %&gt;%
+  
+  # append with actual values used to simulate data
   left_join(unit_params, by = c(&quot;term&quot; = &quot;unit&quot;)) %&gt;%
   rename(true_value = beta) %&gt;%
   mutate(true_value = case_when(term == &quot;cutpoints[1]&quot; ~ cutpoints[1],
@@ -1341,6 +1416,8 @@ precis(raccoon_04, depth = 2)</code></pre>
          term = fct_relevel(term, c(paste0(&quot;cutpoints[&quot;, 1:2, &quot;]&quot;),
                                     &quot;b_age&quot;,
                                     LETTERS[5:1]))) %&gt;%
+  
+  # plot!
   ggplot(aes(x = term,
              y = estimate,
              ymin = .lower,
@@ -1358,10 +1435,24 @@ precis(raccoon_04, depth = 2)</code></pre>
        x = NULL,
        y = NULL,
        caption = &quot;Pointrange indicates 50/80% &lt;br&gt;posterior credible interval&quot;)</code></pre>
-<pre class="r"><code>counterfactual_data &lt;- 
+<p>With this new parameterization, however, this inference stands on a
+bit sturdier ground. While still not near the actual 2000 total samples,
+the effective sample size of each parameter has greatly improved and the
+convergence statistic is better across the board.</p>
+<pre class="r"><code>precis(raccoon_04, depth = 2)</code></pre>
+</div>
+</div>
+<div id="eploring-the-posterior" class="section level2">
+<h2>Eploring the posterior</h2>
+<p>With this finalized model, we can answer interesting <a href="https://bookdown.org/ajkurz/Statistical_Rethinking_recoded/multivariate-linear-models.html#plotting-multivariate-posteriors.">counterfactual</a>
+questions even if there isn’t data directly in the dataset. For example,
+what do we expect each unit’s score to be across <em>all ages?</em></p>
+<pre class="r"><code># sequence of standardized ages for each unit
+counterfactual_data &lt;- 
   crossing(unit_id = 1:5,
            age_std = seq(-2, 2, length.out = 50))
 
+# extract a sample of 100 cutpoints from the posterior 
 cutpoints &lt;- 
   extract.samples(
     raccoon_04,
@@ -1369,6 +1460,7 @@ cutpoints &lt;-
     pars = paste0(&quot;cutpoints[&quot;, 1:2, &quot;]&quot;)
   )
 
+# convert to tibble &amp; add sim index
 cutpoints &lt;- 
   tibble(
     sim = seq(1:100),
@@ -1377,26 +1469,42 @@ cutpoints &lt;-
   )
   
 counterfactual_output &lt;- 
+  
+  # extract phi &amp; convert to wide tibble format
   raccoon_04 %&gt;%
   link(as.list(counterfactual_data),
        post = extract.samples(., n = 100)) %&gt;%
   t() %&gt;%
   as_tibble() %&gt;%
+  
+  # add unit/age data; convert to long format
   bind_cols(counterfactual_data, .) %&gt;%
   rowid_to_column() %&gt;%
   pivot_longer(starts_with(&quot;V&quot;),
                names_to = &quot;sim&quot;,
                values_to = &quot;phi&quot;) %&gt;%
   mutate(sim = as.numeric(str_remove(sim, &quot;V&quot;))) %&gt;%
+  
+  # estimate probabilities for each category
   left_join(cutpoints) %&gt;%
   mutate(q1 = cutpoint1 - phi,
          q2 = cutpoint2 - phi,
          detractor = expit(q1),
          passive = expit(q2) - expit(q1),
          promoter = 1 - expit(q2)) %&gt;%
-  select(unit_id, age_std, sim, promoter, passive, detractor) 
+  select(unit_id, age_std, sim, promoter, passive, detractor)
 
 counterfactual_output %&gt;%
+  slice_head(n = 10) %&gt;%
+  mutate(across(c(promoter:detractor), ~scales::label_percent(accuracy = 1)(.x))) %&gt;%
+  knitr::kable()</code></pre>
+<p>Here, we’ve taken 100 samples from <code>raccoon_04</code> for each
+combination of <code>unit_id</code> and <code>age_std</code> and
+extracted the probability of selecting promoter, passive, or detractor.
+If we put together in a plot, we can see what the model expects of each
+unit across each age and how confident hte model is in that
+expectation.</p>
+<pre class="r"><code>counterfactual_output %&gt;%
   pivot_longer(c(promoter, passive, detractor),
                names_to = &quot;nps_group&quot;,
                values_to = &quot;prob&quot;) %&gt;%
@@ -1416,15 +1524,34 @@ counterfactual_output %&gt;%
        subtitle = glue::glue(&quot;Probability of selecting 
                              **{color_text(&#39;promoter&#39;, egypt_blu)}**, 
                              **{color_text(&#39;passive&#39;, egypt_grn)}**, or 
-                             **{color_text(&#39;detractor&#39;, egypt_red)}**
-                             at each unit as age increases&quot;),
+                             **{color_text(&#39;detractor&#39;, egypt_red)}** 
+                             as age increases&quot;),
        x = NULL,
        y = NULL,
        caption = &quot;Sample of 100 posterior draws&quot;)</code></pre>
+<p>There are quite a few items to note from this plot. Firstly, across
+all age ranges, the early-alphabet units are more likely to have
+promoter responses than the late-alphabet units. Additionally, there is
+a relatively small chance of selecting passive at each unit across the
+ages. As age increases, each unit is expected to receive more favorable
+scores. Finally, Unit D, which had the most responses, has the tightest
+posterior intervals while Unit E, which had the fewest, has the widest
+intervals. All of this is expected, given how the data was simulated. In
+combination with the true/estimated parameter plot, this serves as a
+good confirmation that <code>raccoon_04</code> models the process
+appropriately.</p>
+<p>Since each sample gives the probability of selecting promoter,
+passive, or detractor, we can simply plug these probabilities into the
+formula for NPS to get the <em>expected</em> NPS for each unit across
+the ages.</p>
 <pre class="r"><code>counterfactual_output %&gt;%
+  
+  # get nps for each posterior sample
   mutate(nps = promoter - detractor,
          unit = paste(&quot;Unit&quot;, LETTERS[unit_id]),
          age = age_std * 10 + 45) %&gt;%
+  
+  # plot!
   ggplot(aes(x = age,
              y = nps,
              group = sim)) + 
@@ -1438,10 +1565,76 @@ counterfactual_output %&gt;%
        x = NULL,
        y = NULL,
        caption = &quot;Sample of 100 posterior draws&quot;)</code></pre>
-<p><span class="math display">\[
-\color{red}{\text{hello}} \latex
-\]</span></p>
 </div>
+<div id="in-summary" class="section level2">
+<h2>In summary…</h2>
+<p>In this post, we’ve done the following:</p>
+<ul>
+<li>Defined a data-generating process that links NPS to a linear model
+while preserving the order of the categories.</li>
+<li>Manually set the parameters of the linear model and simulated
+patient responses.</li>
+<li>Recovered the parameters with a series of models.</li>
+</ul>
+<p>The models that were built increased in both complexity and
+utility:</p>
+<ul>
+<li><code>raccoon_01</code> didn’t contain any terms and only estimated
+the cutpoints <span class="math inline">\(\kappa_k\)</span> — this
+effectively gave us a Bayesian histogram of the data.</li>
+<li><code>raccoon_02</code> added terms for unit the patient visited and
+age. This recovered the parameters we set manually, but didn’t pool any
+information across units and only allowed us to draw inferences from the
+units in the dataset.</li>
+<li><code>raccoon_03</code> converted <span class="math inline">\(\beta_{\text{unit}}\)</span> to a hierarchical
+term, which addressed some of the shortcomings of
+<code>raccoon_02</code>. However, the way the model was written resulted
+in a difficult parameter space for Stan’s sampler to explore, which gave
+less-than-desirable diagnostics.</li>
+<li><code>raccoon_04</code> was a non-centered reparameterization of
+<code>raccoon_03</code>. The two models were mathematically equivalent,
+but <code>raccoon_04</code> was easier to for Stan to sample from, which
+gave us a larger effective sample size and smaller convergence statistic
+for each parameter (which are both good things!).</li>
+</ul>
+<p>With the fit from <code>raccoon_04</code>, we also were able to look
+at how the model expected responses to vary with age at each unit. This
+served as another visual confirmation that the model was doing what we
+expected based on how the data was simulated. These expected responses
+also allowed us to plot the expected NPS score at each unit as age
+varies.</p>
+</div>
+<div id="some-additional-closing-thoughts" class="section level2">
+<h2>Some (additional) closing thoughts</h2>
+<p>As mentioned in the opening section, NPS is a difficult metric to
+model (or, at least, it was prior to picking up McElreath’s book). In
+the past, I’d used some hack-ish methods to model NPS, such as:</p>
+<ul>
+<li>Ignoring passives and detractors by modeling promoters with a
+binomial.</li>
+<li>Aggregating scores at the unit-level, rescaling NPS from
+<code>[-100, 100]</code> to <code>[0, 1]</code>, tossing out any zeroes
+or ones, then modeling with a beta distribution.</li>
+<li>Separately modeling promoters, passives, and detractors with three
+binomial models.</li>
+</ul>
+<p>Each of these is wrong in their own way, but, fundamentally, they all
+ignore the data-generating process of a patient’s experience influencing
+an ordered response on a 0-10 scale.</p>
+<p>Speaking of a 0-10 scale, this ordinal model extends to any number of
+categories — we could have have directly modeled the 11 response
+categories using <span class="math inline">\(k = 10\)</span> cutpoints.
+While NPS is more granular (and therefore, in my opinion, better) than
+LTR/topbox, modeling and evaluating the mean response on the 0-10 scale
+is <em>even more granular/better</em> than NPS! That being said,
+however, it’s unlikely that much of my work at the hospital will
+incorporate that more-granular view. NPS is our chosen metric, so while
+there are more potential categories, we really only care about the three
+big buckets of promoter, passive, or detractor. Additionally, from a
+benchmarking perspective, NPS is more widely available and allows for
+quick comparison to <a href="https://www.qualtrics.com/news/leading-healthcare-organizations-choose-qualtrics-to-deliver-ease-and-empathy-to-patients-and-caregivers/">other
+hospital systems that are picking up the metric</a> or even <a href="https://success.qualtrics.com/rs/542-FMF-412/images/Qualtrics_CX_Industry_NPS_Benchmarks_eBook.pdf">other
+industries</a> where NPS is the standard satisfaction metric.</p>
 </div>
 
 
