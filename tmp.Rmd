@@ -153,9 +153,9 @@ $$
 \begin{gather}
 R_i \sim \text{Categorical}(p_i) \\
 p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
-p_{\text{detractor}[i]} = q_{1, i} \\
+\color{blue}{p_{\text{detractor}[i]} = q_{1, i} \\
 p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
-p_{\text{promoter}[i]} = 1 - q_{2,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i}}
 \end{gather}
 $$
 
@@ -168,8 +168,8 @@ p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promo
 p_{\text{detractor}[i]} = q_{1, i} \\
 p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
 p_{\text{promoter}[i]} = 1 - q_{2,i} \\
-\text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
-\phi_i = \text{some linear model}
+\color{blue}{\text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
+\phi_i = \text{some linear model}}
 \end{gather}
 $$
 
@@ -187,7 +187,7 @@ p_{\text{detractor}[i]} = q_{1, i} \\
 p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
 p_{\text{promoter}[i]} = 1 - q_{2,i} \\
 \text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
-\phi_i = \beta_{\text{unit}[i]} + \beta_{\text{age}} \ \text{age}_i
+\phi_i = \color{blue}{\beta_{\text{unit}[i]} + \beta_{\text{age}} \ \text{age}_i}
 \end{gather}
 $$
 
@@ -379,8 +379,8 @@ The first model doesn't contain any terms and just estimates the cutpoints from 
 $$
 \begin{gather}
 R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
-\phi_i = 0 \\
-\kappa_k \sim \text{Normal}(0, 1)
+\color{blue}{\phi_i = 0 \\
+\kappa_k \sim \text{Normal}(0, 1)}
 \end{gather}
 $$
 
@@ -418,10 +418,10 @@ The second model is where things get a bit more interesting --- now we'll actual
 $$
 \begin{gather}
 R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
-\phi_i = \beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i \\
+\phi_i = \color{blue}{\beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i} \\
 \kappa_k \sim \text{Normal}(0, 1) \\
-\beta_{\text{unit}} \sim \text{Normal}(0, 1) \\
-\beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
+\color{blue}{\beta_{\text{unit}} \sim \text{Normal}(0, 1) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5)}
 \end{gather}
 $$
 
@@ -488,8 +488,8 @@ raccoon_02@stanfit %>%
              size = 2.5) + 
   coord_flip() + 
   labs(title = "**Raccoon #02** Posterior Fit",
-       subtitle = glue::glue("Comparison of 
-                             **{color_text('true values', egypt_red)}** 
+       subtitle = glue::glue("Comparison of each parameter's 
+                             **{color_text('true value', egypt_red)}** 
                              to the 
                              **{color_text('model\\'s estimate', egypt_blu)}**"),
        x = NULL,
@@ -497,22 +497,25 @@ raccoon_02@stanfit %>%
        caption = "Pointrange indicates 50/80% <br>posterior credible interval")
 ```
 
+This model, however, could be improved. The model only uses categorical indicators for the unit, which causes two issues. Firstly, we can only make predictions for the few units that are in the dataset --- this model would fail if we tried to make a prediction on a new unit, F. Secondly, information about each unit is contained just to that unit. In this case, unit E has relatively few responses, and such can only draw inference from those responses. A [hierarchical model](https://www.thedatadiary.net/blog/2022-11-14-hierarchical-hospitals/), however, can help in both these areas.
 
+### Raccoon #03
 
-# Haven't done this section yet
-
+Let's add a hierarchical term for the unit-level intercept, $\beta_{\text{unit}}$. To do so, we don't actually need to make any changes to the linear model, just how $\beta_{\text{unit}}$ is defined underneath. Rather than estimating each unit intercept directly, this new model will allow intercepts to vary around a group mean, $\overline{\beta}$ with a standard deviation $\sigma$. 
 
 $$
 \begin{gather}
 R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
 \phi_i = \beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i \\
 \kappa_k \sim \text{Normal}(0, 1) \\
-\beta_{\text{unit}} \sim \text{Normal}(\overline{\beta}, \sigma) \\
+\beta_{\text{unit}} \sim \text{Normal}(\color{blue}{\overline{\beta}}, \color{blue}{\sigma}) \\
 \beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
-\overline{\beta} \sim \text{Normal}(0, 1) \\
-\sigma \sim \text{Exponential}(1)
+\color{blue}{\overline{\beta} \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Exponential}(1)}
 \end{gather}
 $$
+
+This new definition means that we no longer set priors for $\beta_{\text{unit}}$ directly. Instead, our new terms are considered *hyper-priors* or *adaptive priors*. 
 
 ```{r raccoon-03, eval=FALSE}
 raccoon_03 <-
@@ -539,6 +542,8 @@ raccoon_03 <-
 
 precis(raccoon_03, depth = 2)
 ```
+
+Similar to the previous model, all the true parameter values fall within the model's 80% credible interval estimates. *And*, we're now accounting for the group structure with a hierarchical model! If you look at Unit E, however, it looks like the model has gotten worse --- the median parameter estimate here is further away from the true value than in the previous model. This, however, is actually what we want. Because there are so few responses for unit E, the estimates are shrunken towards the group mean. In the previous model, we were a bit too *over-indexed* on the responses we had --- if this were real data, where we don't inherently know the parameter value, we'd want to be similarly cautious for a unit with few responses. 
 
 ```{r raccoon-02-post-fit, eval=FALSE}
 raccoon_03@stanfit %>%
@@ -577,8 +582,8 @@ raccoon_03@stanfit %>%
              size = 2.5) + 
   coord_flip() + 
   labs(title = "**Raccoon #03** Posterior Fit",
-       subtitle = glue::glue("Comparison of 
-                             **{color_text('true values', egypt_red)}** 
+       subtitle = glue::glue("Comparison of each parameter's 
+                             **{color_text('true value', egypt_red)}** 
                              to the 
                              **{color_text('model\\'s estimate', egypt_blu)}**"),
        x = NULL,
@@ -586,16 +591,29 @@ raccoon_03@stanfit %>%
        caption = "Pointrange indicates 50/80% <br>posterior credible interval")
 ```
 
+Despite all this hierarchical goodness, this model's diagnostics could stand to be improved. Although Stan didn't throw any errors, each parameter's [effective sample size](https://mc-stan.org/docs/reference-manual/effective-sample-size.html#effective-sample-size.section), `n_eff`, is low relative to the number of actual samples drawn (in this case, we used the default of 500 samples per chain for a total of 2000 samples) and the [convergence statistic](https://mc-stan.org/docs/reference-manual/notation-for-samples-chains-and-draws.html#potential-scale-reduction), `Rhat4`, is often a hair or two above the target value of `1.00`.
+
+```{r raccoon-03-precis, eval=FALSE}
+precis(raccoon_03, depth = 2)
+```
+
+This is not-so-much an issue with the model specification, but with the computation. Stan's sampler has a bit of difficulty estimating the shape of the posterior for each $\beta_{\text{unit}}$ because they are dependent on $\overline{\beta}$ and $\sigma$, which are estimated separately ([this post](https://benslack19.github.io/data%20science/statistics/devilsfunnel_cnc_param/) provides a good visual of the "Devil's Funnel" --- a difficult shape to explore that can arise from this sort of model). 
+
+Once again, I am fortunate to not be the first person to encounter this issue, and there is a relatively standard approach that we can take to address. We can respecify the model using a [non-centered parameterization](https://mc-stan.org/docs/stan-users-guide/reparameterization.html#non-centered-parameterization) for the $\beta_{\text{unit}}$ terms. 
+
+### Raccoon #04
+
+
 
 $$
 \begin{gather}
 R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
-\phi_i = \overline{\beta} + z_{\text{unit}} \ \sigma + \beta_{\text{age}} \ \text{age}_i \\
+\phi_i = \color{blue}{\underbrace{\overline{\beta} + z_{\text{unit}} \ \sigma}_{\beta_{\text{unit}} \ \text{replacement}}} + \beta_{\text{age}} \ \text{age}_i \\
 \kappa_k \sim \text{Normal}(0, 1) \\
 \beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
 \overline{\beta} \sim \text{Normal}(0, 1) \\
-z_{\text{unit}} \sim \text{Normal}(0, 1) \\
-\sigma \sim \text{Exponential}(1)
+\color{blue}{z_{\text{unit}} \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Exponential}(1)}
 \end{gather}
 $$
 
@@ -661,8 +679,8 @@ raccoon_04@stanfit %>%
              size = 2.5) + 
   coord_flip() +
   labs(title = "**Raccoon #04** Posterior Fit",
-       subtitle = glue::glue("Comparison of 
-                             **{color_text('true values', egypt_red)}** 
+       subtitle = glue::glue("Comparison of each parameter's 
+                             **{color_text('true value', egypt_red)}** 
                              to the 
                              **{color_text('model\\'s estimate', egypt_blu)}**"),
        x = NULL,
@@ -725,8 +743,12 @@ counterfactual_output %>%
   scale_y_continuous(labels = scales::label_percent()) + 
   MetBrewer::scale_color_met_d("Egypt") +
   theme(legend.position = "none") + 
-  labs(title = "some snarky title",
-       subtitle = "some snarky subtitle",
+  labs(title = "Counterfactual odds and oddities",
+       subtitle = glue::glue("Probability of selecting 
+                             **{color_text('promoter', egypt_blu)}**, 
+                             **{color_text('passive', egypt_grn)}**, or 
+                             **{color_text('detractor', egypt_red)}**
+                             at each unit as age increases"),
        x = NULL,
        y = NULL,
        caption = "Sample of 100 posterior draws")
@@ -744,12 +766,21 @@ counterfactual_output %>%
             color = RColorBrewer::brewer.pal(3, "Dark2")[3]) +
   facet_wrap(~unit) + 
   scale_y_continuous(labels = scales::label_percent()) +
-  labs(title = "Some snarky title",
-       subtitle = "some snarky subtitle",
+  labs(title = "Counterfactual odds and oddities 2: NPS drift",
+       subtitle = glue::glue("**{color_text('Expected NPS', RColorBrewer::brewer.pal(3, 'Dark2')[3])}** 
+                             at each unit as age increases"),
        x = NULL,
        y = NULL,
        caption = "Sample of 100 posterior draws")
 ```
+
+$$
+\color{red}{\text{hello}} \latex
+$$
+
+
+
+
 
 
 
