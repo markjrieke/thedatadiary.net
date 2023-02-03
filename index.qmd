@@ -1,0 +1,15 @@
+---
+title: "recent entries"
+---
+
+# test for the home page
+
+
+listing: 
+  contents: posts
+  sort: "date desc"
+  type: grid
+  grid-columns: 3
+  image-height: 250px
+  page-size: 100
+  categories: true
