@@ -11,6 +11,13 @@
     "href": "index.html",
     "title": "recent entries",
     "section": "",
-    "text": "test for the home page\nlisting: contents: posts sort: “date desc” type: grid grid-columns: 3 image-height: 250px page-size: 100 categories: true"
+    "text": "this is a block quote"
+  },
+  {
+    "objectID": "index.html#heading-2",
+    "href": "index.html#heading-2",
+    "title": "recent entries",
+    "section": "heading 2",
+    "text": "heading 2\n\nheading 3\n\nheading 4\n\nheading 5\n\nheading 6\n\nlisting:\ncontents: posts\nsort: “date desc”\ntype: grid\ngrid-columns: 3\nimage-height: 250px\npage-size: 100\ncategories: true\n\n\nOh no! this is something that requires me to write out more than a few lines of text at a time. We should look at the following.\n\nNotes\nnotes in bold\nnotes in italics\nNotes with latex: \\(\\phi \\sim \\text{Normal}(\\mu, \\sigma)\\)\n\n\n\nthis is a note that’s just for information\n\n\nthis is the regular ole alert\n\n\nthis is a more subtle guy\n\n\n\nThis is an extensive comment in the margin of the page. I have lots of questions and comments that may sometimes be better suited for the side panel rather than the main panel.\n\nmtcars |>\n  tibble::as_tibble() |>\n  dplyr::filter(cyl == 6)\n\n# A tibble: 7 × 11\n    mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb\n  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>\n1  21       6  160    110  3.9   2.62  16.5     0     1     4     4\n2  21       6  160    110  3.9   2.88  17.0     0     1     4     4\n3  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1\n4  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1\n5  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4\n6  17.8     6  168.   123  3.92  3.44  18.9     1     0     4     4\n7  19.7     6  145    175  3.62  2.77  15.5     0     1     5     6\n\n\n\\[\n\\begin{align*}\nR_i & \\sim \\text{Multinomial}(n_i, p_i) \\\\\np_i & = \\langle p_1, \\ p_2, \\ p_3 \\rangle\n\\end{align*}\n\\]\nI should problably test out links to other sites."
   }
 ]

@@ -4,12 +4,67 @@ title: "recent entries"
 
 # test for the home page
 
+> this is a block quote
 
-listing: 
-  contents: posts
-  sort: "date desc"
-  type: grid
-  grid-columns: 3
-  image-height: 250px
-  page-size: 100
-  categories: true
+# heading 1
+
+## heading 2
+
+### heading 3
+
+#### heading 4
+
+##### heading 5
+
+###### heading 6
+
+
+* listing: 
+* contents: posts
+* sort: "date desc"
+* type: grid
+* grid-columns: 3
+* image-height: 250px
+* page-size: 100
+* categories: true
+
+:::{.alert-warning}
+Oh no! this is something that requires me to write out more than a few lines of text at a time. We should look at the following. 
+
+* Notes
+* **notes in bold**
+* *notes in italics*
+* Notes with *latex*: $\phi \sim \text{Normal}(\mu, \sigma)$
+:::
+
+:::{.alert-info}
+this is a note that's just for information
+:::
+
+:::{.alert-primary}
+this is the regular ole alert
+:::
+
+:::{.alert-light}
+this is a more subtle guy
+:::
+
+:::{.column-margin}
+This is an extensive comment in the margin of the page. I have lots of questions and comments that may sometimes be better suited for the side panel rather than the main panel.
+:::
+
+```{r}
+mtcars |>
+  tibble::as_tibble() |>
+  dplyr::filter(cyl == 6)
+```
+
+$$
+\begin{align*}
+R_i & \sim \text{Multinomial}(n_i, p_i) \\
+p_i & = \langle p_1, \ p_2, \ p_3 \rangle
+\end{align*}
+$$
+
+I should problably test out [links to other sites](https://github.com/markjrieke).
+

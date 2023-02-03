@@ -7,6 +7,7 @@ website:
   favicon: /static/img/icon.png
   repo-url: https://github.com/markjrieke/thedatadiary.net
   repo-actions: [source, issue]
+  
   navbar: 
     logo: /static/img/icon.png
     background: light
@@ -19,13 +20,13 @@ website:
           - text: "Governor"
       - text: "Blog"
       - text: "About"
+  
   page-footer:
     left: |
       {{< fa regular copyright >}} Mark Rieke, 2023<br>
       All content licensed under [MIT License](https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE)<br>
       Made with {{< fa brands r-project >}} and [Quarto](https://quarto.org)
     right: 
-      
       - icon: github
         aria-label: github
         href: https://github.com/markjrieke
@@ -38,6 +39,12 @@ website:
       
 format: 
   html: 
-    theme: minty
+    theme: dinty.scss
     css: styles.css
     toc: true
+    toc-location: left
+    highlight-style: kate
+    code-block-bg: true
+    code-block-border-left: "#78c2ad"
+    link-external-newwindow: true
+    
