@@ -1,0 +1,16 @@
+[
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "about",
+    "section": "",
+    "text": "test dir for quarto"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "recent entries",
+    "section": "",
+    "text": "test for the home page\nlisting: contents: posts sort: “date desc” type: grid grid-columns: 3 image-height: 250px page-size: 100 categories: true"
+  }
+]
