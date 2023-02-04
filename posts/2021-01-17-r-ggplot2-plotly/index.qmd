@@ -1,37 +1,27 @@
 ---
 title: R, ggplot2, & plotly
-author: ''
 date: '2021-01-17'
-slug: []
 categories: [archive]
-tags: []
-subtitle: ''
-summary: ''
-authors: []
-lastmod: '2021-01-17T19:49:59-05:00'
-featured: no
-image:
-  caption: ''
-  focal_point: ''
-  preview_only: no
-projects: []
+image: "featured.png"
 ---
 
+:::{.alert-info}
 Editor’s note: I’ve gone back & read my previous post, & have one general thought - yeeeesh… Everything is so… “matter of fact” in tone & doesn’t really sound like me. I’ll give myself a pass, since it was the first post, was written around midnight (which is very late for me!), and probably won’t ever be read by anyone besides me/my mom (hi mom!). That being said, I’m going to try to make a more conscious effort going forward of having my voice be expressed in my writing. This is my blog, after all, so it should sound like my voice when read back. 
+:::
 
-### Plotting in R
+# Plotting in R
 
 I’ve started getting more familiar with R & wrangling my way through a few plotting examples (Youtube university is, once again, my best friend), but I thought it would be worthwhile to work towards plotting my own dataset. Luckily enough, plotting with R is pretty intuitive, once you get ahold of the basic syntax. I had put together a [dataset](https://github.com/markjrieke/thedatadiary/tree/main/2021.01.17-r_ggplot2_plotly) on past US presidential elections for a separate personal project, and was able to convert to a .csv to use for some basic plotting practice. 
 
 It’s generally well understood that the Republican party has a [structural advantage in presidential elections](https://www.vox.com/policy-and-politics/2019/9/17/20868790/republicans-lose-popular-vote-win-electoral-college) due to the winner-take-all nature of the electoral college, but I wanted to see if I could quantify this advantage in an understandable format using R. I used the ggplot2, dplyr, and plotly packages to put this together.
 
-### Putting Together the Plot
+# Putting Together the Plot
 
-I imported the entire dataset and assigned it to a dataframe (R’s version of, say, an excel table). Using the base R plot() function, I plotted the entire dataframe:
+I imported the entire dataset and assigned it to a dataframe (R’s version of, say, an excel table). Using the base R `plot()` function, I plotted the entire dataframe:
 
 ![](pics/plot_01.png)
 
-Without specifying which variables I want to look at, plot() will output a set of summary plots, with every variable plotted against every other variable. This isn’t great for gathering any meaningful insight, but helps get a “lay of the land” view of the dataframe. In this case, I’m interested in how the percentage of the popular vote a candidate wins is related to the percentage of the electoral vote they win. Using plot(), I can graph popular_vote_pct and electoral_vote_pct variables from the dataframe:
+Without specifying which variables I want to look at, `plot()` will output a set of summary plots, with every variable plotted against every other variable. This isn’t great for gathering any meaningful insight, but helps get a “lay of the land” view of the dataframe. In this case, I’m interested in how the percentage of the popular vote a candidate wins is related to the percentage of the electoral vote they win. Using plot(), I can graph `popular_vote_pct` and `electoral_vote_pct` variables from the dataframe:
 
 ![](pics/plot_02.png)
 
@@ -59,9 +49,11 @@ I plotted the absolute vote share from published election results, rather than t
 
 Finally, I used the ggplotly() to convert from a static ggplot to an interactive plotly, and exported as an html file. For reasons I’ve yet to figure out, the custom textbox formatting did not want to play nice with the linear regression lines, so I had to take those out. I plan on figuring this wrinkle out eventually, but for now I’m happy with the final plot. You can hover over individual datapoints below to see more details!
 
-*This is an archive of a post previously hosted on Squarespace. You can view the original interactive content [here](https://plotly.com/~markjrieke/1/).*
+:::{.alert-light}
+This is an archive of a post previously hosted on Squarespace. You can view the original interactive content [here](https://plotly.com/~markjrieke/1/).
+:::
 
-### Some Notes
+# Some Notes
 
 I’ve published all of my work to [github](https://github.com/markjrieke/thedatadiary), and I’ll continue to do so in the future. The files I uploaded are, to say the least, in pretty rough shape. That being said, I don’t really plan on tweaking them for this post - I’ve used them as training tools, and it might be interesting in the future to look at the progress I’ve made.
 

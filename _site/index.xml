@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>the data diary</title>
+<link>https://www.thedatadiary.net/index.html</link>
+<atom:link href="https://www.thedatadiary.net/index.xml" rel="self" type="application/rss+xml"/>
+<description></description>
+<generator>quarto-1.2.335</generator>
+<lastBuildDate>Sun, 17 Jan 2021 06:00:00 GMT</lastBuildDate>
+<item>
+  <title>R, ggplot2, &amp; plotly</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="alert-info">
+<p>Editor’s note: I’ve gone back &amp; read my previous post, &amp; have one general thought - yeeeesh… Everything is so… “matter of fact” in tone &amp; doesn’t really sound like me. I’ll give myself a pass, since it was the first post, was written around midnight (which is very late for me!), and probably won’t ever be read by anyone besides me/my mom (hi mom!). That being said, I’m going to try to make a more conscious effort going forward of having my voice be expressed in my writing. This is my blog, after all, so it should sound like my voice when read back.</p>
+</div>
+<section id="plotting-in-r" class="level1">
+<h1>Plotting in R</h1>
+<p>I’ve started getting more familiar with R &amp; wrangling my way through a few plotting examples (Youtube university is, once again, my best friend), but I thought it would be worthwhile to work towards plotting my own dataset. Luckily enough, plotting with R is pretty intuitive, once you get ahold of the basic syntax. I had put together a <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.01.17-r_ggplot2_plotly">dataset</a> on past US presidential elections for a separate personal project, and was able to convert to a .csv to use for some basic plotting practice.</p>
+<p>It’s generally well understood that the Republican party has a <a href="https://www.vox.com/policy-and-politics/2019/9/17/20868790/republicans-lose-popular-vote-win-electoral-college">structural advantage in presidential elections</a> due to the winner-take-all nature of the electoral college, but I wanted to see if I could quantify this advantage in an understandable format using R. I used the ggplot2, dplyr, and plotly packages to put this together.</p>
+</section>
+<section id="putting-together-the-plot" class="level1">
+<h1>Putting Together the Plot</h1>
+<p>I imported the entire dataset and assigned it to a dataframe (R’s version of, say, an excel table). Using the base R <code>plot()</code> function, I plotted the entire dataframe:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_01.png" class="img-fluid"></p>
+<p>Without specifying which variables I want to look at, <code>plot()</code> will output a set of summary plots, with every variable plotted against every other variable. This isn’t great for gathering any meaningful insight, but helps get a “lay of the land” view of the dataframe. In this case, I’m interested in how the percentage of the popular vote a candidate wins is related to the percentage of the electoral vote they win. Using plot(), I can graph <code>popular_vote_pct</code> and <code>electoral_vote_pct</code> variables from the dataframe:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_02.png" class="img-fluid"></p>
+<p>Figure 2 shows the basic data I want to represent, but there’s a lot of noise. The dataset includes every major candidate in every election since <a href="https://en.wikipedia.org/wiki/1788%E2%80%9389_United_States_presidential_election">Washington’s run for re-election in 1788</a>. I’m really only interested in the modern two-party system, so I filtered out the elections prior to 1952, as well as any candidate that won 0 electoral votes (i.e., third parties). The new, filtered plot is shown in Figure 3, below:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_03.png" class="img-fluid"></p>
+<p>Now, with all the data manipulation squared away, I can start with the fun part: making it look good! ggplot’s base plot is, right off the bat, just a bit nicer looking than base R’s plot() function:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_04.png" class="img-fluid"></p>
+<p>ggplot color maps very easily, and with a little googling (aka - jumping through multiple color converters online to convert colors from hexadecimal to rgb to hcl), I was able to make some formatting changes that give the below static chart:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_05.png" class="img-fluid"></p>
+<p>Despite some frustrations (more on that, below), I was able to add a simple linear regression to the plot, with the shaded bands representing the 95% confidence interval for each regression. Since the Republican regression is above the Democratic regression, the chart implies that, for a given share of popular vote, Republican candidates on average win a larger share of the electoral college than their Democratic counterparts.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_06.png" class="img-fluid"></p>
+<p>This finding matches the general consensus and my prior expectations, but I also found something mildly surprising. Ideally, I would imagine, we’d want a candidate’s share of the electoral vote to match their share of the popular vote. However, if I add a reference line of y = x, we can see that both parties tend to underperform in the electoral college when they lose the popular vote, but overperform in the electoral college when they win the popular vote!</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/pics/plot_07.png" class="img-fluid"></p>
+<p>I plotted the absolute vote share from published election results, rather than the two-party vote share (2PV) (i.e., the percentage of vote won if only the top two candidates are considered). Converting to the 2PV would shift the plot to the right, but keep the same overall trend, as Democrats and Republicans have won 100% of the electoral college since 1952. This exercise was more about exploring R’s ggplot() function, so going back into the dataset to account for this marginal change doesn’t seem like an efficient use of time, but I did want to make a note of it, for transparency’s sake.</p>
+<p>Finally, I used the ggplotly() to convert from a static ggplot to an interactive plotly, and exported as an html file. For reasons I’ve yet to figure out, the custom textbox formatting did not want to play nice with the linear regression lines, so I had to take those out. I plan on figuring this wrinkle out eventually, but for now I’m happy with the final plot. You can hover over individual datapoints below to see more details!</p>
+<div class="alert-light">
+<p>This is an archive of a post previously hosted on Squarespace. You can view the original interactive content <a href="https://plotly.com/~markjrieke/1/">here</a>.</p>
+</div>
+</section>
+<section id="some-notes" class="level1">
+<h1>Some Notes</h1>
+<p>I’ve published all of my work to <a href="https://github.com/markjrieke/thedatadiary">github</a>, and I’ll continue to do so in the future. The files I uploaded are, to say the least, in pretty rough shape. That being said, I don’t really plan on tweaking them for this post - I’ve used them as training tools, and it might be interesting in the future to look at the progress I’ve made.</p>
+<p>Also, I just realized that the interactive plotly chart looks like junk when viewed via mobile (the data points and labels don’t resize automatically). I’ll have to figure out a way to fix this in the future… Maybe I can set the point size as a ratio of the plot width? It’s something to think about, but again, I’m happy with my first run using ggplot &amp; plotly.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {R, Ggplot2, \&amp; Plotly},
+  date = {2021-01-17},
+  url = {https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“R, Ggplot2, &amp; Plotly.”</span> January 17,
+2021. <a href="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly">https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/index.html</guid>
+  <pubDate>Sun, 17 Jan 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/featured.png" medium="image" type="image/png" height="99" width="144"/>
+</item>
+<item>
+  <title>Baby Steps</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-01-10-baby-steps/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<section id="an-uphill-battle" class="level1">
+<h1>An Uphill Battle</h1>
+<p>Today marks the beginning of what I imagine will be a long journey, with a significant number of hiccups &amp; frustrations along the way. The end goal I have is to build out an election forecast model (in the spirit of <a href="https://projects.fivethirtyeight.com/2020-election-forecast/">FiveThirtyEight</a> &amp; <a href="https://projects.economist.com/us-2020-forecast/president">The Economist</a>), but along the way, I plan on getting better at a few things:</p>
+<ul>
+<li><strong>Writing</strong> : while I’ve never been a poor writer, I’ve always gravitated more toward math &amp; science, &amp; in my career as an engineer, a good amount of my communication has been visual. If possible, I’ve always preferred to leave words off the page &amp; have a chart speak for me. While I still think that, in general, its better the explain a concept visually (a picture vs.&nbsp;a thousand words, and all), I also believe supplementing a visual with my a well written analysis &amp; opinion can improve its reception.</li>
+<li><strong>Stats</strong> : in my current job, almost everything I model is deterministic, rather than probabilistic (physical systems tend to behave the way that natural laws expect them to). It has been a long time since I’ve done any sort of stats work (&amp; it was all basic introductory analyses), so I expect an uphill battle with getting my head wrapped around Bayes’ Theorem, Monte Carlo simulations, Brier’s Tests, etc.</li>
+<li><strong>Coding</strong> : most of my experience in coding is with VBA - typically just for manipulating data in Excel. I’ve built out a good number of forms using VBA, but don’t typically tend to dig into anything far beyond simple manipulation. The front end of Excel is effectively setup as a visual programming tool, so there’s not a great incentive to do much array manipulation outside of the spreadsheet. Excel is a wonderful tool, &amp; is sufficient for my current job, but I’ve definitely found where its limits lie. I’m excited to dig into R, the stats based program that seems almost to be designed specifically for what I’d like to do.</li>
+</ul>
+</section>
+<section id="the-first-plot" class="level1">
+<h1>The First Plot</h1>
+<p>R has a few sample datasets, and r:base includes a pretty basic plot function. With the sample set, cars, I made a quick plot of the stopping distance vs.&nbsp;the speed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;">plot</span>(cars)</span></code></pre></div>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2021-01-10-baby-steps/index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="2100"></p>
+</div>
+</div>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Baby {Steps}},
+  date = {2021-01-10},
+  url = {https://www.thedatadiary.net/posts/2021-01-10-baby-steps},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Baby Steps.”</span> January 10, 2021. <a href="https://www.thedatadiary.net/posts/2021-01-10-baby-steps">https://www.thedatadiary.net/posts/2021-01-10-baby-steps</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-01-10-baby-steps/index.html</guid>
+  <pubDate>Sun, 10 Jan 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-01-10-baby-steps/plot.png" medium="image" type="image/png" height="103" width="144"/>
+</item>
+<item>
+  <title>Hello World!</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-01-09-hello-world/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>I’m currently setting up the website &amp; will have an official post soon(ish).</p>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Hello {World!}},
+  date = {2021-01-09},
+  url = {https://www.thedatadiary.net/posts/2021-01-09-hello-world},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Hello World!”</span> January 9, 2021. <a href="https://www.thedatadiary.net/posts/2021-01-09-hello-world">https://www.thedatadiary.net/posts/2021-01-09-hello-world</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-01-09-hello-world/index.html</guid>
+  <pubDate>Sat, 09 Jan 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-01-09-hello-world/icon.png" medium="image" type="image/png" height="132" width="144"/>
+</item>
+</channel>
+</rss>

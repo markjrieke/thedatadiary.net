@@ -41,10 +41,6 @@ format:
   html: 
     theme: dinty.scss
     css: styles.css
-    toc: true
-    toc-location: left
     highlight-style: kate
     code-block-bg: true
     code-block-border-left: "#78c2ad"
-    link-external-newwindow: true
-    
