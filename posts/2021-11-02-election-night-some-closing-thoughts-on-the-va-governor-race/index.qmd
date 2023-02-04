@@ -1,0 +1,39 @@
+---
+title: 'Election Night: Some Closing Thoughts on the VA Governor Race'
+date: '2021-11-02'
+categories: [politics]
+image: featured.png
+---
+
+A few weeks ago I had [written about the VA Governor's race](https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/) before going on vacation - in that time it seems as though Terry McAuliffe's campaign had lost a lot of steam and Youngkin made up a lot of ground in the final weeks of the campaign. At the time of this writing, it seems overwhelmingly likely that Glenn Youngkin will become the next governor of Virginia. To avoid some of the [galaxy-brain takes that will inevitabely wind up twitter](https://twitter.com/rp_griffin/status/1455696452915802122), I thought I'd distract myself by following up on my previous post. 
+
+Firstly, I should share the updated polling average. A few weeks ago, McAullife appeared to have a sizeable lead in the polls:
+
+{{< tweet markjrieke 1444454926399254535 >}}
+
+However, as of election day, the race had significantly tightened to effectively a coin-toss:
+
+{{< tweet markjrieke 1455164731749175304 >}}
+
+As I mention in the above tweet, the win probability isn't a true forecast, just the portion of each candidate's election day distribution *above 50%*. That being said, actual forecasts similarly had the race down to a near 50-50 split as of this morning:
+
+{{< tweet gelliottmorris 1454130028149620737 >}}
+{{< tweet jhkersting 1455545666999042056 >}}
+
+Even the model most confident in McAuliffe built by [Lakshya Jain](https://twitter.com/lxeagle17) and [Thorongil](https://twitter.com/Thorongil16) had dropped McAuliffe's win probability from ~85% to 67% over the course of a few weeks:
+
+{{< tweet lxeagle17 1455544487149592576 >}}
+
+While I definitely plan on utilizing a more scientific poll-weighting methodology in the future, I do find it interesting that even a simple averaging method can produce relatively accurate results in line with the majority of other forecasters. 
+
+Regarding post-hoc analysis of *why* McAuliffe lost, I won't dredge up any of my own (partially because it'd be irresponsible & pundit-y to do so without referencing any data and partially because it's getting late & I'm a bit tired), but I'll point out a few tweets from [Nate Cohn](https://twitter.com/Nate_Cohn) that show that the results appear to show a near uniform shift across precincts and different voting groups. This would suggest that McAuliffe's loss is tied more closely to the national environment, rather than shifts amongst specific groups/counties.
+
+{{< tweet Nate_Cohn 1455693099062153217 >}}
+{{< tweet Nate_Cohn 1455717564772986884 >}}
+
+This won't stop the networks from ascribing the win/loss to very specific campaign issues (I've already seen quite a few folks ascribe Youngkin's win to education, race, suburban-reversion, etc., without any evidence to back up such claims). Until there are deep dives into data regarding the election, I'd treat any comments from pundits with a hefty grain of salt. 
+
+### Some closing thoughts
+
+That's all for me today! I'll be back in a few weeks with some non-political content, looking at a machine learning model predicting the price of a diamond in the [diamonds dataset](https://ggplot2.tidyverse.org/reference/diamonds.html). 
+
