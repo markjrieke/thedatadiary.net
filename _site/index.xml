@@ -10,7 +10,1024 @@
 <atom:link href="https://www.thedatadiary.net/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.2.335</generator>
-<lastBuildDate>Sun, 17 Jan 2021 06:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 19 Oct 2021 05:00:00 GMT</lastBuildDate>
+<item>
+  <title>Polling Average of the VA Governor’s Race using purrr::map functions</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Rolling poll averages can be misleading in the absence of errorbars or an expected distribution of outcomes. FiveThirtyEight is currently <a href="https://projects.fivethirtyeight.com/polls/governor/virginia/">tracking polls of Virginia’s Governor race</a> slated for early November, and has kindly made their polls <a href="https://projects.fivethirtyeight.com/polls-page/data/governor_polls.csv">available to the public</a>. Their current polling average, however, looks to be a simple rolling average and doesn’t include a confidence interval. I’ve attempted to improve upon their tracker here by providing a weighted polling average and a 95% confidence interval.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/pics/race_results_2021-10-19.png" class="img-fluid"></p>
+<section id="how-this-works" class="level1">
+<h1>How this works</h1>
+<p>Since we’re only considering the top candidates from each party, we’ll look at each candidate’s two-party voteshare of each poll. To get the two-party voteshare, third party or other minor candidates are removed from each poll and each candidate’s percentage is recalculated as if they were the only two options on the ballot (in practice, this only removes a tiny amount of undecideds and third party voters). Then, the daily polling average is calculated by weighting each poll by sample size and recency. Using <a href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Bayes’ theorem</a> and a weak <a href="https://en.wikipedia.org/wiki/Continuous_uniform_distribution">uniform prior</a>, we can use the same method recalculate the polling average and confidence interval for each day between today and the election. Because polls are weighted by recency, as we look further and further into the future, our confidence in the polls decreases and the confidence interval around the polling average fans out. Each candidate’s probability of winning is the portion of the portion of the projected election-day polling distribution in their favor, based on that day’s polling average.</p>
+</section>
+<section id="some-caveats-worth-noting" class="level1">
+<h1>Some caveats worth noting</h1>
+<p>This is an inherently flawed method, and it’s worth pointing out a few of the flaws and shortcuts I used:</p>
+<section id="the-functions-used-to-weight-polls-are-nowhere-near-perfect." class="level3">
+<h3 class="anchored" data-anchor-id="the-functions-used-to-weight-polls-are-nowhere-near-perfect.">The functions used to weight polls are nowhere near perfect.</h3>
+<p>The original weighting functions (which I haven’t changed) were chosen somewhat arbitrarily. In hindsight, they’re probably placing too much emphasis on recency and the error bars ought to be larger. While I have received some <a href="https://community.rstudio.com/t/is-it-possible-to-tune-arbitrary-parameters-w-tidymodels/117998/2">advice on tuning arbitrary functions</a> as a part of a larger model, I haven’t implemented here. It’s more prudent to think of this as an over-confident polling aggregate, rather than any sort of model. For a true projection model, I’d recommend looking at <a href="https://projects.jhkforecasts.com/2022-midterms/virginia-governor">Jack Kersting’s website</a>.</p>
+</section>
+<section id="the-weighting-method-ignores-important-weighting-factors" class="level3">
+<h3 class="anchored" data-anchor-id="the-weighting-method-ignores-important-weighting-factors">The weighting method ignores important weighting factors</h3>
+<p>This weighting method is super simple and ignores common weighting factors, like pollster and survey methodology. Other less-common poll weighting methods, like accounting for partisan non-response bias and and how the pollster weights their results (notably, whether or not the pollster weights by education) were similarly ignored. There is definitely a <a href="https://gelliottmorris.substack.com/p/what-people-are-missing-about-the?justPublished=true">strong argument</a> for including these weighting factors, but for me, this exercise was more about learning to use <code>purrr::map()</code> and other related functions when <a href="https://github.com/markjrieke/thedatadiary/blob/main/2021.10.01-virginia_governors_race/scripts/va_poll_wrangle.R">writing the script for this plot</a>.</p>
+</section>
+<section id="some-pollsters-are-filtered-out-by-design" class="level3">
+<h3 class="anchored" data-anchor-id="some-pollsters-are-filtered-out-by-design">Some pollsters are filtered out by design</h3>
+<p>I debated this for quite some time, but decided to add a filter to remove polls conducted by <a href="https://www.rasmussenreports.com/">Rasmussen</a> and <a href="https://www.thetrafalgargroup.org/">Trafalgar</a>. Trafalgar is excluded from any of the <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ56fySJKLL18Lipu1_i3ID9JE06voJEz2EXm6JW4Vh11zmndyTwejMavuNntzIWLY0RyhA1UsVEen0/pub?gid=0&amp;single=true&amp;output=csv">Economist’s polling databases</a> for opaque yet clearly shoddy methodology and Rasmussen is <a href="https://twitter.com/Rasmussen_Poll/status/1448819612242616324?ref_src=twsrc%5Etfw%7Ctwcamp%5Eembeddedtimeline%7Ctwterm%5Eprofile%3ARasmussen_Poll%7Ctwgr%5EeyJ0ZndfZXhwZXJpbWVudHNfY29va2llX2V4cGlyYXRpb24iOnsiYnVja2V0IjoxMjA5NjAwLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X2hvcml6b25fdHdlZXRfZW1iZWRfOTU1NSI6eyJidWNrZXQiOiJodGUiLCJ2ZXJzaW9uIjpudWxsfSwidGZ3X3NwYWNlX2NhcmQiOnsiYnVja2V0Ijoib2ZmIiwidmVyc2lvbiI6bnVsbH19%7Ctwcon%5Etimelinechrome&amp;ref_url=https%3A%2F%2Fwww.rasmussenreports.com%2F">clearly partisan</a>. Removing these from the average follows the general consensus on ET (though, to be transparent, ET does tend to slant far to the left). In future polling projects, I’d hope to develop some more robust methodology to programatically downweight problematic pollsters (how’s <em>that</em> for a tongue twister?), but for now I’m just going to exclude.</p>
+</section>
+</section>
+<section id="final-thoughts-on-polling" class="level1">
+<h1>Final thoughts on polling</h1>
+<p>This methodology certainly has its flaws, but it <em>is</em> <a href="https://github.com/markjrieke/thedatadiary/blob/main/2021.10.01-virginia_governors_race/scripts/va_poll_wrangle.R">transparent</a>. I’ll continuously update this plot up until election day on my <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race">github</a>.</p>
+</section>
+<section id="some-programming-notes" class="level1">
+<h1>Some programming notes</h1>
+<p>I’ve finished migrating my site to Netlify! I had originally planned to make the switch from Squarespace sometime early in 2022, but motivation struck me during a relatively light work week and I was able to rebuild the site using <a href="https://bookdown.org/yihui/blogdown/">blogdown</a>. This allows for a lot more customization and control than was available with Squarespace, but the biggest upside is <em>definitely</em> the ease of sharing in-line code, here’s a quick example:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;">library</span>(tidyverse)</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;"># let's put together a plot from the diamonds dataset</span></span>
+<span id="cb1-4">diamonds <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb1-5">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> carat,</span>
+<span id="cb1-6">             <span class="at" style="color: #657422;">y =</span> price,</span>
+<span id="cb1-7">             <span class="at" style="color: #657422;">color =</span> cut)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb1-8">  <span class="fu" style="color: #4758AB;">geom_point</span>(<span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb1-9">  <span class="fu" style="color: #4758AB;">theme_minimal</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb1-10">  viridis<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">scale_color_viridis</span>(<span class="at" style="color: #657422;">discrete =</span> <span class="cn" style="color: #8f5902;">TRUE</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="2100"></p>
+</div>
+</div>
+<p>This ease of use and visibility will make things more seamless for me and allow me to dig into more technical content in more detail in the future!</p>
+<p>I’ll be taking a (much needed) vacation next week, spending some time off the grid in the Grand Canyon and surrounding area with my family. I’ve got a short post lined up for early November when I return - see you then!</p>
+<p>As always, you can find the source files for <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.10.01-virginia_governors_race">the script to generate the polling average</a> and for <a href="https://github.com/markjrieke/thedatadiary.net">this site</a> on my github.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Polling {Average} of the {VA} {Governor’s} {Race} Using
+    Purrr::map Functions},
+  date = {2021-10-19},
+  url = {https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Polling Average of the VA Governor’s Race Using
+Purrr::map Functions.”</span> October 19, 2021. <a href="https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions">https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions</a>.
+</div></div></section></div> ]]></description>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index.html</guid>
+  <pubDate>Tue, 19 Oct 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/featured.png" medium="image" type="image/png" height="192" width="144"/>
+</item>
+<item>
+  <title>RStudio’s Call for Documentation</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-10-05-rstudio-s-call-for-documentation/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>In my job, I spend a good amount of time working in the platform setup by our survey vendor, <a href="https://www.qualtrics.com/">Qualtrics</a>. There are some pre-formatted reports that we can send on a recurring basis through Qualtrics, but for one-off or custom reports, I can work with the raw data in R. A few weeks ago, however, I was asked to setup a recurring email to send a customized report to a group of hospital directors each week. While R makes generating the report simple, sending out each week was tedious, as each one needed to be sent separately. Since the reports contain patient information, I couldn’t automate via a third party server like <a href="https://github.com/features/actions">GitHub Actions</a>. I needed a way to localize the automation to my computer.</p>
+<p>Luckily enough, I was able to work out a solution! I wrote about it in a submission to <a href="https://community.rstudio.com/t/r-views-call-for-documentation-announcement/110579">RStudio’s 2021 Call for Documentation</a>. You can read my article on <a href="https://community.rstudio.com/t/automated-email-reports-with-r-vba-and-the-task-scheduler-r-views-submission/115807/5">Automated Email Reports with R, VBA, and the Task Scheduler</a> for more detail.</p>
+<section id="some-programming-notes" class="level3">
+<h3 class="anchored" data-anchor-id="some-programming-notes">Some programming notes</h3>
+<ul>
+<li>I’ve been named one of RStudio Community’s New Users of the Month!</li>
+<li>I’ve started working in Rmarkdown for these posts (you can actually view the native file for this post here). This allows me to mix in code and prose in one document &amp; should make the process a bit easier on my end.</li>
+<li>I’ve scheduled out posts every two weeks for the rest of the year. I wanted to give myself enough time to work on some longer term projects, so be on the lookout for more in store!</li>
+</ul>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {RStudio’s {Call} for {Documentation}},
+  date = {2021-10-05},
+  url = {https://www.thedatadiary.net/posts/2021-10-05-rstudio-s-call-for-documentation},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“RStudio’s Call for Documentation.”</span>
+October 5, 2021. <a href="https://www.thedatadiary.net/posts/2021-10-05-rstudio-s-call-for-documentation">https://www.thedatadiary.net/posts/2021-10-05-rstudio-s-call-for-documentation</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>rstats</category>
+  <guid>https://www.thedatadiary.net/posts/2021-10-05-rstudio-s-call-for-documentation/index.html</guid>
+  <pubDate>Tue, 05 Oct 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-10-05-rstudio-s-call-for-documentation/icon.png" medium="image" type="image/png" height="132" width="144"/>
+</item>
+<item>
+  <title>Catching Up (again)</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-09-23-catching-up-again/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Wow, it’s been quite a while! Once again, I’m catching up from a long hiatus (this time, there was about a month’s gap between posts). Although I haven’t been writing here, I have been keeping myself incredibly busy - for that reason, I think I’m going to switch up the format of this site. Here’s a few changes I’m planning on making, &amp; also why I plan on making them.</p>
+<section id="opening-up-topic-options" class="level3">
+<h3 class="anchored" data-anchor-id="opening-up-topic-options">Opening up topic options</h3>
+<p>Up until now, I’ve pretty much exclusively been looking at politically-related things from a data-centric point of view, partially because most news outlets are sensationalist and it annoys me, and partially because the 2020 election &amp; aftermath was on my mind for most of early 2021 (also, wanting to understand the <a href="https://projects.economist.com/us-2020-forecast/president/how-this-works">Economist’s Election Forecast methodology</a> was the spark that led to taking stats classes, learning R, and [eventually] landing a new job). While I still want to/expect that I will touch on political-esque topics, I want to expand into things I’m more generally interested in. I’ve spent a lot of time this year working on projects that don’t touch politics and it was difficult to spur the enthusiasm to work on a political project just to fill the site after having spent hours coding something unrelated. I’ve imposed this political filter on myself, &amp; expanding the horizon to include any/all topics that interest me will allow me to more consistently write without overextending myself.</p>
+</section>
+<section id="moving-away-from-squarespace" class="level3">
+<h3 class="anchored" data-anchor-id="moving-away-from-squarespace">Moving away from Squarespace</h3>
+<p>Currently, this site is hosted by Squarespace. This was great for getting setup &amp; used to working online, but after a year of working with it, I’ve realized that it isn’t the ideal platform for my use case. Early next year, hopefully, I’ll switch over to using rmarkdown, Hugo, and Netifly to build &amp; deploy a site directly from R. This will make my life a lot easier, for a couple of reasons:</p>
+<ul>
+<li>I will have a lot more control over layouts and themes</li>
+<li>I’ll be able to more easily share code, images, and interactives(!)</li>
+<li>The code &amp; the website will be housed under one directory (rather than existing as two separate entities)</li>
+</ul>
+<p>Additionally, the platform I’m planning on moving to is more blog/personal-professional focused, rather than retail focused, like Squarespace. I may also be able to move towards having posts appear in emails, rather than having to link to the post itself.</p>
+</section>
+<section id="timeline" class="level3">
+<h3 class="anchored" data-anchor-id="timeline">Timeline</h3>
+<p>I haven’t yet settled on this yet, but I may move from a weekly schedule to a bi-weekly schedule (not that I ever really stuck to the weekly schedule). The projects I’ve been working on typically take quite a bit of time, so trying to churn one out each week means that I may have to suffer quality for a schedule, which I don’t want to do. I’d rather have enough time to fully devote to completing something.</p>
+<p>Anyways, that’s a lot of updates - I’ll hopefully check in within a few weeks time!</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Catching {Up} (Again)},
+  date = {2021-09-23},
+  url = {https://www.thedatadiary.net/posts/2021-09-23-catching-up-again},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Catching Up (Again).”</span> September 23,
+2021. <a href="https://www.thedatadiary.net/posts/2021-09-23-catching-up-again">https://www.thedatadiary.net/posts/2021-09-23-catching-up-again</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-09-23-catching-up-again/index.html</guid>
+  <pubDate>Thu, 23 Sep 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-09-23-catching-up-again/icon.png" medium="image" type="image/png" height="132" width="144"/>
+</item>
+<item>
+  <title>Tidymodels and the Titanic</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>This week, I thought I’d do something a bit different. I’ve been working with &amp; getting used to <a href="https://www.tidymodels.org/">tidymodels</a>, a suite of R packages for building machine learning models with tidyverse principles (you can thank <a href="https://juliasilge.com/blog/">Julia Silge’s blog</a> for providing a whole host of examples and walkthroughs). Using tidymodels and <a href="https://www.kaggle.com/c/titanic">Kaggle’s Titanic dataset</a>, I created a few simple models to predict whether or not each passenger survived.</p>
+<section id="exploratory-data-analysis" class="level1">
+<h1>Exploratory Data Analysis</h1>
+<p>First off, it’s important to get to know the dataset in a bit of detail before diving into model building. The Titanic dataset is relatively small, containing 12 columns of data on 891 passengers.</p>
+<ul>
+<li><strong>PassengerId</strong> : ordered number assigned to each passenger (1, 2, 3… etc.).</li>
+<li><strong>Survived</strong> : indicates whether the passenger survived or not (imported as numeric, where a 1 means that the passenger survived and a 0 means that the passenger died.</li>
+<li><strong>PClass</strong> : passenger class (1st, 2nd, or 3rd).</li>
+<li><strong>Name</strong> : passenger’s name.</li>
+<li><strong>Sex</strong> : passenger’s sex.</li>
+<li><strong>Age</strong> : passenger’s age.</li>
+<li><strong>SibSp</strong> : number of the passenger’s siblings and/or spouses aboard the ship.</li>
+<li><strong>Parch</strong> : number of the passenger’s parents and/or children aboard the ship.</li>
+<li><strong>Ticket</strong> : passenger’s ticket number.</li>
+<li><strong>Fare</strong> : price of the passenger’s ticket.</li>
+<li><strong>Cabin</strong> : passenger’s cabin number.</li>
+<li><strong>Embarked</strong> : port from which the passenger embarked.</li>
+</ul>
+<p>The passenger’s name and ticket number are unique, and don’t offer any much predictive power (at least, not for the type we’ll be deploying), so I’ve removed those columns from the selection. The majority of passengers are missing Cabin information, so I’ve similarly removed that column. Let’s take a look at the age distribution by gender. Density plots are good for this sort of objective, but a quick note - density plots don’t show the counts (like a histogram), just the relative distribution of each group.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_01.png" class="img-fluid"></p>
+<p>Both men and women have similar age distributions, with the majority being adults roughly in their twenties. It’d be interesting to look at which age groups survived.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_02.png" class="img-fluid"></p>
+<p>There’s a spike survivorship at a young age (as expected, due to the prioritization of children). Young adults make up the majority of both survivors and those who died, simply because young adults made up the majority of passengers. It may be more interesting to see which male/female age groups survived.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_03.png" class="img-fluid"></p>
+<p>Interestingly, there’s a large portion of the women who died were children. To gain some more insight, however, it may be beneficial to bin the results. As mentioned above, density plots don’t show a count of each age, but the relative amounts instead. We can use a histogram to get a better idea of the actual amount in each group.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_04.png" class="img-fluid"></p>
+<p>From the histogram, we can see that there were far more male passengers than female passengers. Let’s setup age brackets and see how many of each age group survived.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_05.png" class="img-fluid"></p>
+<p>Despite there being more male passengers, there were more female survivors in just about every age bracket. I had expected that women would have a greater percentage of survivorship, but was mildly surprised that the absolute number of female survivors was greater than the number of male survivors.</p>
+<p>Lets look at how survivorship is related to the number of family members each passenger was traveling with.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_06.png" class="img-fluid"></p>
+<p>While there’s not huge variation between survivorship percentages across each class, we can see that the majority of passengers were traveling alone.</p>
+<p>Finally, I looked at the distribution of the fare price by survivorship. As expected, passengers who didn’t survive skewed towards low cost fares while survivors were more evenly distributed across fare prices.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/plot_07.png" class="img-fluid"></p>
+</section>
+<section id="model-fitting-and-evaluation" class="level1">
+<h1>Model Fitting and Evaluation</h1>
+<p>Now that we’ve explored the data a bit, we can get started on some actual model fitting and evaluation. I split the dataset into a training set and test set, and built two simple models - a <a href="https://en.wikipedia.org/wiki/Logistic_regression">logistic regression</a> and a <a href="https://en.wikipedia.org/wiki/Random_forest">random forest model</a>. In very light detail, a logistic regression is the most basic classification model based on the generalized linear model and a random forest model is a decision tree-based algorithm. With no <a href="https://www.datarobot.com/wiki/tuning/">tuning</a> applied, neither model performed particularly well - the logistic regression and random forest models had accuracies of 85.5% and 83.8% on the test set, respectively. While the logistic regression had a slightly higher accuracy on the test set, the random forest performed better on the metric of <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">area under the ROC (receiver-operator characteristic)</a> curve - 0.899 compared to 0.888 (generally, binary classification systems with ROC AUC values close to 1 perform better). A comparison between the two ROC curves is shown below.</p>
+<p>It’s not perfect, but the purpose was to explore the tidymodels framework, and I’m pretty happy with the outcome/practice along the way.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/pics/roc_auc.png" class="img-fluid"></p>
+</section>
+<section id="some-things-to-readwatchlisten-to" class="level1">
+<h1>Some Things to Read/Watch/Listen to</h1>
+<ul>
+<li>There’s been a concerted effort by prominent conservatives to <a href="https://twitter.com/gelliottmorris/status/1424524749875601408?s=21">promote vaccination</a> and <a href="https://www.reviewjournal.com/opinion/letters/letter-dont-blame-the-gop-for-vaccine-hesitancy-2413731/amp/">shift the blame for vaccine hesitancy to the Biden administration</a>, pointing in particular to one of Kamala Harris’ comments during the Vice Presidential debate. This criticism falls fairly short, given that commentators like <a href="https://www.youtube.com/watch?v=ocEFTIwnO6I">Tucker Carlson</a> and legislators like <a href="https://www.cnn.com/2021/08/10/tech/twitter-marjorie-taylor-greene/index.html">Marjorie Taylor Green</a> continue to spread vaccine conspiracy theories. Further, a <a href="https://www.economist.com/graphic-detail/2021/07/30/which-americans-are-against-the-jab">statistical model by the Economist</a> found that the strongest predictor of whether or not someone has been vaccinated is who they voted for in the 2020 presidential election.</li>
+<li>Julia Silge was recently featured as a guest on an excellent episode of the <a href="https://www.youtube.com/watch?v=p7z8yZucwlM">Not So Standard Podcast</a>. Well worth a listen for R dorks like myself.</li>
+<li>Perry Bacon Jr wrote an <a href="https://www.washingtonpost.com/opinions/2021/08/09/why-moderation-doesnt-guarantee-electoral-success-biden-democrats/">informative piece</a> on the misplaced importance on swing voters in election cycles.</li>
+</ul>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Tidymodels and the {Titanic}},
+  date = {2021-08-08},
+  url = {https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Tidymodels and the Titanic.”</span> August 8,
+2021. <a href="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic">https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>rstats</category>
+  <category>tidymodels</category>
+  <guid>https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/index.html</guid>
+  <pubDate>Sun, 08 Aug 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>The Gas Price Fallacy</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>As America has vaccinated its population, life has seemingly begun to return to the pre-pandemic normal. Businesses have been opening to higher levels of capacity, schools are planning for higher levels of in-person learning in the fall, and, notably, Americans have returned to <a href="https://covid19.apple.com/mobility">pre-pandemic levels of transit</a>.</p>
+<p><a href="https://twitter.com/existentialfish/status/1377779116414533638">Conservative commentators</a> and <a href="https://twitter.com/Jim_Jordan/status/1406966549714440196">representatives</a> have pointed out that prices of commodity goods - in particular, gasoline - have skyrocketed over the past year and attribute this increase to Biden’s presidency. Looking at retail gasoline prices, we can see a steady increase since Biden took office.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy/plot_01.png" class="img-fluid"></p>
+<p>What they fail to point out, however, is that the price of gasoline (and other commodities) significantly dropped during the pandemic, and that the increases are largely a return to pre-pandemic prices.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy/plot_02.png" class="img-fluid"></p>
+<p>While there are certainly opportunities to critique the current administration’s energy policy (<a href="https://apnews.com/article/joe-biden-billings-a3a37acf2fce55449b704b01badc1f67">banning new drilling leases on federal land/water</a> and <a href="https://apnews.com/article/donald-trump-joe-biden-keystone-pipeline-canada-environment-and-nature-141eabd7cca6449dfbd2dab8165812f2">canceling the Keystone XL pipeline’s border-crossing permit</a>, for example), attributing the recent return to pre-pandemic gasoline prices is a particularly weak and intentionally misleading avenue of attack.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary">github</a>.</p>
+<section id="some-readingviewing-material" class="level3">
+<h3 class="anchored" data-anchor-id="some-readingviewing-material">Some Reading/Viewing Material</h3>
+<ul>
+<li>The Economist wrote an <a href="https://www.economist.com/graphic-detail/2021/07/10/in-person-voting-really-did-accelerate-covid-19s-spread-in-america">interesting article</a> finding a significant link between a county’s in-person voting rate and new COVID cases in November.</li>
+<li>Elliot Morris summarized the work of several political scientists in a recent article describing <a href="https://gelliottmorris.substack.com/p/why-did-the-gop-slide-so-far-towards">why the GOP slid so far towards authoritarianism</a> in the past decade. The article is behind a subscriber paywall, but is well worth the read. In short, however, “ethnically antagonistic” voters are much more likely to agree with statements traditionally viewed as authoritarian. This group hadn’t coalesced under a single party until Trump brought these anti-racial voters into the party (recall his role in the <a href="https://www.theatlantic.com/ideas/archive/2020/05/birtherism-and-trump/610978/">birther conspiracy</a> and the <a href="https://www.cnn.com/2016/08/31/politics/2016-election-donald-trump-hillary-clinton-race/index.html">racial antagonism surrounding his 2016 campaign</a>), at which point democratic (note, small “d”) norms became a partisan issue.</li>
+<li>In my machine learning class, I’ve started learning about the implementation of neural networks. The course’s instruction style is highly technical, but Grant Sanderson’s <a href="https://www.youtube.com/watch?t=1015s&amp;v=aircAruvnKk">series on neural networks</a> has helped me align a technical and intuitive understanding of the topic.</li>
+</ul>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {The {Gas} {Price} {Fallacy}},
+  date = {2021-07-18},
+  url = {https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“The Gas Price Fallacy.”</span> July 18, 2021.
+<a href="https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy">https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy/index.html</guid>
+  <pubDate>Sun, 18 Jul 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-07-18-the-gas-price-fallacy/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Blexas?</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-07-11-blexas/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Last year, Donald Trump won Texas’ 38 electoral votes handily, <a href="https://en.wikipedia.org/wiki/2020_United_States_presidential_election_in_Texas">earning 52% of the vote compared to Biden’s 46% (R+6)</a>. Taken on its own, this is hardly surprising - <a href="https://www.270towin.com/states/Texas">Texas has gone to the Republican presidential candidate in every election since 1980</a>. Looking at the relative gains made in Texas over recent election cycles, however, paints a much more hopeful picture for Democrats hoping to flip the state &amp; garner the nickname, “blexas.”</p>
+<p>On election day, FiveThirtyEight and the Economist gave Biden a <a href="https://projects.fivethirtyeight.com/2020-election-forecast/texas/">38%</a> and <a href="https://projects.economist.com/us-2020-forecast/president/texas">30%</a> chance of winning in Texas, respectively. While still bearish on Biden, this is far more bullish than 2016, when FiveThirtyEight’s model gave Clinton a mere <a href="https://projects.fivethirtyeight.com/2016-election-forecast/texas/#plus">5%</a> chance of winning in Texas (in fact, both FiveThirtyEight and the Economist were more confident in Biden’s chance of winning Texas in 2020 than FiveThirtyEight was that Trump would win the presidency in 2016 (<a href="https://projects.fivethirtyeight.com/2016-election-forecast/#plus">28%</a>)). Part of this shift can be attributed to Democratic gains nationally, but Texas Democrats have been steadily gaining more ground than can be explained by national swing.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-07-11-blexas/pics/plot_01.png" class="img-fluid"></p>
+<p>The Cook Political Report publishes its <a href="https://cookpolitical.com/analysis/national/pvi/introducing-2021-cook-political-report-partisan-voter-index">Partisan Voter Index</a> (PVI) following each presidential election. PVI is a measure of how a state, district, or county votes relative to the national environment. For example, say a Democratic candidate wins 53% of the two-party voteshare nationally, but 51% in a given state. Despite the state going to the Democratic candidate, the state PVI would be R+2%, since the candidate performed 2% under the national vote (the actual PVI calculated in the Cook report is slightly more involved, but this basic understanding is sufficient for our purposes). Looking at Texas’ PVI over past elections, we see that Democrats have been making relative gains in every election since 2004, despite Texas still voting more Republican than the nation.</p>
+<p>Much of this can likely be attributed to demographic shifts drive by major Texas cities - <a href="https://demographics.texas.gov/Resources/Presentations/OSD/2021/2021_01_15_LeadershipNorthTexas.pdf">Dallas, Houston, Austin, and San Antonio have seen massive population increases</a>, largely due to domestic and international migration (as opposed to natural changes - e.g., births). As Texas grows, it also continues to diversify. The non-hispanic white population in Texas dropped from 45% in 2010 to 41% in 2019, and non-white population groups have driven growth over the past 10 years.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-07-11-blexas/pics/txdemographics.jpg" class="img-fluid"></p>
+<p>All that being said, while I expect that Texas will continue to experience demographic shifts that are favorable in the eyes of Democratic politicians, in the absence of any real modeling work, I’m hesitant to say that Texas will turn blue in the near term. Despite gains in the presidential results, Texas Democrats <a href="https://en.wikipedia.org/wiki/2020_United_States_House_of_Representatives_elections_in_Texas#Results_summary">didn’t outperform expectations in the house</a>, nor did they even advance a candidate in the special election for TX-06 (two Republican candidates advanced to a runoff). Governor Abbott is also introducing a <a href="https://www.nytimes.com/2021/07/07/us/politics/texas-abbott-voting-laws-transgender-rights.html">special legislative session</a> with one goal (of many) of making Texas a state with some of the most restrictive voting laws with targeted partisan effects. Looking to other states as a reference, North Carolina had also seen similar PVI shifts in the past without resulting in Democratic victories (though, to be fair, North Carolina hasn’t experienced the same level of demographic shift that Texas is undergoing).</p>
+<p>Perhaps there is some modeling work I can do to produce a more definitive stance, but until then, I’ll hold on making any bold predictions.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary">github</a>.</p>
+<section id="general-updates" class="level3">
+<h3 class="anchored" data-anchor-id="general-updates">General Updates</h3>
+<p>It’s been quite a while, but it’s good to get back into writing again. I wrote the scripts/made the charts for this post about two weeks ago, but haven’t had the time (or rather, haven’t made the time) to write the post itself. While I feel like I’ve been saying this for three months now, I do hope to get back to a more regular schedule soon - perhaps biweekly, to avoid rushing projects. We’ll see - in any regard, here are some updates that I’m excited about:</p>
+<ul>
+<li>I started my new job a few weeks ago! It’s both very rewarding (I get to use R &amp; work with large polling datasets daily!) and very demanding. I enjoy the challenge &amp; am excited for upcoming projects that I’ve been tasked with.</li>
+<li>I’ve been steadily making headway against the Machine Learning course I’ve been taking - at this point, I’m about halfway finished.</li>
+<li>I’ve begun to poke around in the tidymodels framework. I’m interested in the standardization the packages supply for generating models in R.</li>
+</ul>
+<section id="some-readingviewing-material" class="level4">
+<h4 class="anchored" data-anchor-id="some-readingviewing-material">Some reading/viewing material:</h4>
+<ul>
+<li>I linked to it above, but it’s worth reading through this <a href="https://www.nytimes.com/2021/07/07/us/politics/texas-abbott-voting-laws-transgender-rights.html">NYT article on the special legislative session in Texas</a>. I only touched on voting rights, but session is primed as another hot-button issue session following spring’s ultra-conservative agenda.</li>
+<li>Checks and Balance, the Economist’s weekly podcast, focused on Critical Race Theory &amp; the troubled history of race in American education in their most recent podcast, “<a href="https://open.spotify.com/show/4jjKHhNPHfkIZHssgrQavP">History Test</a>.” It’s well worth a listen, especially if you’re like me, and had never heard of CRT until recently.</li>
+<li>Just over 6 months ago on January 6th, violent Trump supporters stormed the U.S. capitol. With time and <a href="https://www.msnbc.com/opinion/gop-lies-about-jan-6-are-getting-bolder-more-dangerous-n1267178">overt lies</a> being propagated by Fox News, OANN, and Newsmaxx, it’s easy to forget exactly what happened and how it felt on that day. This <a href="https://www.youtube.com/watch?v=jWJVMoe7OY0">NYT Visual Investigation</a> does an excellent job of reconstructing the timeline of the events that day.</li>
+</ul>
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Blexas?},
+  date = {2021-07-11},
+  url = {https://www.thedatadiary.net/posts/2021-07-11-blexas},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Blexas?”</span> July 11, 2021. <a href="https://www.thedatadiary.net/posts/2021-07-11-blexas">https://www.thedatadiary.net/posts/2021-07-11-blexas</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-07-11-blexas/index.html</guid>
+  <pubDate>Sun, 11 Jul 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-07-11-blexas/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>COVID Cases Improve with Introduction of Vaccines</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>As vaccines have become widely available in the US, new COVID cases and deaths have dropped significantly from winter peak, with the 7-day average for both cases and deaths nearing the averages reported during the initial lockdown in the summer of last year (note that, in the chart for the 7-day average of deaths below, the scale is restricted to 15 deaths per million; this cuts off some of the state surges, but shows the US average better than a <a href="https://github.com/markjrieke/thedatadiary/raw/main/2021.05.30-COVID/p3.png">chart with an unedited scale</a>).</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/pics/plot_01.png" class="img-fluid"></p>
+<p><img src="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/pics/plot_03.png" class="img-fluid"></p>
+<p>According to the US Vaccine Tracker, <a href="https://twitter.com/USVaccineCount">41% of Americans are fully vaccinated</a> as of today. Even more heartening is the fact that the partisan divide regarding vaccine hesitancy, while still existent, <a href="https://twitter.com/gelliottmorris/status/1397579777448550404">is shrinking</a>.</p>
+<p>While this is certainly good news about the country as a whole, individual states, counties, and cities may have varying levels of success in curbing the spread of the virus in the local community. The New York Times created a <a href="https://www.nytimes.com/interactive/2021/us/covid-cases-deaths-tracker.html">helpful dashboard</a> that lets you look at the spread of the virus on a state, county, or metro area scale.</p>
+<p>All this is to say that, while the pandemic is still not (and possibly will never be) a thing of the past, the introduction of vaccines certainly has appeared to help curb the spread.</p>
+<section id="catching-up" class="level3">
+<h3 class="anchored" data-anchor-id="catching-up">Catching Up</h3>
+<p>It’s been a while since I’ve written, due to a flurry of weddings and trips. While I had originally hoped to get back onto a regular weekly writing schedule, I will again have to push out the next post until late June, due to some exciting personal news: June 21st, I’ll be starting a new job! I’ll be transitioning from engineering in the oil &amp; gas industry to healthcare analytics, which I’m really excited about! In the meantime, however, there’s a flurry of work to do in my current job to ensure that the person backfilling me is prepared to pick up the projects I’m working on. Hopefully after that, I can get back to a regular schedule.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.05.30-COVID">github</a>.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {COVID {Cases} {Improve} with {Introduction} of {Vaccines}},
+  date = {2021-06-03},
+  url = {https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“COVID Cases Improve with Introduction of
+Vaccines.”</span> June 3, 2021. <a href="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines">https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/index.html</guid>
+  <pubDate>Thu, 03 Jun 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>President of the Polls</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Elliot Morris wrote in his <a href="https://gelliottmorris.substack.com/p/are-preferences-for-more-government">newsletter last week</a> about the increase in the public’s opinion that the government ought to be doing more. A summary of the last twenty years of polling by NBC shows that, while there seems to be a reactive effect based on the party of the president, support for increased government activity has generally been on the rise.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/govt.png" class="img-fluid"></p>
+<p>The combination of Biden’s <a href="https://www.pewresearch.org/politics/2021/03/11/biden-viewed-positively-on-many-issues-but-public-is-less-confident-he-can-unify-country/">approval across several categories</a>, <a href="https://www.nytimes.com/2021/02/04/us/politics/biden-approval-rating-republicans.html">public support of his proposals</a> (with the exception of his original cap on refugees, which he then <a href="https://www.cnn.com/2021/05/03/politics/refugee-cap/index.html">raised after public outcry</a>), and the public support of increased government activity gives Biden a strong argument in pressing congress to get his progressive policies pushed through to his desk. Despite the popularity, his $4 trillion <a href="https://www.nytimes.com/2021/04/28/upshot/biden-families-plan-american-rescue-infrastructure.html">infrastructure and families plan</a> largely depends on what the senate parliamentarian will allow into a reconciliation bill (which only needs majority approval, rather than a filibuster-proof 60 votes) and the votes of a few moderate Democratic senators, since the bills will receive <a href="https://nypost.com/2021/05/04/mcconnell-no-gop-senator-will-back-bidens-4-trillion-infrastructure-plan/">no Republican support in the senate</a>.</p>
+<section id="outlook-for-the-coming-weeks" class="level3">
+<h3 class="anchored" data-anchor-id="outlook-for-the-coming-weeks">Outlook for the Coming Weeks</h3>
+<p>I’ll be taking a break for the next few weeks, due to a flurry of weekend trips/weddings now that I/most of my friends are fully vaccinated. I’ll continue to work on the database in the background (notably, I need to dive deep into the census bureau demographic data, which needs a lot of fixing). I’ll likely write a short update in either late May or early June.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.05.03-misc_ish">Github</a>.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {President of the {Polls}},
+  date = {2021-05-05},
+  url = {https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“President of the Polls.”</span> May 5, 2021. <a href="https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls">https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/index.html</guid>
+  <pubDate>Wed, 05 May 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>A Lukewarm Case for DC Statehood</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on <a href="https://github.com/markjrieke/electionsimulator/tree/main/notepad">building out the demographic/economic database</a>. I, did, however, sneak in some time to explore the <a href="https://www.census.gov/data/tables/2020/dec/2020-apportionment-data.html">2020 Census Apportionment Results</a> that were released yesterday. Some surprises came out of the release: Texas and Florida underperformed expectations, only gaining two and one seat, respectively; Arizona didn’t gain a seat; and New York lost a seat but was apparently <a href="https://www.nytimes.com/2021/04/26/nyregion/new-york-census-congress.html">89 people short of retaining its seats</a>. Given that Texas and Florida each gained one less seat than was generally expected, there’s been some speculation online that <a href="https://www.washingtonpost.com/business/are-you-a-citizen-the-trump-census-controversy-explained/2021/04/26/1cfe6ed8-a6e1-11eb-a8a7-5f45ddcdf364_story.html">Donald Trump’s attempt to undercount Hispanics</a> was successful, but backfired. I’ll hold my judgments on this theory until I can read some more in-depth opinions (if they get written).</p>
+<p>With the new apportionment and population data, each individual’s representative power in congress has shifted. Including both Senators and House Representatives, states with smaller populations continue to have outsized representation in congress: Wyoming and Vermont have significantly more representatives per million residents than California or Texas, for example. Residents of Washington D.C., however, receive no representation in congress.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/plot.png" class="img-fluid"></p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>As a side note, the reps-per-million will be greater than the total number of congressional representatives in states with less than one million residents. This chart is really meant to compare the uneven representative power of each state.</p>
+</div></div><p>If D.C. were to become a state, it would have outsized representative power, similar to Wyoming and Vermont, due to its size. That, however, isn’t really a justification to deny ~700,000 Americans national representation, and the arguments against D.C. statehood have been <a href="https://www.washingtonpost.com/opinions/treating-fellow-citizens-as-landfill/2021/03/24/f4c16d34-8c1a-11eb-a6bd-0eb91c03305a_story.html">weak at best</a> and <a href="https://www.cnn.com/2020/06/26/politics/tom-cotton-wyoming-dc-statehood/index.html">implicitly racist at worst</a>, given D.C.’s <a href="https://en.wikipedia.org/wiki/Washington,_D.C.#Demographics">majority-minority population</a>.</p>
+<p>Still, it’s virtually impossible that D.C. statehood receive the filibuster-proof 60 votes in the Senate (I’d doubt that even a compromise of <a href="https://www.forbes.com/sites/andrewsolender/2021/04/22/gop-senator-introduces-bill-to-give-dc-to-maryland-as-statehood-bill-heads-to-senate/?sh=c66ab4c2ca30">retrocession into Maryland</a> would pass). For the time being, residents of D.C. will have to wait for representation until polarized ideological walls come down and Republicans vote for D.C. statehood, Democrats gain enough seats for a supermajority, or the filibuster is abolished.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.04.27-bureau_results">Github</a>.</p>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {A {Lukewarm} {Case} for {DC} {Statehood}},
+  date = {2021-04-27},
+  url = {https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“A Lukewarm Case for DC Statehood.”</span> April
+27, 2021. <a href="https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood">https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/index.html</guid>
+  <pubDate>Tue, 27 Apr 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Catching Up</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-04-20-catching-up/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>The past few weeks have been a bit lite (read::absent) in terms of posting updates. When not taking the machine learning course, I’ve been spending quite a bit of time working on <a href="https://github.com/markjrieke/electionsimulator/tree/main/data/tidy">building out a database</a> of demographic data (from 1980 to 2019). The goal is to be able to build this database out once, then reference it repeatedly for future projects. If you’re so inclined, you can read my unedited ad-hoc thoughts while working on the database <a href="https://github.com/markjrieke/electionsimulator/tree/main/notepad">here</a>. There’s lots of code interspersed with prose, so it’s a bit of a slog to read through, but gives a really detailed account of how I worked through the different problems that arose.</p>
+<p>That being said, I did have a bit of time to squeeze in a quick chart. YouGov recently conducted a <a href="https://today.yougov.com/topics/politics/articles-reports/2021/04/14/best-and-worst-states-democrats-republicans">poll</a> on each state’s favorability rating according to Democrats and Republicans. Not surprisingly, state favorability is closely aligned with Biden’s voteshare in November.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-20-catching-up/yougov.png" class="img-fluid"></p>
+<p>I’ll keep this short and sweet. I may continue to write sparsely over the next month or so, due to a few trips (now that I have the COVID vaccine), but will continue to work on the database in the background.</p>
+<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.04.18-misc">Github</a>.</p>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Catching {Up}},
+  date = {2021-04-20},
+  url = {https://www.thedatadiary.net/posts/2021-04-20-catching-up},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Catching Up.”</span> April 20, 2021. <a href="https://www.thedatadiary.net/posts/2021-04-20-catching-up">https://www.thedatadiary.net/posts/2021-04-20-catching-up</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-04-20-catching-up/index.html</guid>
+  <pubDate>Tue, 20 Apr 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-04-20-catching-up/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Seasonality is a Weak Predictor of Border Crossings</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Last week, the Washington Post published an <a href="https://www.washingtonpost.com/politics/2021/03/23/theres-no-migrant-surge-us-southern-border-heres-data/">article</a> postulating that the recent increase in crossings at the border cannot be attributed to Biden administration policies, but rather is a function of seasonal patterns and pent up demand due to restricted travel in 2020. While the article is well intentioned, a simple linear model that predicts crossings based on month shows seasonality is a poor predictor (or, at least is a poor predictor on its own).</p>
+<section id="examining-the-data" class="level1">
+<h1>Examining the Data</h1>
+<p>The US Border Patrol (USBP) publishes <a href="https://www.cbp.gov/newsroom/stats/southwest-land-border-encounters">monthly data</a> summarizing the number of encounters/crossings at the Southern border. Since November of 2020, border crossings have increased monthly, from about 70,000 in November to a little over 100,000 in February.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/pics/plot_01.png" class="img-fluid"></p>
+<p>Looking at the long term monthly data, however, reveals two key aspects:</p>
+<ol type="1">
+<li>2019 was an exceptionally high year for crossings, and 2021 is on track to have a similar number of crossings;</li>
+<li>There seems to be a cyclical set of peaks and troughs in annual border crossing numbers.</li>
+</ol>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/pics/plot_02.png" class="img-fluid"></p>
+<p>Looking at the chart above, it’s difficult to determine which months correspond to peaks and troughs. Aligning by month offers a clearer picture of how monthly border crossings in each year compare to other years.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/pics/plot_03.png" class="img-fluid"></p>
+<p>From this chart, it does appear that there is some semblance of a monthly pattern, albeit with extreme outliers of 2019, 2020, and 2021. Appearances, however, can be deceiving, and a mathematical model can help distinguish signal from noise. Using month as a predictive input, we can create a model that estimates the expected number of crossings in said month. If we look at the residual error (the actual number of crossings minus the predicted number of crossings) over time, we can get an idea of how well the model is performing. If seasonality is a good predictor of the number of border crossings, the model will accurately account for seasonal shifts, and the residual error plot would be expected to remove or reduce the “waviness” that appears in the crossing plot and only show the long term trends.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/pics/plot_04.png" class="img-fluid"></p>
+<p>Plotting the residual error, however, doesn’t filter out seasonal noise. In fact, apart from the y-axis shifting down, the residual plot is strikingly similar to the crossings plot. This means that the month offers little power on its own in predicting the number of border crossings.</p>
+</section>
+<section id="closing-remarks" class="level1">
+<h1>Closing Remarks</h1>
+<p>The Washington Post article makes good points that aren’t discussed fully here, but are worth mentioning:</p>
+<ul>
+<li>Those who planned on crossing the border in 2020 but couldn’t due to travel restrictions may have simply waited until now to travel.</li>
+<li>Unaccompanied migrants are arriving at the border in rates that exclude the possibility of seasonal patterns.</li>
+</ul>
+<p>Also notable is that seasonal patterns - while not a good predictor of the number of border crossings on its own - may be more impactful in a more robust model. <a href="https://www.nbcsandiego.com/news/local/professor-reacts-to-wapo-articles-claims-border-is-not-seeing-surge-or-crisis/2559256/">As a professor from the University of San Diego explains</a>, conditions in the migrant’s country of origin and the countries they pass through are among a host of variables that play a significant role in determining if migrants make the trip to the US border. While a more robust model may be able to accurately incorporate season into its predictions, simply using month as a predictor, as the Washington Post does in their article, does not explain the surge at the border (evidenced by the fact that this equally simple model refutes their finding).</p>
+<p>Finally, it should be noted that, above all else, there is a humanitarian crisis at the border. If you’d like to find a way to help or donate, <a href="https://www.globalgiving.org/us-mexico-border-crisis/">Global Giving</a> is an excellent resource.</p>
+</section>
+<section id="some-other-updates" class="level1">
+<h1>Some Other Updates</h1>
+<p>Here’s what I’ve been working on recently:</p>
+<ul>
+<li><strong>TidyTuesday</strong>: I’ve made my first contribution to <a href="https://twitter.com/search?q=%23tidytuesday&amp;src=typed_query">#tidytuesday</a>! For those who are unaware, TidyTuesday is a weekly data project in R for the R4DS (R for data science) community. Each week, a public dataset is released on Monday, allowing users to explore and create interesting visualizations and analyses based on the dataset. This week, a <a href="https://github.com/rfordatascience/tidytuesday/blob/master/data/2021/2021-04-06/readme.md">dataset</a> based on global deforestation was released, but it came along with interesting information on the production of vegetable oil. I plotted the global annual vegetable oil production by crop type in the steamgraph below.</li>
+</ul>
+<p><img src="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/pics/tidytuesday15.png" class="img-fluid"></p>
+<ul>
+<li><strong>Courses</strong>: I’ve continued with the machine learning and Bayesian courses, though I’ve descoped to roughly two days each week, as my personal schedule has gotten quite hectic. The ML course is excellent for understanding the theory that goes into each algorithm, but in practice, I expect that I will likely make use of the tidymodels R package’s relatively simple interface.</li>
+<li><strong>Rmd</strong>: I’ve started writing my code in a R markdown document, which allows me to mix both code and prose. I mix in some off-the-rails/stream of consciousness commentary as I step through the process to get to a functional code. For regularly updated/critical code/projects, I’ll still stick to concise scripts.</li>
+</ul>
+<p>That’s all for this week - as always, you can read through the code for <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.04.02-border_crossings">this piece</a> or for the <a href="https://github.com/markjrieke/thedatadiary/blob/main/tidytuesday/2021.04.05-deforestation/tidydeforestation.md">tidytuesday</a> piece on github. See you next week.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Seasonality Is a {Weak} {Predictor} of {Border} {Crossings}},
+  date = {2021-04-05},
+  url = {https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Seasonality Is a Weak Predictor of Border
+Crossings.”</span> April 5, 2021. <a href="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings">https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/index.html</guid>
+  <pubDate>Mon, 05 Apr 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Recent Works</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-03-15-recent-works/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>One of the history teachers at my highschool was known for his prolific catchphrase, “give me the stuff, not the fluff,” often uttered to students attempting to submit history papers padded with superfluous words and sentences in order to meet a minimum word threshold. While I never took a class with this teacher, the phrase has stuck with me. With that in mind, I’ve reprioritized some of the things I’ve been working on. Here’s what I’ve been up to over the past week:</p>
+<ul>
+<li><strong>TX COVID Tracker</strong>: Over the weekend, I put together and published my first Shiny application, a county-level <a href="https://thedatadiary.net/texas-covid-tracker">interactive Texas COVID tracker</a>. Using <a href="https://github.com/nytimes/covid-19-data">data from the New York Times</a>, the tracker lets the user view county-level historical data. The goal is to fill in the gaps of the <a href="https://www.nytimes.com/interactive/2020/us/texas-coronavirus-cases.html">Times’ Texas tracker</a>, which shows historical state data and live county data, but doesn’t offer historical county data.<br>
+</li>
+<li><strong>Classes</strong>: I had previously spent evenings working on projects in R and had pushed off some of the statistics classes to focus on these projects. This past week, I’ve scheduled an hour each day for dedicated class time, alternating daily between a Bayesian inference course and a machine learning course.</li>
+</ul>
+<section id="my-plans-for-the-upcoming-week" class="level3">
+<h3 class="anchored" data-anchor-id="my-plans-for-the-upcoming-week">My plans for the upcoming week:</h3>
+<ul>
+<li><strong>TX COVID Tracker</strong>: While the interactive tracker is functional, it still leaves a lot to be desired. Being the first Shiny app I developed, I ran into a lot of learning curve issues but should be able to make updates more quickly. This upcoming week, I plan on converting to a <a href="https://rstudio.github.io/shinythemes/">bootstrap layout</a>, adding in an interactive state map with <a href="https://rstudio.github.io/leaflet/shiny.html">leaflet</a>, adding in statewide <a href="https://dshs.texas.gov/coronavirus/AdditionalData.aspx">hospitalization and vaccination information</a>, adding a state and county level <a href="https://www.youtube.com/watch?t=10s&amp;v=54XLXg4fYsc">log-log plot</a>, making some formatting changes to help with mobile viewing, and updating themes/appearances. Eventually, I’d like to write a <a href="https://cran.r-project.org/web/packages/taskscheduleR/vignettes/taskscheduleR.html">scheduleR</a> script to automatically update the data, but that may need to be put off to focus on the laundry list above.</li>
+<li><strong>Classes</strong>: I’ll still continue with the daily schedule for coursework and may be able to finish the Bayesian inference course this week.</li>
+</ul>
+<p>Between the COVID tracker and classes, I don’t think I’ll have too much time to work on anything else. That being said, I’ve got some projects/articles in the backlog that I’m looking forward to working on:</p>
+<ul>
+<li><strong>Polarization - top down or bottom up?</strong> It’s no secret that we are living in the <a href="https://voteview.com/articles/party_polarization">most polarized political landscape since the Civil War</a>, but I’m interested in exploring where this polarization originates. Do elected politicians split the public by pushing increasingly divisive policies? Or do voters lead the polarization effort by increasingly self-segregating into isolated camps?</li>
+<li><strong>Two Party PVI (Partisan Voter Index)</strong>: The <a href="https://cookpolitical.com/pvi-0">partisan voter index (PVI)</a> is a measure of a state’s (or county’s) partisan preference relative to the national environment. There’s a story here about how the national environment is progressing - are our country voting preferences converging or diverging? What states are trending towards Democrats? What states are trending towards Republicans?</li>
+<li><strong>The Gas Price Fallacy</strong>: I’ve seen quite a few <a href="https://twitter.com/ksorbs/status/1362540095241347073">bad faith attempts to blame increasing gas prices on Joe Biden</a> recently. Additionally, it’s particularly frustrating that I’ve seen a number of my colleagues in the oil &amp; gas industry repeat this nonsense. As a working member of the oil &amp; gas industry, I think I’m qualified and have a duty to explain why the administration change isn’t the cause of the rising gas prices (the TL;DR version is that we’re recovering from a global pandemic &amp; oil oversupply, you can see that gas prices are just returning to pre-COVID Trump administration levels<a href="https://www.gasbuddy.com/charts">here</a>.)</li>
+</ul>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Recent {Works}},
+  date = {2021-03-15},
+  url = {https://www.thedatadiary.net/posts/2021-03-15-recent-works},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Recent Works.”</span> March 15, 2021. <a href="https://www.thedatadiary.net/posts/2021-03-15-recent-works">https://www.thedatadiary.net/posts/2021-03-15-recent-works</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-03-15-recent-works/index.html</guid>
+  <pubDate>Mon, 15 Mar 2021 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-03-15-recent-works/icon.png" medium="image" type="image/png" height="132" width="144"/>
+</item>
+<item>
+  <title>aRtwork!</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-03-07-artwork/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p><img src="https://www.thedatadiary.net/posts/2021-03-07-artwork/p_art.png" class="img-fluid"></p>
+<p>This week, I did something a bit different - the artwork above was made in R! The code to create the graph is actually pretty short, only taking up 28 lines. The bulk of the work was spent writing the csv containing all the polygon points and colors. I spent most of the past week doing some back end work that will pay off in the future. Namely, I set up a local clone of my repository on github and figured out how to embed Shiny applications on Squarespace.</p>
+<p>I’d like to address something that has been nagging me for a bit. Last week, I wrote about Georgia’s special senate race. I spent a lot of time learning new packages and methods, and am happy with how the plots and majority of the post turned out. Near the end of the post, however, I made the conjecture that Doug Collins may have seen an opportunity to run against Kelly Loeffler because she was a polarizing candidate with a string of controversies surrounding her campaign. While I shared sources that generally support this position, I didn’t back it up with any sort of data or in-depth analysis. I’m not a political scientist nor am I an expert in election strategy, so in hindsight I think it was pretty irresponsible to add my uninformed opinion to the post. I’ll leave the post up unedited, since it’s important to keep a true record of what I’ve written, but moving forward, I’ll be better about writing the story the data reveals, rather than one I’d like to believe.</p>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {aRtwork!},
+  date = {2021-03-07},
+  url = {https://www.thedatadiary.net/posts/2021-03-07-artwork},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“aRtwork!”</span> March 7, 2021. <a href="https://www.thedatadiary.net/posts/2021-03-07-artwork">https://www.thedatadiary.net/posts/2021-03-07-artwork</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-03-07-artwork/index.html</guid>
+  <pubDate>Sun, 07 Mar 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-03-07-artwork/featured.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
+<item>
+  <title>Doug Collins Saved Raphael Warnock’s Senate Bid</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>I’ll be honest - prior to writing this post, I had never heard of Doug Collins (R), the third major candidate in the race for Georgia’s special senate election after Raphael Warnock (D) and Kelly Loeffler (R). I wasn’t particularly tuned in to the Georgia senate elections prior to the runoff (by which time, the special election race had narrowed to just Warnock and Loeffler) and most of the coverage I had seen prior to Nov.&nbsp;3rd pitted Warnock against Leoffler, without considering Collins. Even Google search trends show that people were more interested in Loeffler than Collins leading up to the election.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_01.png" class="img-fluid"></p>
+<p>Despite my ignorance, Collins was a major candidate in the special election, and ended up with a significant portion of the republican vote. It may be a bit obvious, but republicans splitting votes between Loeffler and Collins made Warnock a significantly more competitive candidate. However, the role of voter dropoff relative to the regular senate election is worth exploring in detail.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_02.png" class="img-fluid"></p>
+<section id="comparing-results" class="level1">
+<h1>Comparing Results</h1>
+<p>Georgia’s regular senate election was a much more typical election than the special election - a tightly contested election between two candidates, Jon Ossoff (D) and David Perdue (R). The county result map comparing the voteshare of the two major candidates shows democratic strongholds in urban areas and a republican lean in rural areas. The county result map of the special election, if comparing Warnock to both Loeffler and Collins, is noticeably redder.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_03.png" class="img-fluid"></p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_04.png" class="img-fluid"></p>
+<p>If we remove Collins, however, and just look at the county map comparing the top two candidates, the map shifts drastically in Warnock’s favor.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_04.png" class="img-fluid"></p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_05.png" class="img-fluid"></p>
+<p>At face value, this explains how Warnock was able to advance to the runoff - split ticket votes aren’t usually good for the party with multiple major candidates. Voter dropoff between the regular and special election, however, shows just how much this pushed Warnock over the edge.</p>
+</section>
+<section id="voter-retention-a-tale-of-two-elections" class="level1">
+<h1>Voter Retention: a Tale of Two Elections</h1>
+<p>About 5 million Georgians voted in each of the senate elections in November. In the regular election, the major candidates, Ossoff and Perdue, accounted for about 98% of the votes, the rest going to Libertarian Shane Hazel or other write-in candidates. In the special election, on the other hand, a huge portion of Georgia voters didn’t vote for the major candidates - Warnock, Loeffler, and Collins only account for 79% of the votes! That’s about a 1 million voters who didn’t vote for their party’s major candidate (i.e., “dropped-off”).</p>
+<p>To get a clear grasp of what voter retention means in this context, let’s consider a hypothetical county with 100 voters, of which 60 voted for Perdue and 40 voted for Ossoff in the regular election. Let’s also say these 100 voters split their special election votes in the following way: 35 votes for Loeffler, 15 votes for Collins, 30 votes for Warnock, and 20 write-in votes. In this scenario, Warnock retained 75% of regular election votes (30 / 40 = 75%), republicans, collectively, retained 83% ([35 + 15] / 60 = 83%), and Loeffler retained 58% (35 / 60 = 58%). In this hypothetical county, republicans collectively improved relative to the regular election, since they had a greater vote retention, but Loeffler on her own worsened, despite winning more votes than Warnock.</p>
+<p>If we compare retentions for the entire state of Georgia, we can see that Loeffler and Collins were collectively better at retaining regular election votes than Warnock, retaining about 90% of Perdue votes compared to Warnock’s retention of about 68% of Ossoff votes. On her own, however, Loeffler was worse at retaining votes than Warnock, retaining a little over 50% of Perdue votes. This means that Warnock improved democratic performance relative to the regular election when compared against Loeffler directly.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_06.png" class="img-fluid"></p>
+<p>Repeating this comparison across every county in Georgia shows that Loeffler and Collins, collectively, improved republican performance relative to the regular senate election across every single county. When, however, Collins is omitted, and Warnock and Loeffler are compared directly, democratic performance improves across the majority of counties.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_07.gif" class="img-fluid"></p>
+</section>
+<section id="in-summary" class="level1">
+<h1>In Summary</h1>
+<p>While it was obvious from the beginning that the split ticket hurt republicans in Georgia’s special senate election, it’s interesting to see just how much this split ticket helped Warnock. Collectively, republicans handily won the special election, but splitting votes between Loeffler and Collins meant that Warnock ended up winning a <a href="https://en.wikipedia.org/wiki/Plurality_(voting)">plurality</a> of the votes.</p>
+<p>Political analysists are probably better than me at examining why multiple republicans ran as major contenders for the special senate election, but a quick take is that Kelly Loeffler wasn’t a particularly strong candidate. Although she was an incumbent, she wasn’t a senator any Georgian had ever voted for - <a href="https://www.ajc.com/news/state--regional-govt--politics/inside-how-kemp-picked-loeffler-for-the-senate/ftgH6xSI2Lnl0QLgqSQu8O/">she gained her senate seat through appointment</a>. Loeffler <a href="https://www.nytimes.com/2020/10/05/us/politics/kelly-loeffler-georgia.html">came to office as a moderate</a>, but quickly pivoted to a more <a href="https://projects.fivethirtyeight.com/congress-trump-score/kelly-loeffler/">Trumpy ideology</a>, eventually defining herself as “more conservative than Atilla the Hun” in a campaign ad (I would normally just add a hyperlink, but this ad is just too weird not to link directly - I originally thought this was a bad parody).</p>
+<div class="quarto-video ratio ratio-16x9"><iframe src="https://www.youtube.com/embed/4pfvEFPvVGA" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+<p>Her campaign was also plagued by a few scandals, like <a href="https://www.ibtimes.sg/kelly-loefflers-campaign-caught-darkening-skin-opponent-raphael-warnock-facebook-ad-54651">darkening Warnock’s skin in a campaign ad</a>, taking photos with <a href="https://www.washingtonpost.com/nation/2020/12/14/loeffler-chester-doles-kkk-photo/">known KKK members</a>, and potentially <a href="https://www.politifact.com/factchecks/2020/oct/31/raphael-warnock/fact-checking-raphael-warnocks-claim-georgia-sen-k/">making stock trades based on COVID-19 information not-yet released to the public</a>. It’s a bit of a conjecture, so take this with a grain of salt, but all of the above factors may have provided Collins an opportunity to run as a stronger &amp; less divisive alternative to Loeffler.</p>
+</section>
+<section id="some-final-notes" class="level1">
+<h1>Some Final Notes</h1>
+<p>Choropleth charts (maps) can be misleading in the wrong context - it’s easy to subconsciously associate area with population. It wasn’t particularly relevant to the post above, but in spirit of the animation “<a href="https://s3files.core77.com/blog/images/960537_81_90771_DrdO3qFgW.gif">Land doesn’t vote, people do</a>”, I added dot-plot maps where bubble size corresponds to total number of votes.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_08.png" class="img-fluid"></p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/pics/plot_09.png" class="img-fluid"></p>
+<p>As always, source data and code can be found on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.02.28-ticket_splitting">github</a>. I’m particularly happy with how this post turned out. I learned a lot of new things worth highlighting (some of this gets into technical mumbo jumbo):</p>
+<ul>
+<li>Learned how to use the maps, gganimate, and gifski packages;</li>
+<li>Picked up new method of piping objects into a ggplot object;</li>
+<li>Worked with geom_col and geom_poly for the first time;</li>
+<li>Used forcats for the first time (just to reorder a factor, but I’ll still count it as a win);</li>
+<li>Added new colors to the dd color palette;</li>
+<li>Created a reusable theme var to reduce code;</li>
+<li>Started using tibbles.</li>
+</ul>
+<p>For this post, I had originally wanted to compare presidential vote to senate, governor, and house vote, but I had to pivot a bit to just the Georgia senate elections, for a few reasons. Firstly, the senate county dataset from Kaggle, for whatever reason, doesn’t include the winner of each county. Adding this by hand, just for Georgia’s 159 counties and two senate elections took hours. There’s probably a more efficient way to do this by scraping the data from online, but then I’d have to have learned a scraping package in addition to all of the other packages. I may have to hold on the original post idea for a bit while I pick up these skills.</p>
+<p>That being said, I’ve already started working on next week’s post. It’s a bit of a departure from what I’ve been doing, so I’m excited to see how it’ll turn out.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Doug {Collins} {Saved} {Raphael} {Warnock’s} {Senate} {Bid}},
+  date = {2021-02-28},
+  url = {https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Doug Collins Saved Raphael Warnock’s Senate
+Bid.”</span> February 28, 2021. <a href="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid">https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/index.html</guid>
+  <pubDate>Sun, 28 Feb 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/featured.png" medium="image" type="image/png" height="144" width="144"/>
+</item>
+<item>
+  <title>(Kind of) Projecting the 2020 Election</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>I’m about 4 months too late, but to practice forecasting, I made a modest projection for the 2020 national popular vote using <a href="https://projects.fivethirtyeight.com/2020-general-data/presidential_polls_2020.csv">polling data</a> from the two weeks leading up to election day. In the weeks leading up to the election, aggregated polling was fairly stable, and the model projection was within 1.5% of the <a href="https://en.wikipedia.org/wiki/2020_United_States_presidential_election">actual outcome</a> (both the model and actual outcome are adjusted to exclude third parties and instead show the two-party vote share).</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/pics/plot_01.png" class="img-fluid"></p>
+<p>The projected outcome of Biden’s vote share, 53.6%, is only the most likely outcome in a <a href="https://en.wikipedia.org/wiki/Beta_distribution">distribution of possible outcomes</a> predicted by the model. Of the possible outcomes, Biden wins the popular vote about 70% of the time, according to the November 2nd projection.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/pics/plot_03.png" class="img-fluid"></p>
+<p>Like the projected vote share, the probability of Biden winning the popular vote remained fairly constant in the two weeks leading up to the election.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/pics/plot_02.png" class="img-fluid"></p>
+<p>If you were like me, obsessing over the prominent forecast models prior to election day, you may notice that this projection is substantially less confident in the outcome than the leading forecasters. <a href="https://projects.fivethirtyeight.com/2020-election-forecast/">FiveThirtyEight</a> and the <a href="https://projects.economist.com/us-2020-forecast/president">Economist</a>, for example, both projected similar popular vote outcomes (within a percentage point of this forecast), but gave Biden at least a 97% of winning the popular vote! There are a couple reasons for this difference:</p>
+<ul>
+<li><strong>This model is one-dimensional</strong> : this is a pretty simple model built just to get practice with forecasting and some of the tools in R, so it only uses polls (and, at that, only a small subset of polls), whereas other forecast models used a wide variety of variables to inform the model (economic indicators, demographics, partisanship, etc.).</li>
+<li><strong>This model doesn’t weight polls</strong> : aside from the sample size of the poll, this model doesn’t apply any weights or corrections to the polling data. The polling method, date the poll was taken, and pollster <a href="https://fivethirtyeight.com/features/calculating-house-effects-of-polling-firms/">house effect</a> (i.e., how partisan the pollster tends to be relative to the average) can be used to inflate or deflate the weight of each poll in the model. This simple model ignores all of that and treats every poll as equal.</li>
+<li><strong>This model forces an uncertainty range</strong> : unlike other models, which are a set of <a href="https://en.wikipedia.org/wiki/Regression_analysis">linear regressions</a>, this model is a relatively simple <a href="https://en.wikipedia.org/wiki/Beta_distribution">beta distribution</a> of the vote, with the sum of parameters manually set to 50. This is a bit of technical mumbo-jumbo, but the gist is that a beta distribution allows you to control its “peaky-ness,” and I did this manually, whereas other forecasters had the model do it for them. Increasing the sum of parameters increases how peaky the distribution looks, and a sum of 50 was used based on <a href="http://florianmuellerklein.github.io/election/">Florian Muellerklein’s Georgia runoff model</a>, which also used a sum of 50.</li>
+</ul>
+<section id="some-notes" class="level1">
+<h1>Some Notes</h1>
+<p>As always, you can find source data and code on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.02.21-simple_projection">github</a>. I’m pretty happy with how this turned out - I’ve been getting a bit more comfortable with R, and the tools used for this post were pretty intuitive to implement. I’m also happy with the color palette I selected (<a href="https://htmlcolorcodes.com/color-picker/">HTML Color Picker</a> is a godsend). The only improvement is that I could/should have saved quite a bit of code by writing over one of the plot themes, rather than re-writing the theme for each plot. Something to remember going forward.</p>
+<p>Next week, I’ll dig into some of the county-level data from the election to see if there was any ticket splitting between the presidential election and the down-ballot races.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {(Kind of) {Projecting} the 2020 {Election}},
+  date = {2021-02-21},
+  url = {https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“(Kind of) Projecting the 2020 Election.”</span>
+February 21, 2021. <a href="https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election">https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/index.html</guid>
+  <pubDate>Sun, 21 Feb 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Scorecasting</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-02-14-scorecasting/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>A baseball forecast that correctly predicts the winner of the <a href="https://www.mlb.com/schedule/2021-04-01">15 opening day games</a> could be a truly accurate model, or could just be getting lucky. Over the course of 6 months and <a href="https://en.wikipedia.org/wiki/Major_League_Baseball_schedule">2,430 regular season games</a>, however, a great forecast will continue to shine whereas an initially lucky one will falter. In data rich environments like sports, there are lots of events (games) over the course of a season to judge how well a model is performing.</p>
+<p>When there aren’t a lot of events to forecast, like presidential elections that occur once every four years (quadrennially?), it’s more difficult to tell how well a forecast performs (a handful of correct/incorrect predictions could just be good/bad luck!), but forecasters still have tools available to evaluate their model. This week, I took a look at a few different methods of comparing different models.</p>
+<section id="scoring-the-forecasters" class="level1">
+<h1>Scoring the Forecasters</h1>
+<p>The most common scoring method, the Brier score, is a measurement of a probabilistic forecast’s accuracy based on the confidence of the prediction. Each event has its own score, and the average of all predicted events is the model’s Brier score. Highly confident predictions are highly rewarded/punished for their accuracy/inaccuracy, whereas timid predictions don’t move the needle too much, regardless of the outcome. Scores can range from 0.00 to 1.00, with 0.00 being a perfect score (you can read more about Brier scores <a href="https://en.wikipedia.org/wiki/Brier_score">here</a>, but the gist is that the lower the score, the better). In presidential forecasts, each state can be considered an event.</p>
+<p>Oftentimes, presidential forecasters report Brier scores as weighted by each state’s number of electors. Correctly predicting Texas’ winner in this scoring system is far more important than correctly predicting Wyoming’s winner, given that Texas’ 38 electoral votes far overshadow Wyoming’s 3. I’m not quite convinced that this is the most meaningful way to evaluate models (California is pretty easy to predict and heavily weighted by its 55 electoral votes, but most of us were more concerned with Georgia’s outcome, despite being undervalued by this scoring method), but <a href="https://projects.jhkforecasts.com/presidential-forecast/forecast-analysis">forecasters do use this scoring method</a>.</p>
+<p>Finally, I came up with my own scoring method that makes a “bet” between $0 and $100 based on prediction confidence. 100% confidence would turn into a $100 bet, and 50% confidence (aka, a coin toss) would be a $0 bet. Each model’s average winnings (including losses) is reported as the score.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-02-14-scorecasting/pics/pic_01.png" class="img-fluid"></p>
+<p>I scored a few prominent presidential forecasts based on the above methodologies (you can read more about the <a href="https://projects.jhkforecasts.com/presidential-forecast/">JHK</a>, <a href="https://projects.economist.com/us-2020-forecast/president">Economist</a>, <a href="https://projects.fivethirtyeight.com/2020-election-forecast/">FiveThirtyEight</a>, and <a href="https://thecycle.news/news/september-2020-election-update">Bitecofer</a> forecasts at the links here). While all the scoring methods are similar - rewarding confidence in correct predictions and penalizing meek or incorrect predictions - each model’s performance is all over the map (with perhaps the exception of Bitecofer, which scores in the lower half of all methods). But does that mean these methods are useless? No! If anything, it highlights the importance that each forecast method’s performance should be scored across a wide variety of scoring methodologies. While it might not make a huge difference at the margins, it may separate some models as clearly ahead or behind the curve.</p>
+<p>So, how does each forecast model measure up? It depends on which yardstick you use!</p>
+<p>Here are some other things to consider with regards to each model:</p>
+<ul>
+<li>Unlike the Economist, FiveThirtyEight, and Bitecofer models, which simulate each state’s outcome thousands of times and reports the confidence as the percentage of simulations won, the JHK forecast reports the percentage of winning results that fall within the 80% confidence interval around the expected vote. <a href="https://en.wikipedia.org/wiki/Standard_deviation#/media/File:Standard_deviation_diagram.svg">Lower confidence intervals result in tighter bands</a>, so this relatively low confidence interval means that the model is allowed to make quite a few 100% confident predictions (which, luckily for the model, all came true in this case).</li>
+<li>The Bitecofer forecast is the only model that doesn’t utilize polls and instead uses an in-house developed negative-partisanship model.</li>
+<li>Based on conversations between Nate Silver of FiveThirtyEight and Elliott Morris of the Economist, it appears that <a href="https://fivethirtyeight.com/features/our-election-forecast-didnt-say-what-i-thought-it-would/">FiveThirtyEight added a bit of uncertainty ad-hoc</a> to account for COVID, whereas <a href="https://www.reddit.com/r/IAmA/comments/jjr0wk/im_elliott_morris_a_data_journalist_at_the/gaeefhv?context=3&amp;utm_medium=web2x&amp;utm_source=share">the Economist did not</a>.</li>
+</ul>
+<p>As always, source files and code can be found on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.02.14-scorecasting">github</a>. Next week, I plan on making a relatively modest prediction of the election’s popular vote outcome based on polls from the final week.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Scorecasting},
+  date = {2021-02-14},
+  url = {https://www.thedatadiary.net/posts/2021-02-14-scorecasting},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Scorecasting.”</span> February 14, 2021. <a href="https://www.thedatadiary.net/posts/2021-02-14-scorecasting">https://www.thedatadiary.net/posts/2021-02-14-scorecasting</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-02-14-scorecasting/index.html</guid>
+  <pubDate>Sun, 14 Feb 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-02-14-scorecasting/featured.png" medium="image" type="image/png" height="31" width="144"/>
+</item>
+<item>
+  <title>Some Worthwhile Links</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-02-08-some-worthwhile-links/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>Rather than diving deep into a topic this week, I took a bit of a break to focus on playing catchup with the stats course I’m taking. Instead, I’ve listed out below a number of creators that I follow on various platforms. If you’re interested in data or critical thinking, each is well worth your time and attention.</p>
+<section id="newsletters" class="level1">
+<h1>Newsletters</h1>
+<ul>
+<li><a href="https://fivethirtyeight.com/">FiveThirtyEight</a> : While it’s not technically a newsletter, the FiveThirtyEight site, created by statistician Nate Silver prior to the 2008 presidential election, is the original source for data-driven news (or, at least, one of the first sites to popularize data as a news resource). Nate created the site specifically because the narrative created by pundits, that the 2008 election was super close, was pretty easily refutable when you looked at the polling data, which showed that Obama was going to win handily. Now, FiveThirtyEight is a powerhouse of data analysis for politics, sports, and science, and often serves as a good reality check against the narratives espoused by talking heads on the major news networks.<br>
+</li>
+<li><a href="https://gelliottmorris.substack.com/">G. Elliott Morris’ Newsletter</a> : G. Elliott Morris is a data journalist for the Economist and created their forecast for the 2020 presidential election. In addition to regularly writing for the Economist, Elliott also writes a weekly newsletter in which he comments on polls that caught his eye (he also has a subscriber newsletter, for those who want to get his thoughts on even more topics). Elliott is also writing a book on the history of public polls, their limitations, and their future in American politics, which I am looking forward to reading when it releases later this year. As an aside, Elliott and I are the same age, and he was a large part of the inspiration for me to start diving into statistics again (i.e., if he can do it, so can I). Elliot is pretty bearish on the future of American democracy, especially following Donald Trump’s repeated attempts to overturn the overwhelmingly clear and overwhelmingly fair results of the election and the attempted (but, thankfully, woefully unorganized) coup by insurrectionists on Jan.&nbsp;6th. Despite all this, I’m a bit more hopeful for the future of democracy, and hope to be able to provide a more positive opinion alongside Elliott’s (provided it’s supported by the data!).</li>
+<li><a href="https://infinitemonkeys.substack.com/">Infinite Monkeys</a> : Started by a collection of college students who met via #ElectionTwitter, the Infinite Monkeys newsletter (named such from the theory that, an infinite collection of monkeys hitting keys on typewriters will eventually write the entirety of Shakespeare’s work by random chance) take a look at geographical trends and their relation to current political headlines. It’s a relatively recent startup, and I’m looking forward to the development of the newsletter &amp; its coalition of authors over the coming years.</li>
+<li><a href="https://visualnoise.substack.com/">Visual in the Noise</a> : The Visual in the Noise is a weekly newsletter focused on data visualization. Most often looking at sports (particularly, NBA) data, the Visual in the Noise is a great touch-point for the importance of visualization and how it can help make data more insightful.</li>
+</ul>
+</section>
+<section id="podcasts" class="level1">
+<h1>Podcasts</h1>
+<ul>
+<li><a href="https://www.nytimes.com/column/the-daily">The Daily</a> : The Daily is, appropriately, a daily (Mon. - Fri.) podcast hosted by the New York Times, covering important topics in the American landscape. The podcast generally focuses in on individuals, and how national stories can affect people personally (for example, touching base with a bar throughout the pandemic as they wade through the difficulties of diminished business, PPP applications, and unclear direction from the government). On Sundays, a guest reads an older, long form New York Times piece.</li>
+<li><a href="https://theintelligence.economist.com/">The Intelligence</a> : The Intelligence, similarly to the Daily, is a daily weekday podcast covering important topics in the news, though typically has a more global focus than the Daily. Rather than following individuals, the Intelligence often brings in subject matter experts and local correspondents.</li>
+<li><a href="https://www.economist.com/checks-and-balance-our-weekly-podcast-on-american-politics">Checks and Balance</a> : This weekly podcast by the Economist takes a deep dive into one big topic shaping American politics each week. Approximately 45 minutes per podcast, the Checks and Balance hosts take care to thoroughly explore each topic.</li>
+<li><a href="https://fivethirtyeight.com/podcasts/">FiveThirtyEight’s Politics Podcast</a> : Every week, the FiveThirtyEight team covers the latest news in politics, utilizing polling data to guide their discussion. During election years, they also host intermittent “Model Talks,” where Nate Silver talks about into some of the intricacies of the site’s forecast models based on questions from listeners.<br>
+</li>
+<li><a href="https://rationalreminder.ca/podcast-directory">The Rational Reminder</a> : A non-politics podcast, the Rational Reminder is a weekly podcast discussing index investing and rational decision making. Although the podcast is made by and for Canadians, most of the content is widely applicable, and the podcast has garnered an international audience.</li>
+</ul>
+</section>
+<section id="youtube" class="level1">
+<h1>YouTube</h1>
+<ul>
+<li><a href="https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw">3blue1brown</a> : Many concepts in math can feel daunting and teaching methods are often unintuitive. Grant Sanderson’s channel attempts to introduce viewers to the beauty of math through intuitive visualizations and animations. As a fun fact, the animations are run via a python package, manim, developed on-the-fly by Grant himself!</li>
+<li><a href="https://www.youtube.com/user/sxephil">Philip DeFranco</a> : One of the original members of the YouTube community, Phil has grown from a weekly commentary on popular videos via a webcam in his bedroom to a daily rundown of the news backed by a full production staff. Phil does an excellent job of presenting the news whilst making it clear where the official reporting stops and his opinion starts.</li>
+<li><a href="https://www.youtube.com/channel/UCpa-Zb0ZcQjTCPP1Dx_1M8Q">Legal Eagle</a> : Dubbed “YouTube’s Lawyer,” Devin (DJ) Stone provides a perspective on the role the law plays in current events and controversies (as well as more fun videos, like reviewing a Spongebob episode for legal accuracy). I’m not sure how he manages to balance the two full time jobs of running channel with near-daily longform content and being a lawyer with active litigation, but I appreciate that he is able to find time for thoughtful (and often comedic) insight.<br>
+</li>
+<li><a href="https://www.youtube.com/channel/UCDXTQ8nWmx_EhZ2v-kp7QxA">Common Sense Investing</a> : Ben Felix’s Common Sense Investing investigates the academic research supporting passive, rather than active, portfolio management (in summary: the data shows that passive index investing is overwhelmingly a more effective long term investment strategy than trusting an active portfolio manager with your money).</li>
+<li><a href="https://www.youtube.com/user/standupmaths">Standup Maths</a> : Mathematician, comedian, and Excel-enthusiast Matt Parker shares the joy that can be found in math by exploring topics in a comedic setting. Matt’s book, Humble Pi, explores some of history’s most famous mathematical blunders, and is coming up soon on my reading list.</li>
+<li><a href="https://www.youtube.com/user/numberphile">Numberphile</a> : The Numberphile channel is a collection of interviews of prominent mathematicians explaining interesting historical math problems on trademark brown parchment paper. Grant Sanderson and Matt Parker make appearances on the channel a number of times (the infamous Parker square first made its appearance on Numberphile).</li>
+<li><a href="https://www.youtube.com/user/minutephysics/featured">MinutePhysics</a> : As Henry Reich, the channel owner, puts it, the channel is simply about “cool physics and other sweet science.” Henry’s videos explain concepts in physics via a whiteboard, expo markers, and a backdrop of jazzy standup bass.</li>
+</ul>
+</section>
+<section id="election-twitter" class="level1">
+<h1>Election Twitter</h1>
+<div class="alert-info">
+<p><em>There are quite a few, so I’ll just highlight a few &amp; link ot the rest</em></p>
+</div>
+<ul>
+<li><a href="https://twitter.com/lxeagle17">Lakshya Jain</a> : Lakshya is a software engineer and self-described amateur elections mapper/analyst. He’s a very vocal (and self-labeled) partisan democrat, so I take his non-analytical posts with a grain of salt, but his analytical posts are very insightful.</li>
+<li><a href="https://twitter.com/jhkersting">Jack Kersting</a> : A relative rarity on Election Twitter, Jack is a conservative forecaster. He’s not an ardent twitter user, but developed one of the most complete and thorough election forecasts I’ve seen outside of professional work.</li>
+<li><a href="https://twitter.com/maxtmcc">Max</a> : A self described mapmaker, shitposter, and ardent supporter of Long Nebraska, Max is known for his oddball posts and lukewarm political takes.</li>
+<li>Some other folks I follow for election maps/data: <a href="https://twitter.com/NateSilver538">Nate Silver</a>, <a href="https://twitter.com/gelliottmorris">G. Elliott Morris</a>, <a href="https://twitter.com/umichvoter99">U Mich Voter</a>, and <a href="https://twitter.com/norwood270">Sam</a></li>
+</ul>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Some {Worthwhile} {Links}},
+  date = {2021-02-08},
+  url = {https://www.thedatadiary.net/posts/2021-02-08-some-worthwhile-links},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Some Worthwhile Links.”</span> February 8,
+2021. <a href="https://www.thedatadiary.net/posts/2021-02-08-some-worthwhile-links">https://www.thedatadiary.net/posts/2021-02-08-some-worthwhile-links</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <guid>https://www.thedatadiary.net/posts/2021-02-08-some-worthwhile-links/index.html</guid>
+  <pubDate>Mon, 08 Feb 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-02-08-some-worthwhile-links/icon.png" medium="image" type="image/png" height="132" width="144"/>
+</item>
+<item>
+  <title>The Min-Wage Debate</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>On January 26, House Democrats introduced a <a href="https://twitter.com/nbcnews/status/1354102510101868547?s=21">bill to raise the federal minimum wage</a> from $7.25 per hour to $15 per hour by 2025. In the weeks leading up to the introduction, there’s been an influx on twitter of <a href="https://twitter.com/laurenboebert/status/1353102326744166409?s=21">bad faith attacks</a>, outright <a href="https://twitter.com/JoshuaConkel/status/1350228946361622528?s=20">factually incorrect statements</a>, and the type of fact-free arguments that <a href="https://www.washingtonpost.com/news/wonk/wp/2012/10/10/in-excitable-pundits-vs-political-scientists-ill-take-political-scientists-every-time/">pundits love</a> (to be fair, my twitter timeline is biased towards my left-leaning friends, so the majority of what I see are poorly formulated left-leaning takes, but it’s pretty easy to find similarly <a href="https://www.prageru.com/">bad right-leaning takes</a>). The slew of emotion-driven arguments muddies the water around the minimum wage discussion by avoiding references to data. In an effort to find the signal in all this noise, I dug into publicly available databases to hopefully provide at least one opinion grounded in empiricism, rather than emotion.</p>
+<section id="my-priors" class="level1">
+<h1>My Priors</h1>
+<p>For transparency’s sake, prior to taking a look into the data behind the minimum wage debate, I was of the belief that the minimum wage should increase and that the proposed $15 per hour seemed reasonable. I didn’t have an empirically driven reason for this belief, just a vague sense that the minimum wage hadn’t risen in a while and had therefore effectively been deflating. Anecdotally, I also hadn’t seen a good defense of keeping the minimum wage static (in fact, most of the arguments against raising the minimum wage that I’d seen were <a href="https://www.forbes.com/sites/laurashin/2013/07/18/why-mcdonalds-employee-budget-has-everyone-up-in-arms/?sh=4bb3106a5216">laughably bad</a>). My prior was built on little data, so the analysis I set out to do would either strongly confirm or refute it.</p>
+</section>
+<section id="the-history-of-the-minimum-wage" class="level1">
+<h1>The History of the Minimum Wage</h1>
+<p>In 1947, the federal government introduced a minimum wage for hourly-compensated labor as part of an amendment to the Fair Labor Standards Act (FLSA). First set at $0.40 per hour, the minimum wage has risen periodically throughout its 80 year history - most recently rising to $7.25 per hour in 2009. Currently, <a href="https://www.ncsl.org/research/labor-and-employment/state-minimum-wage-chart.aspx#:~:text=Saige%20Draeger-,Summary,wage%20below%20%247.25%20per%20hour.">29 states and D.C.</a> have state minimum wages greater than the minimum wage, and several state minimum wages are increasing in 2021 (either due to ballot initiatives or automatic increases based on cost of living).</p>
+<p>I’ve seen a theory float around that, <a href="https://twitter.com/nytopinion/status/1215889657571028992">had the minimum wage risen with inflation, it would be $22 per hour</a> today, rather than $7.25 per hour. This is pretty overtly false.* Using the <a href="https://fred.stlouisfed.org/series/CPIAUCSL">consumer price index</a> (CPI) as the standard measure of inflation, the nominal minimum wage throughout the years can be adjusted to real (aka, inflation-adjusted) dollars:</p>
+<p>In inflation-adjusted terms, the minimum wage peaked around 1968 at $12.20 per hour ($1.60 per hour, unadjusted). The current minimum wage of $7.25 per hour, while on the lower end of inflation-adjusted historical values, is not the lowest it’s ever been, and a $15 per hour minimum wage would set a new record for both adjusted and unadjusted minimum wage. Critics of the proposed increase may point to this as reason to keep the minimum wage at its current value - why increase the minimum wage beyond its historical high if it hasn’t even reached its historical low? Supporters, on the other hand, may argue that the minimum wage has never been enough.</p>
+</section>
+<section id="the-minimum-wages-dance-between-two-thresholds" class="level1">
+<h1>The Minimum Wage’s Dance Between Two Thresholds</h1>
+<p>In 1978, the Census Bureau and Department of Health and Human Services set a baseline administrative threshold to determine eligibility for financial assistance from the federal government. Dubbed the “<a href="https://www.census.gov/data/tables/time-series/demo/income-poverty/historical-poverty-thresholds.html">poverty threshold</a>,” this value was created based on an approximation of the annual budget various family units require to meet basic food &amp; shelter needs (for example, a single adult with no children would need to earn less per hour to meet his needs than, say, a nuclear family of two working adults and two children). The Census Bureau updates the threshold annually by simply adjusting for inflation.</p>
+<p>Many groups, however, argue that the poverty threshold doesn’t meet basic needs and instead advocate for a <a href="https://www.investopedia.com/terms/l/living_wage.asp">living wage</a>. The living wage is similar in concept to the poverty threshold, but generally much higher, as it includes an expanded food budget (the poverty threshold is based on <a href="https://www.fns.usda.gov/cnpp/usda-food-plans-cost-food-reports-monthly-reports">USDA’s “thrifty” food plan</a>), a budget cap on rent (generally set at ~30% of a monthly budget), healthcare, and childcare, amongst other additions.</p>
+<p>Based on <a href="https://livingwage.mit.edu/">MIT Lab’s Living Wage Calculator</a>, we can see that, for a family of four with two working adults, the minimum wage has historically been marginally greater than the poverty threshold, but never reaches (or approaches) the living wage:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate/pics/plot_02.png" class="img-fluid"></p>
+<p>Figure 2, above, shows the national minimum and living wages, but these values vary by location. Figure 3 below shows the minimum and living wages for each state. Even states with minimum wages greater than the federal minimum do not meet the local living wage:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate/pics/plot_03.png" class="img-fluid"></p>
+</section>
+<section id="the-proposed-increase" class="level1">
+<h1>The Proposed Increase</h1>
+<p>So how does the proposed increase to the minimum wage fare against the living wage and poverty threshold in the future? If inflation continues to hold at about <a href="https://www.pwlcapital.com/how-pwl-estimates-future-inflation/">1.6%</a>, the increased minimum wage will get significantly closer to, but not greater than, the living wage in 2025.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate/pics/plot_04.png" class="img-fluid"></p>
+<p>Is this enough? Arguably, no, as the proposed increase is less than the estimated living wage. But it is certainly a step in the right direction, and if passed, would likely keep the minimum wage above the poverty threshold for quite some (the poverty threshold rises roughly at a rate of $1 per hour every 10 years).</p>
+</section>
+<section id="my-posterior" class="level1">
+<h1>My Posterior</h1>
+<p>In general, my prior was confirmed by the analysis - my belief that the minimum wage should be increased has strengthened, and there’s a believable argument that the $15 per hour increase could be raised even higher. There are some additional points that I didn’t discuss above, however, that are still worth noting:</p>
+<ul>
+<li>There are many different groups that have estimated living wages, and results can vary (I used MIT Lab’s data because it was the most readily available &amp; also provided state, county, and metropolitan level data). In general, however, living wage estimates agree that the poverty threshold is far too low, and typically show living wages in excess of $15 per hour.</li>
+<li>The percentage of hourly workers earning the federal minimum wage (or less) has <a href="https://usafacts.org/articles/minimum-wage-america-how-many-people-are-earning-725-hour/">decreased over the years</a> and currently rests at about 1.9%. This is in part due to many states having minimum wages greater than the federal minimum. If the minimum wage increases to $15 per hour, the total number of workers earning the federal minimum wage will likely increase (the linked chart shows spikes that correspond to minimum wage increases in the ’90s and 2009).</li>
+<li>Some critics of the increased minimum wage argue that the minimum wage is only meant for teenagers working summer jobs. The data doesn’t support this argument - over <a href="https://www.bls.gov/opub/reports/minimum-wage/2019/home.htm#cps_mw_whe_hist.f.1">80% of federal minimum wage workers are 20+ years old</a>.</li>
+<li>In 2019, the Congressional Budget Office released <a href="https://www.cbo.gov/system/files/2019-07/CBO-55410-MinimumWage2019.pdf">a report</a> that estimated that job losses due to an increased minimum wage could range between 4.7 million and 0, with a median of 1.3 million lost jobs. The report also notes, however, that about 17 million workers would benefit from the wage increase.</li>
+</ul>
+<blockquote class="blockquote">
+<p>The linked NYT opinion article does give itself the caveat that the $22 per hour figure is based on “inflation and productivity,” though <a href="https://twitter.com/JoshuaConkel/status/1350228946361622528?s=20">others</a> have repeated this $20+ per hour wage argument without this caveat. The <a href="https://www.nytimes.com/2020/01/09/opinion/sunday/deaths-despair-poverty.html">opinion article</a> doesn’t mention any sources or databases, though I expect that the author is using GDP as a proxy for inflation - several articles point out that if the minimum wage had <a href="https://www.counterpunch.org/2020/01/24/what-the-minimum-wage-would-be-if-it-kept-pace-with-productivity/">kept pace with GDP growth since 1968</a>, it’d be significantly greater than even the proposed $15 per hour minimum wage. Correlating this to inflation, however, is at best a significant oversight by the author/editor, and at worst intentionally deceptive.</p>
+</blockquote>
+</section>
+<section id="some-other-notes" class="level1">
+<h1>Some Other Notes</h1>
+<p>As always, source data for this post can be found on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.01.31-minwage">github</a>. I made an overt attempt to keep the code a bit cleaner this time around (having a “test area” in the code helped out). It’s still not perfect, and I suspect I’ll just naturally get better at writing neatly formatted scripts as the language becomes more intuitive.</p>
+<p>I think I’m going to take a break for a couple weeks from some of these longer posts - I’m currently finishing this a bit after midnight (which is very late for me!) - and between writing this &amp; the Bayes’ Theorem post, I’ve had little time to dedicate to stats. Next week, I’ll put together a less intensive piece to give myself time to push forward with the stats class. Maybe after that I can write a quick post about the accuracy of prediction models, then get into another deep dive. We’ll see how I feel about it in the next couple weeks.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {The {Min-Wage} {Debate}},
+  date = {2021-01-31},
+  url = {https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“The Min-Wage Debate.”</span> January 31, 2021.
+<a href="https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate">https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>politics</category>
+  <guid>https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate/index.html</guid>
+  <pubDate>Sun, 31 Jan 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-01-31-the-min-wage-debate/featured.png" medium="image" type="image/png" height="78" width="144"/>
+</item>
+<item>
+  <title>Your Doctor Probably Isn’t an Idiot</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>There’s a great standup routine about doctors (which I spent about an hour trying to find online with no luck!) with a punchline to the effect of, “getting a positive cancer test then requesting a second opinion is basically the medical equivalent of telling your doctor you think they’re an idiot to their face.” The joke makes sense in context (and is a lot funnier to hear, rather than read), and is logical at a general level (why would a patient, who probably isn’t a medical expert, be able to say that a doctor’s assessment is wrong?), but there’s a hidden nugget of nuance about cancer screenings missed by the joke that make them such an interesting introduction to one of the foundational equations in statistics, <a href="https://en.wikipedia.org/wiki/Bayes%27_theorem">Bayes’ Theorem</a>.</p>
+<section id="what-is-bayes-theorem" class="level1">
+<h1>What is Bayes’ Theorem?</h1>
+<p>To understand Bayes’ Theorem, it’s probably best to get a grasp on frequency-based probability, which is often considered the contrast of bayesian/uncertainty-based probability. Consider a perfectly ideal coin flip. I know that, for any given coin flip, the probabilities of landing either heads-up or tails-up are exactly the same: 50%. Moreover, this is true no matter how many times I flip the coin. If the coin lands heads-up on the first flip, I still have a 50% chance of the coin landing heads-up on the next flip (and the next flip, and the next flip, etc.).</p>
+<p>But what if I’m told the coin has a manufacturing defect, and is slightly heavier on one side (lets say, to favor tails-up)? I might assume, starting out, that the defect is small, and has a negligible effect on my odds of the coin landing heads-up. But every flip that lands tails-up changes my certainty about the true odds. That’s the heart of Bayes’ Theorem, and the biggest difference between bayesian statistics and frequentist statistics. With frequentist statistics, when the data updates, the uncertainty stays the same, whereas with bayesian statistics, when the data updates, the uncertainty updates as well.</p>
+<p>So why is this important? Well, at a base level, just about every forecasting model needs to make use of Bayes’ Theorem. So with the long term goal of building a predictive election model, it’s pretty dang important to have a firm understanding of the foundation the model will rest on. But in a more general sense, I think it’s important to understand how views can (and should) update in the light of new data. From what I can tell, the majority of opinions (especially political opinions…) are either based on assumptions or <a href="https://fivethirtyeight.com/features/the-art-of-cherry-picking-polls/">cherry-picked data points</a>, and typically don’t update - even when presented with new evidence. In contrast, to think like a bayesian is to weigh the severity of new information against the history of data and update your views accordingly.</p>
+</section>
+<section id="ugly-vs.-pretty-bayes" class="level1">
+<h1>Ugly vs.&nbsp;Pretty Bayes</h1>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_01.png" class="img-fluid"></p>
+<p>Equation 1 above shows Bayes’ Theory. As expressed in statistical language, it reads, “the probability of A, given event B, is equal to the probability of B, given event A, and the probability of A divided by the probability of B.” As written, Bayes’ Theorem is… unintuitive… Even reading the description back to myself stirs up memories of fumbling through my high school stats class. The way the equation is written doesn’t lend itself towards being accessible, but, <a href="https://www.3blue1brown.com/videos-blog/bayes-theorem-and-making-probability-intuitive">as Grant Sanderson points out in this video</a>, reframing the equation into a geometry problem makes Bayes’ Theorem much easier to understand (much of the rest of this post is applying Bayes’ Theorem via Grant’s geometrical framing).</p>
+<p>To understand how a geometrical framing can help make sense of Bayes’ Theorem, it’s best to run through an example. So let’s get back to the doctor’s office &amp; cancer screening.</p>
+<p>Let’s first consider a population group of 10,000, arranged on a grid of 100 x 100. If we know that 1% of the population has cancer, we can divide the group into two segments, cancer-free and cancerous, as shown below:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_02.png" class="img-fluid"></p>
+<p>If we avoid any compounding risk factors (like age, sex, diet, etc.) &amp; assume that the likelihood of having cancer is the same for everyone, any person in the population can say that they are 99% certain that they do not have cancer. But how might this certainty update for someone who gets a positive result from a cancer screening test?</p>
+<p>The reliability of cancer screening tests are measured by their sensitivity &amp; specificity. A test’s sensitivity is the the proportion of cancer-positive patients it correctly identifies (i.e., “true positives”). For example, if a screening test has a sensitivity of 90% and is used to test 100 cancerous patients, we’d expect 90 of these patients to receive a correct positive result and the remaining 10 patients to receive an incorrect negative result. The specificity, on the other hand, is the proportion of cancer-free patients the test correctly identifies. If the screening test’s specificity is 92% and is used to test 100 cancer-free patients, we’d expect 92 patients to correctly receive a negative result and 8 patients to incorrectly receive a positive result (a “false positive”). I tend to find it easier just to think about the positive cases, so from now on, I’ll refer to a test’s true positive rate and false positive rate, rather than the sensitivity &amp; specificity.</p>
+<p>Let’s assume that a cancer screening test has the true positive &amp; false positive rates above, 90% &amp; 8%, respectively. How certain should someone who tests positive be that they truly have cancer? A test that gives a true positive 90% of the time seems pretty damning, but the 8% false positive rate isn’t insignificant. An important step is to realize that this person is no longer looking for the probability of having cancer, but instead looking for the probability of having cancer given that they have a positive test result.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_03.png" class="img-fluid"></p>
+<p>For someone who receives a positive test result, it may be helpful to think about the hypothetical question: “What if everyone took this test?” This reframing can help us think in terms of people, rather than probabilities.</p>
+<p>Given that 1% of the 10,000 person population has cancer, we can divide the group into two segments: 100 people with cancer, and 9,900 people without cancer.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_04.png" class="img-fluid"></p>
+<p>If everyone takes the screening test, we’d expect 90 true positives (90% x 100 = 90) and a whopping 792 false positives (8% x 9,900 = 792)!</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_05.png" class="img-fluid"></p>
+<p>Although the test is fairly accurate in terms of sensitivity &amp; specificity (90% and 92% are both considered A’s, by most grading standards) the sheer number of non-cancerous people in the population results in a large number of false positives. Of all the 882 positive cases (792 + 90 = 882), only 90 are true positives, meaning that the probability of having cancer given a positive test result is about 10% (90 / 882 = 10.2%). While this is a significant increase from the prior assumption, 1%, it’s still far likelier that someone with one positive test result doesn’t have cancer. This is why it’s important to get a second opinion. It’s not that your first doctor is an idiot, just that your uncertainty has changed!</p>
+<p>Now what would happen if all the people who received a positive result took another test? Well, of this subset of 882 patients, we expect that 792 are cancer free and 90 are cancerous:</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_06.png" class="img-fluid"></p>
+<p>When these 882 patients take the second test, we still expect the test to hold the same true positive &amp; false positive rates - meaning we can expect 81 true positives (90% x 90 = 81) and about 63 false positives (8% x 792 = 63). This means that, of the 144 positive cases (81 + 63 = 144), 81 are true positives, and the probability of having cancer given two positive results is about 56% (81 / 144 = 56%).</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_07.png" class="img-fluid"></p>
+<p>With this new round of data from test results, those who receive a second positive result once again update their prior assumption from 10% to 56%. In fact, every test result, positive or negative, should either support or refute the prior. Each positive test result, appropriately, increases your likelihood of actually having cancer. Similarly, each negative result decreases your likelihood.</p>
+<p><img src="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/pics/pic_08.png" class="img-fluid"></p>
+<p>That’s the beauty of Bayes’ Theorem in a nutshell. Gathering new information allows you to update your prior belief!</p>
+</section>
+<section id="in-summary" class="level1">
+<h1>In Summary…</h1>
+<p>I may have gotten too in the weeds with this post, though, to be fair, walking through Bayes’ Theorem in detail also helps my understanding. I likely wont dive as deep into stats topics in the future. In part, they’re a bit of a slog to read through if you’re not as excited as I am by this kind of stuff. But it also took me a good chunk of time to write this post. Going forward, I’d like to better balance my time between the three goals of coding, writing, and learning stats.</p>
+<p>As always, I’ve posted my work to <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.01.24-bayes_theorem">github</a>, though this file just includes an excel workbook &amp; a few pictures. Next week, I’ll dig more into plotting with ggplot - likely with a much shorter post!</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+  author = {Mark Rieke},
+  title = {Your {Doctor} {Probably} {Isn’t} an {Idiot}},
+  date = {2021-01-24},
+  url = {https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2021. <span>“Your Doctor Probably Isn’t an Idiot.”</span>
+January 24, 2021. <a href="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot">https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot</a>.
+</div></div></section></div> ]]></description>
+  <category>archive</category>
+  <category>bayes</category>
+  <guid>https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/index.html</guid>
+  <pubDate>Sun, 24 Jan 2021 06:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2021-01-24-your-doctor-probably-isn-t-an-idiot/featured.png" medium="image" type="image/png" height="102" width="144"/>
+</item>
 <item>
   <title>R, ggplot2, &amp; plotly</title>
   <dc:creator>Mark Rieke</dc:creator>
@@ -56,6 +1073,8 @@
 <p>Also, I just realized that the interactive plotly chart looks like junk when viewed via mobile (the data points and labels don’t resize automatically). I’ll have to figure out a way to fix this in the future… Maybe I can set the point size as a ratio of the plot width? It’s something to think about, but again, I’m happy with my first run using ggplot &amp; plotly.</p>
 
 
+<!-- -->
+
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
@@ -73,80 +1092,6 @@ Mark Rieke. 2021. <span>“R, Ggplot2, &amp; Plotly.”</span> January 17,
   <guid>https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/index.html</guid>
   <pubDate>Sun, 17 Jan 2021 06:00:00 GMT</pubDate>
   <media:content url="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/featured.png" medium="image" type="image/png" height="99" width="144"/>
-</item>
-<item>
-  <title>Baby Steps</title>
-  <dc:creator>Mark Rieke</dc:creator>
-  <link>https://www.thedatadiary.net/posts/2021-01-10-baby-steps/index.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<section id="an-uphill-battle" class="level1">
-<h1>An Uphill Battle</h1>
-<p>Today marks the beginning of what I imagine will be a long journey, with a significant number of hiccups &amp; frustrations along the way. The end goal I have is to build out an election forecast model (in the spirit of <a href="https://projects.fivethirtyeight.com/2020-election-forecast/">FiveThirtyEight</a> &amp; <a href="https://projects.economist.com/us-2020-forecast/president">The Economist</a>), but along the way, I plan on getting better at a few things:</p>
-<ul>
-<li><strong>Writing</strong> : while I’ve never been a poor writer, I’ve always gravitated more toward math &amp; science, &amp; in my career as an engineer, a good amount of my communication has been visual. If possible, I’ve always preferred to leave words off the page &amp; have a chart speak for me. While I still think that, in general, its better the explain a concept visually (a picture vs.&nbsp;a thousand words, and all), I also believe supplementing a visual with my a well written analysis &amp; opinion can improve its reception.</li>
-<li><strong>Stats</strong> : in my current job, almost everything I model is deterministic, rather than probabilistic (physical systems tend to behave the way that natural laws expect them to). It has been a long time since I’ve done any sort of stats work (&amp; it was all basic introductory analyses), so I expect an uphill battle with getting my head wrapped around Bayes’ Theorem, Monte Carlo simulations, Brier’s Tests, etc.</li>
-<li><strong>Coding</strong> : most of my experience in coding is with VBA - typically just for manipulating data in Excel. I’ve built out a good number of forms using VBA, but don’t typically tend to dig into anything far beyond simple manipulation. The front end of Excel is effectively setup as a visual programming tool, so there’s not a great incentive to do much array manipulation outside of the spreadsheet. Excel is a wonderful tool, &amp; is sufficient for my current job, but I’ve definitely found where its limits lie. I’m excited to dig into R, the stats based program that seems almost to be designed specifically for what I’d like to do.</li>
-</ul>
-</section>
-<section id="the-first-plot" class="level1">
-<h1>The First Plot</h1>
-<p>R has a few sample datasets, and r:base includes a pretty basic plot function. With the sample set, cars, I made a quick plot of the stopping distance vs.&nbsp;the speed.</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;">plot</span>(cars)</span></code></pre></div>
-<div class="cell-output-display">
-<p><img src="https://www.thedatadiary.net/posts/2021-01-10-baby-steps/index_files/figure-html/unnamed-chunk-1-1.png" class="img-fluid" width="2100"></p>
-</div>
-</div>
-
-
-</section>
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
-  author = {Mark Rieke},
-  title = {Baby {Steps}},
-  date = {2021-01-10},
-  url = {https://www.thedatadiary.net/posts/2021-01-10-baby-steps},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
-Mark Rieke. 2021. <span>“Baby Steps.”</span> January 10, 2021. <a href="https://www.thedatadiary.net/posts/2021-01-10-baby-steps">https://www.thedatadiary.net/posts/2021-01-10-baby-steps</a>.
-</div></div></section></div> ]]></description>
-  <category>archive</category>
-  <guid>https://www.thedatadiary.net/posts/2021-01-10-baby-steps/index.html</guid>
-  <pubDate>Sun, 10 Jan 2021 06:00:00 GMT</pubDate>
-  <media:content url="https://www.thedatadiary.net/posts/2021-01-10-baby-steps/plot.png" medium="image" type="image/png" height="103" width="144"/>
-</item>
-<item>
-  <title>Hello World!</title>
-  <dc:creator>Mark Rieke</dc:creator>
-  <link>https://www.thedatadiary.net/posts/2021-01-09-hello-world/index.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>I’m currently setting up the website &amp; will have an official post soon(ish).</p>
-
-
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
-  author = {Mark Rieke},
-  title = {Hello {World!}},
-  date = {2021-01-09},
-  url = {https://www.thedatadiary.net/posts/2021-01-09-hello-world},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
-Mark Rieke. 2021. <span>“Hello World!”</span> January 9, 2021. <a href="https://www.thedatadiary.net/posts/2021-01-09-hello-world">https://www.thedatadiary.net/posts/2021-01-09-hello-world</a>.
-</div></div></section></div> ]]></description>
-  <category>archive</category>
-  <guid>https://www.thedatadiary.net/posts/2021-01-09-hello-world/index.html</guid>
-  <pubDate>Sat, 09 Jan 2021 06:00:00 GMT</pubDate>
-  <media:content url="https://www.thedatadiary.net/posts/2021-01-09-hello-world/icon.png" medium="image" type="image/png" height="132" width="144"/>
 </item>
 </channel>
 </rss>

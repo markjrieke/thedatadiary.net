@@ -1,6 +1,6 @@
 ---
 title: the data diary
-subtitle: Notes on shit
+subtitle: Notes from a 
 listing: 
   feed: true
   contents: posts
@@ -12,4 +12,5 @@ listing:
   categories: true
 page-layout: full
 title-block-banner: true
+code-tools: false
 ---

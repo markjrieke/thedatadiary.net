@@ -44,3 +44,5 @@ format:
     highlight-style: kate
     code-block-bg: true
     code-block-border-left: "#78c2ad"
+    code-fold: true
+    code-tools: false

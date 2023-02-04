@@ -1,0 +1,30 @@
+---
+title: Catching Up (again)
+date: '2021-09-23'
+categories: [archive]
+image: icon.png
+---
+
+Wow, it’s been quite a while! Once again, I’m catching up from a long hiatus (this time, there was about a month’s gap between posts). Although I haven’t been writing here, I have been keeping myself incredibly busy - for that reason, I think I’m going to switch up the format of this site. Here’s a few changes I’m planning on making, & also why I plan on making them.
+
+### Opening up topic options
+
+Up until now, I’ve pretty much exclusively been looking at politically-related things from a data-centric point of view, partially because most news outlets are sensationalist and it annoys me, and partially because the 2020 election & aftermath was on my mind for most of early 2021 (also, wanting to understand the [Economist’s Election Forecast methodology](https://projects.economist.com/us-2020-forecast/president/how-this-works) was the spark that led to taking stats classes, learning R, and [eventually] landing a new job). While I still want to/expect that I will touch on political-esque topics, I want to expand into things I’m more generally interested in. I’ve spent a lot of time this year working on projects that don’t touch politics and it was difficult to spur the enthusiasm to work on a political project just to fill the site after having spent hours coding something unrelated. I’ve imposed this political filter on myself, & expanding the horizon to include any/all topics that interest me will allow me to more consistently write without overextending myself.
+
+### Moving away from Squarespace
+
+Currently, this site is hosted by Squarespace. This was great for getting setup & used to working online, but after a year of working with it, I’ve realized that it isn’t the ideal platform for my use case. Early next year, hopefully, I’ll switch over to using rmarkdown, Hugo, and Netifly to build & deploy a site directly from R. This will make my life a lot easier, for a couple of reasons:
+
+* I will have a lot more control over layouts and themes
+* I’ll be able to more easily share code, images, and interactives(!)
+* The code & the website will be housed under one directory (rather than existing as two separate entities)
+
+Additionally, the platform I’m planning on moving to is more blog/personal-professional focused, rather than retail focused, like Squarespace. I may also be able to move towards having posts appear in emails, rather than having to link to the post itself. 
+
+### Timeline
+
+I haven’t yet settled on this yet, but I may move from a weekly schedule to a bi-weekly schedule (not that I ever really stuck to the weekly schedule). The projects I’ve been working on typically take quite a bit of time, so trying to churn one out each week means that I may have to suffer quality for a schedule, which I don’t want to do. I’d rather have enough time to fully devote to completing something.
+
+Anyways, that’s a lot of updates - I’ll hopefully check in within a few weeks time!
+
+
