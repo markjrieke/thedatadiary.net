@@ -1,0 +1,8 @@
+---
+title: "Hello World!"
+date: "2021-01-09"
+categories: [archive]
+image: icon.png
+---
+
+I'm currently setting up the website & will have an official post soon(ish).
