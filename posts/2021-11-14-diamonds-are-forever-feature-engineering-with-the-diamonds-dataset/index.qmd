@@ -4,8 +4,6 @@ description: Feature Engineering with the Diamonds Dataset
 date: '2021-11-14'
 categories: [tidymodels]
 image: featured.png
-execute: 
-  cache: true
 code-fold: show
 ---
 
