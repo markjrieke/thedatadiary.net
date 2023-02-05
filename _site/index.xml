@@ -27,7 +27,7 @@
 <li>there are some data oddities to deal with (log scales, interactions, non-linear relations)</li>
 </ul>
 <p>I’ll be doing a bit of feature engineering prior to fitting an tuning a linear model that predicts the each diamond’s <code>price</code> with the <a href="https://glmnet.stanford.edu/index.html"><code>glmnet</code></a> package. This will give a good end-to-end glimpse into the data exploration and model fitting process! Before we get into that, let’s load some packages and get a preview of the dataset.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-1_52eb7fa85098fc0f961f0bee23b6b4a6">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;">library</span>(tidyverse)</span>
@@ -56,7 +56,7 @@
 </div>
 </div>
 <p>Since we’re predicting price, let’s look at its distribution first.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-2_8671c2bf7c62e4d9ef60b00ba3f94f42">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1">diamonds <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -68,7 +68,7 @@
 </div>
 </div>
 <p>We’re definitely gonna want to apply a transformation to the price when modeling - let’s look at the distribution on a log-10 scale.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-3_ec04d60e73849623d88317b8961753a4">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1">diamonds <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -81,7 +81,7 @@
 </div>
 </div>
 <p>That’s a lot more evenly distributed, if not perfect. That’s a fine starting point, so now we’ll look through the rest of the data.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-4_1ce43702bb2b698feafb9af1dcf15754">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1">diamonds <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -201,7 +201,7 @@
 </div>
 </div>
 <p>It looks like there may be a good opportunity to try out a few normalization and resampling techniques, but before we get into any of that, let’s build a baseline linear model.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-5_775f1abc0eabd87e927653008e7936fd">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><span class="co" style="color: #5E5E5E;"># splits</span></span>
@@ -248,14 +248,14 @@
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 6
-  .metric .estimator     mean     n  std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   1137.       10 10.7     Preprocessor1_Model1
-2 rsq     standard      0.919    10  0.00175 Preprocessor1_Model1</code></pre>
+  .metric .estimator     mean     n std_err .config             
+  &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+1 rmse    standard   1135.       10 8.10    Preprocessor1_Model1
+2 rsq     standard      0.919    10 0.00129 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>And right off the bat, we can see a fairly high value for <code>rsq</code>! However, <code>rsq</code> doesn’t tell the whole story, so we should check our predictions and residuals plots.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-6_10a8c8d29e16e7518fa5dab9e23ac327">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><span class="fu" style="color: #4758AB;">augment</span>(rs01) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -271,7 +271,7 @@
 </div>
 </div>
 <p>This is <em>definitely</em> not what we want to see! It looks like there’s an odd curve/structure to the graph and we’re actually predicting quite a few negative values. The residuals plot doesn’t look too great either.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-7_e3253f32f12a947a55fc02d9aff4ccec">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><span class="fu" style="color: #4758AB;">augment</span>(rs01) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -289,7 +289,7 @@
 </div>
 <p>What we’d like to see is a 0-correlation plot with errors normally distributed; what we’re seeing instead, however, is a ton of structure.</p>
 <p>That being said, that’s okay! we expected this first pass to be pretty rough! And the price is <em>clearly</em> on a log-10 scale. To make apples-apples comparisons with models going forward, I’ll retrain this basic linear model to predict the <code>log10(price)</code>. This’ll involve a bit of data re-manipulation!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-8_ec66dcd6ef098544c357a5a159308981">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><span class="co" style="color: #5E5E5E;"># log transform price</span></span>
@@ -354,7 +354,7 @@
 </div>
 </div>
 <p>And wow, that <em>one</em> transformation increased our <code>rsq</code> to 0.96! Again, that’s not the whole story, and we’re going to be evaluating models based on the <code>rmse</code>. Let’s look at how our prediction map has updated:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-9_0701ecd4e357da1b73181e8f8e7858c9">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1">rs01 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -371,7 +371,7 @@
 </div>
 </div>
 <p>Now <em>that</em> is a much better starting place to be at! Let’s look at our coefficients</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-10_f9fbdbf67537bba7b6a6fcb0faacc62a">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">666</span>) <span class="co" style="color: #5E5E5E;"># :thedevilisalive:</span></span>
@@ -396,7 +396,7 @@
 </div>
 </div>
 <p>Another way of looking at it:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-11_39086d7fc89846ac3b52322a0bbc2c1e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb25" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">666</span>)</span>
@@ -422,7 +422,7 @@
 </div>
 </div>
 <p>This is a good, but definitely improvable, starting point. We can likely decrease our overall error with a bit of feature engineering and drop unimportant features by tuning a regularized model. There are some oddities in this initial model that will need to be improved upon; for one, we can definitively say that the <code>carat</code> feature ought to be <em>positively</em> associated with price</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-12_1412bb03fc60774512478bba367fb23e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -437,7 +437,7 @@
 </div>
 </div>
 <p>Another few things that are interesting to note in this plot! It looks like there are clusterings of carat ratings around round-ish numbers. My hypothesis here is that carat ratings tend to get rounded up to the next size. There’s also a clear abscence of diamonds priced at $1,500 (~3.17 on the log10 scale). I suppose there is some industry-specific reason to avoid a diamond price of $,1500?</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-13_fabc275dc0af918cab59afca8f583d67">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb27" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -457,7 +457,7 @@
 </div>
 <p>How to address all these things? With some feature engineering! Firstly, let’s add some recipe steps to balance classes &amp; normalize continuous variables.</p>
 <p>But before I get into <em>that</em>, I’ll save the resample metrics so that we can compare models!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-14_73d5aa3f138121edc7fe44069d9cf9e5">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb28" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1">metrics <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">collect_metrics</span>(rs01) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">model =</span> <span class="st" style="color: #20794D;">"model01"</span>)</span>
@@ -472,7 +472,7 @@
 2 rsq     standard   0.966     10 0.00494 Preprocessor1_Model1 model01</code></pre>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-15_ab8644a6adc94dcd204963c57e6226f0">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb30" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><span class="co" style="color: #5E5E5E;"># spec will be the same as model01</span></span>
@@ -492,7 +492,7 @@
 </details>
 </div>
 <p>Let’s <a href="https://recipes.tidymodels.org/reference/bake.html">bake</a> our recipe to verify that everything looks up-to-snuff in the preprocessed dataset.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-16_f9588de3fe4bc53e956254f0d71938c5">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb31" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1">baked_rec02 <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
@@ -522,7 +522,7 @@
 #   clarity_other &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-17_a82128c2cdbc56f3d1f9de39624c49fb">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb33" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1">baked_rec02 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -590,7 +590,7 @@
 </div>
 </div>
 <p>Everything looks alright with the exception of the <code>table</code> predictor. I wonder if there are a lot of repeated values in the <code>table</code> variable - that may be why we’re seeing a “chunky” histogram. Let’s check</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-18_a270a4cdb76b081d4f1bd7c049dd7640">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb40" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1">baked_rec02 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -615,7 +615,7 @@
 </div>
 </div>
 <p>Ooh - okay yeah that’s definitely the issue! I’m not <em>quite</em> sure how to deal with it, so we’re just going to ignore for now! Let’s add a new model &amp; see how it compares against the baseline transformed model.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-19_ee4e1cc9b7f50e6fafc49aaa807c705e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb42" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1">wf02 <span class="ot" style="color: #003B4F;">&lt;-</span></span>
@@ -647,7 +647,7 @@
 </div>
 </div>
 <p>Oof - that’s actually slightly worse than our baseline model!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-20_21340b76cd21098cc294178f7f81dfc2">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb44" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1">rs02 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -664,7 +664,7 @@
 </div>
 </div>
 <p>It looks like we’ve introduced structure into the residual plot!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-21_0ba2d6c954a2d6b29585a6cd42beb0b3">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb45" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1">rs02 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -682,7 +682,7 @@
 </div>
 </div>
 <p>Yeah that’s fairly wonky! I’m wondering if it’s due to the SMOTE upsampling method we introduced? To counteract, I’ll build &amp; train new models after each set of recipe steps (e.g., resampling, normalizing, interactions) to buil up a better performing model one step at a time.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-22_5f1ed1a52f4bb54f9653ea481cf8335b">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb46" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1">metrics <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
@@ -690,7 +690,7 @@
 <span id="cb46-3">  <span class="fu" style="color: #4758AB;">bind_rows</span>(<span class="fu" style="color: #4758AB;">collect_metrics</span>(rs02) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">model =</span> <span class="st" style="color: #20794D;">"model02"</span>))</span></code></pre></div>
 </details>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-23_d4e4a66de9366e84d142da7f76b1d6b1">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb47" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><span class="co" style="color: #5E5E5E;"># same model spec</span></span>
@@ -731,7 +731,7 @@
 </div>
 </div>
 <p>Interesting! Improved relative to <code>rs02</code>, but still not as good as our first model! Let’s try using <code>step_downsample()</code> to balance classes &amp; see how we fare.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-24_e03b0539bd5a7826146d9580fd0a98ba">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb49" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><span class="co" style="color: #5E5E5E;"># cleanup some large-ish items eating up memory</span></span>
@@ -776,7 +776,7 @@
 </div>
 </div>
 <p>Wow - still a bit worse! I’ll try upsampling &amp; if there is no improvement, we’ll move on without resampling!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-25_79da622e98d977f1fbc0f7ec4ddfb58e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb51" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1">metrics <span class="ot" style="color: #003B4F;">&lt;-</span></span>
@@ -815,7 +815,7 @@
 </div>
 </div>
 <p>Okay - resampling gets stricken off our list of recipe steps! Let’s look at how the models compare so far</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-26_bf179ddbfb0904fe5bb034287b5c3270">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb53" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1">metrics <span class="ot" style="color: #003B4F;">&lt;-</span></span>
@@ -834,7 +834,7 @@
 </div>
 </div>
 <p>The first simple linear model was the best as measured by both metrics! Let’s see if we can improve with some normalization of the continuous vars.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-27_815491b6129f102975d33c0ccf6defba">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb54" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><span class="fu" style="color: #4758AB;">rm</span>(mod03, mod04, rec03, rec04, rs03, rs04, wf03, wf04)</span>
@@ -872,7 +872,7 @@
 </div>
 </div>
 <p>Well - that was quite a bit for no improvement! I guess that normalizing the continuous vars in this case isn’t helping. Moving on to adding some interactions - first let’s explore potential interactions a bit.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-28_f7ea4ed820f926556d91a2ea010805f8">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb56" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1">metrics <span class="ot" style="color: #003B4F;">&lt;-</span></span>
@@ -890,7 +890,7 @@
 <p><img src="https://www.thedatadiary.net/posts/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="2100"></p>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-29_c59880c636cba809bc90161b20f6f384">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb57" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><span class="fu" style="color: #4758AB;">library</span>(splines)</span>
@@ -909,7 +909,7 @@
 </div>
 </div>
 <p>5 spline terms might not be sufficient here - capturing the lower bound well but <em>really</em> not doing well with the higher carat diamonds.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-30_a0f83308804ccf61153ed47cf8b54b5d">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb58" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -927,7 +927,7 @@
 </div>
 </div>
 <p>Hmmmm, 10 might be too many. It looks lie we’ll just lose a bit of confidence for the Premium &amp; Very Good diamonds at higher carats. Relative to the total number, I’m not too concerned.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-31_c88ddd4df04a38b9d10a75b7bd7b345b">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb59" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -946,7 +946,7 @@
 </div>
 <p>7 terms feels like the best we’re going to do here - I think this is tuneable, but we’ll leave as is (now &amp; in the final model).</p>
 <p>Next, we’ll look at creating interactions between the <code>color</code> and <code>carat</code> variables:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-32_b1a5c26e1d7ae30c5b78ceb143dcb9cb">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb60" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -965,7 +965,7 @@
 </div>
 <p>Adding interactive spline terms with <code>df</code> of 15 seems to add some useful information!</p>
 <p>We have three shape parameters, <code>x</code>, <code>y</code>, and <code>z</code> - I wonder if creating a stand-in for volume by multiplying them all together will provide any useful information?</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-33_0f62ae869f0fa13078cf53e176aae879">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb61" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -979,7 +979,7 @@
 </div>
 </div>
 <p>Ooh, looks like we’re getting some good info here, but we may want to use <code>log10</code> to scale this back.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-34_0bc6fb25985bbff65d457adc579ad843">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb62" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -993,7 +993,7 @@
 </div>
 </div>
 <p>Let’s see if this ought to interact with any other paramaters:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-35_db27896f8cbcacea832e9fb7fa95aa63">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb63" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1">diamonds_train <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1035,7 +1035,7 @@
 </div>
 </div>
 <p>Hmm, it doesn’t really look like we’re capturing too great of interactions, so I’ll leave out for now. It looks like the <em>size</em> of the rock is more important than anything else! I could continue to dig further, but I’ll stop there. I’m likely getting diminishing returns, &amp; I’d like to get back into modeling!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-36_42b5a7ec36201328f536fbce7e9d2050">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb66" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1">mod07 <span class="ot" style="color: #003B4F;">&lt;-</span> mod06</span>
@@ -1092,7 +1092,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </details>
 </div>
 <p>This is definitely going to <em>way</em> overfit our data:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-37_d864700160abd35dedd2de0acd173ce2">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb69" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1">rs07 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1107,7 +1107,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>Well we (finally) made a modes improvement! Let’s see how the predictions/residuals plot:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-38_fa91ddeaa82d3c2679bbbf15d2d91b82">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb71" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1">rs07 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1124,7 +1124,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>That’s pretty good! We do have one value that’s <strong><em>way</em></strong> off, so let’s see if regulization can help. This will require setting a new baseline model, and we’ll tune our way to the best regularizaion parameters.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-39_9233faaec3229487bf18f9f60160dbb7">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb72" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1">metrics <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
@@ -1169,7 +1169,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </details>
 </div>
 <p>Some notes but let’s explore our results…</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-40_c2f4e943324d9af635b9226396d50d3b">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb73" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1">rs08 <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1187,7 +1187,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>Looks like we were performing pretty well with the unregularized model, oddly enough! Let’s select the best and finalize our workflow.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-41_5058d4040c654b3f17622d8d873982bf">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb74" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1">best_metrics <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
@@ -1220,7 +1220,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>What are the most important variables in this regularized model?</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-42_14f1335d215f8e8ca307faaf2053a43f">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb75" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1">final_fit <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1238,7 +1238,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>As expected, most of our terms get regularized away, which is what we want! Our chart is a little unreadable; let’s plot just the most important variables in a few ways:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-43_1c7be10a0132493837d50b131d7e343d">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb76" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1">final_fit <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1257,7 +1257,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <p><img src="https://www.thedatadiary.net/posts/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index_files/figure-html/unnamed-chunk-43-1.png" class="img-fluid" width="2100"></p>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-44_d55547ea3ad3135d8112e5328ea203b4">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb77" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1">final_fit <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
@@ -1288,7 +1288,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <li>Tuned regularization parameters on our model with feature engineering to arrive at the final model.</li>
 </ul>
 <p>Our models’ performances, ranked from best to worst, show that the final tuned model did indeed perform the best on the test dataset!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-45_4e128d973dcd62a33d1d17a5f69370d3">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb78" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1">final_preds <span class="ot" style="color: #003B4F;">&lt;-</span></span>
@@ -1322,7 +1322,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 
 
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Diamonds Are {Forever}},
   date = {2021-11-14},
@@ -1349,18 +1349,536 @@ Mark Rieke. 2021. <span>“Diamonds Are Forever.”</span> November 14,
 
 <p>A few weeks ago I had <a href="https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/">written about the VA Governor’s race</a> before going on vacation - in that time it seems as though Terry McAuliffe’s campaign had lost a lot of steam and Youngkin made up a lot of ground in the final weeks of the campaign. At the time of this writing, it seems overwhelmingly likely that Glenn Youngkin will become the next governor of Virginia. To avoid some of the <a href="https://twitter.com/rp_griffin/status/1455696452915802122">galaxy-brain takes that will inevitabely wind up twitter</a>, I thought I’d distract myself by following up on my previous post.</p>
 <p>Firstly, I should share the updated polling average. A few weeks ago, McAullife appeared to have a sizeable lead in the polls:</p>
-<p></p><div id="tweet-71410"></div><script>tweet={"url":"https:\/\/twitter.com\/markjrieke\/status\/1444454926399254535","author_name":"Mark Rieke","author_url":"https:\/\/twitter.com\/markjrieke","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EFiveThirtyEight&#39;s poll tracker for the VA governor race (\u003Ca href=\"https:\/\/t.co\/HKVw7RcsJN\"\u003Ehttps:\/\/t.co\/HKVw7RcsJN\u003C\/a\u003E) shows the moving averages - as a weekend coding project, I revamped with a weighted avg., 95% CI, and win probability based on an election day distribution\uD83D\uDCC8 \u003Ca href=\"https:\/\/t.co\/hM6vzLUZnM\"\u003Epic.twitter.com\/hM6vzLUZnM\u003C\/a\u003E\u003C\/p\u003E&mdash; Mark Rieke (@markjrieke) \u003Ca href=\"https:\/\/twitter.com\/markjrieke\/status\/1444454926399254535?ref_src=twsrc%5Etfw\"\u003EOctober 3, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-71410").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-18336"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/markjrieke/status/1444454926399254535%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-18336").innerHTML = tweet["html"];</script><p></p>
 <p>However, as of election day, the race had significantly tightened to effectively a coin-toss:</p>
-<p></p><div id="tweet-94848"></div><script>tweet={"url":"https:\/\/twitter.com\/markjrieke\/status\/1455164731749175304","author_name":"Mark Rieke","author_url":"https:\/\/twitter.com\/markjrieke","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EFinal update - p_win ~ 55% McAuliffe; again, the win probability is just the portion of the polling avg. distribution above 50% for each candidate. For *actual* models, go check out the work by \u003Ca href=\"https:\/\/twitter.com\/lxeagle17?ref_src=twsrc%5Etfw\"\u003E@lxeagle17\u003C\/a\u003E\/\u003Ca href=\"https:\/\/twitter.com\/Thorongil16?ref_src=twsrc%5Etfw\"\u003E@Thorongil16\u003C\/a\u003E or \u003Ca href=\"https:\/\/twitter.com\/jhkersting?ref_src=twsrc%5Etfw\"\u003E@jhkersting\u003C\/a\u003E, among others \u003Ca href=\"https:\/\/t.co\/W9bDf1OumZ\"\u003Epic.twitter.com\/W9bDf1OumZ\u003C\/a\u003E\u003C\/p\u003E&mdash; Mark Rieke (@markjrieke) \u003Ca href=\"https:\/\/twitter.com\/markjrieke\/status\/1455164731749175304?ref_src=twsrc%5Etfw\"\u003ENovember 1, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-94848").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-29400"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/markjrieke/status/1455164731749175304%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-29400").innerHTML = tweet["html"];</script><p></p>
 <p>As I mention in the above tweet, the win probability isn’t a true forecast, just the portion of each candidate’s election day distribution <em>above 50%</em>. That being said, actual forecasts similarly had the race down to a near 50-50 split as of this morning:</p>
-<p></p><div id="tweet-31853"></div><script>tweet={"url":"https:\/\/twitter.com\/gelliottmorris\/status\/1454130028149620737","author_name":"G. Elliott Morris","author_url":"https:\/\/twitter.com\/gelliottmorris","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003ESpecial for Twitter: Updated VA polling trends with the new Fox and Post\/GMU polls \u003Ca href=\"https:\/\/t.co\/hLNa3pFCpR\"\u003Ehttps:\/\/t.co\/hLNa3pFCpR\u003C\/a\u003E \u003Ca href=\"https:\/\/t.co\/6cz0JXa0xm\"\u003Epic.twitter.com\/6cz0JXa0xm\u003C\/a\u003E\u003C\/p\u003E&mdash; G. Elliott Morris (@gelliottmorris) \u003Ca href=\"https:\/\/twitter.com\/gelliottmorris\/status\/1454130028149620737?ref_src=twsrc%5Etfw\"\u003EOctober 29, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-31853").innerHTML = tweet["html"];</script><p></p>
-<p></p><div id="tweet-71947"></div><script>tweet={"url":"https:\/\/twitter.com\/jhkersting\/status\/1455545666999042056","author_name":"Jack Kersting","author_url":"https:\/\/twitter.com\/jhkersting","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003E\u003Ca href=\"https:\/\/twitter.com\/hashtag\/FINAL?src=hash&amp;ref_src=twsrc%5Etfw\"\u003E#FINAL\u003C\/a\u003E Virginia Gov. Projection.\u003Ca href=\"https:\/\/twitter.com\/GlennYoungkin?ref_src=twsrc%5Etfw\"\u003E@GlennYoungkin\u003C\/a\u003E is ever so slightly favored in this tossup for the governorship.\u003Cbr\u003E\u003Cbr\u003EFull Projection&gt;&gt;\u003Ca href=\"https:\/\/t.co\/PcM2qSjUYK\"\u003Ehttps:\/\/t.co\/PcM2qSjUYK\u003C\/a\u003E \u003Ca href=\"https:\/\/t.co\/NGCirjkkG4\"\u003Epic.twitter.com\/NGCirjkkG4\u003C\/a\u003E\u003C\/p\u003E&mdash; Jack Kersting (@jhkersting) \u003Ca href=\"https:\/\/twitter.com\/jhkersting\/status\/1455545666999042056?ref_src=twsrc%5Etfw\"\u003ENovember 2, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-71947").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-15029"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/gelliottmorris/status/1454130028149620737%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-15029").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-88769"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/jhkersting/status/1455545666999042056%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-88769").innerHTML = tweet["html"];</script><p></p>
 <p>Even the model most confident in McAuliffe built by <a href="https://twitter.com/lxeagle17">Lakshya Jain</a> and <a href="https://twitter.com/Thorongil16">Thorongil</a> had dropped McAuliffe’s win probability from ~85% to 67% over the course of a few weeks:</p>
-<p></p><div id="tweet-48750"></div><script>tweet={"url":"https:\/\/twitter.com\/lxeagle17\/status\/1455544487149592576","author_name":"Lakshya Jain","author_url":"https:\/\/twitter.com\/lxeagle17","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003E\uD83D\uDEA8FINAL \u003Ca href=\"https:\/\/twitter.com\/hashtag\/VAGov?src=hash&amp;ref_src=twsrc%5Etfw\"\u003E#VAGov\u003C\/a\u003E FORECAST\uD83D\uDEA8\u003Cbr\u003E\u003Cbr\u003EAt the end of a long campaign, here&#39;s where the model made by me and \u003Ca href=\"https:\/\/twitter.com\/Thorongil16?ref_src=twsrc%5Etfw\"\u003E@Thorongil16\u003C\/a\u003E stands. The race is rated as Lean Democratic, with a forecasted margin of D+3.6 and a win probability of 67%. An interactive map is over at \u003Ca href=\"https:\/\/t.co\/Kmvj6sRElC\"\u003Ehttps:\/\/t.co\/Kmvj6sRElC\u003C\/a\u003E. \u003Ca href=\"https:\/\/t.co\/kuaJc82HML\"\u003Epic.twitter.com\/kuaJc82HML\u003C\/a\u003E\u003C\/p\u003E&mdash; Lakshya Jain (@lxeagle17) \u003Ca href=\"https:\/\/twitter.com\/lxeagle17\/status\/1455544487149592576?ref_src=twsrc%5Etfw\"\u003ENovember 2, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-48750").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-25652"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/lxeagle17/status/1455544487149592576%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-25652").innerHTML = tweet["html"];</script><p></p>
 <p>While I definitely plan on utilizing a more scientific poll-weighting methodology in the future, I do find it interesting that even a simple averaging method can produce relatively accurate results in line with the majority of other forecasters.</p>
 <p>Regarding post-hoc analysis of <em>why</em> McAuliffe lost, I won’t dredge up any of my own (partially because it’d be irresponsible &amp; pundit-y to do so without referencing any data and partially because it’s getting late &amp; I’m a bit tired), but I’ll point out a few tweets from <a href="https://twitter.com/Nate_Cohn">Nate Cohn</a> that show that the results appear to show a near uniform shift across precincts and different voting groups. This would suggest that McAuliffe’s loss is tied more closely to the national environment, rather than shifts amongst specific groups/counties.</p>
-<p></p><div id="tweet-29014"></div><script>tweet={"url":"https:\/\/twitter.com\/Nate_Cohn\/status\/1455693099062153217","author_name":"Nate Cohn","author_url":"https:\/\/twitter.com\/Nate_Cohn","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EUpdate at nearly 1500 precincts: Youngkin is still on track for victory, running a ahead of what he needs across basically every dimension worth looking at.\u003Cbr\u003EBut it&#39;s worth noting just how close things are to &#39;expectations,&#39; which is simply shifting the 2020 result to the right \u003Ca href=\"https:\/\/t.co\/Mbe3pg7NFB\"\u003Epic.twitter.com\/Mbe3pg7NFB\u003C\/a\u003E\u003C\/p\u003E&mdash; Nate Cohn (@Nate_Cohn) \u003Ca href=\"https:\/\/twitter.com\/Nate_Cohn\/status\/1455693099062153217?ref_src=twsrc%5Etfw\"\u003ENovember 3, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-29014").innerHTML = tweet["html"];</script><p></p>
-<p></p><div id="tweet-34022"></div><script>tweet={"url":"https:\/\/twitter.com\/Nate_Cohn\/status\/1455717564772986884","author_name":"Nate Cohn","author_url":"https:\/\/twitter.com\/Nate_Cohn","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EAnd btw, if you&#39;re doing pundit things I&#39;d look at that red column. McAuliffe fell short of expectations--a more-or-less uniform shift--by basically the same amount, just about everywhere\u003C\/p\u003E&mdash; Nate Cohn (@Nate_Cohn) \u003Ca href=\"https:\/\/twitter.com\/Nate_Cohn\/status\/1455717564772986884?ref_src=twsrc%5Etfw\"\u003ENovember 3, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-34022").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-80788"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/Nate_Cohn/status/1455693099062153217%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-80788").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-18472"></div><script>tweet=<html>
+
+<head>
+
+<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
+
+<title>Web Page Blocked</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
+
+<meta name="viewport" content="initial-scale=1.0">
+
+<style>
+
+  #content {
+
+    border:3px solid#aaa;
+
+    background-color:#fff;
+
+    margin:1.5em;
+
+    padding:1.5em;
+
+    font-family:Tahoma,Helvetica,Arial,sans-serif;
+
+    font-size:1em;
+
+  }
+
+  h1 {
+
+    font-size:1.3em;
+
+    font-weight:bold;
+
+    color:#196390;
+
+  }
+
+  b {
+
+    font-weight:normal;
+
+    color:#196390;
+
+  }
+
+</style>
+
+</head>
+
+<body bgcolor="#e7e8e9">
+
+<div id="content">
+
+<h1>Web Page Blocked</h1>
+
+<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
+
+<p><b>User:</b> memorial\e1735399 </p>
+
+<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/Nate_Cohn/status/1455717564772986884%26align=center </p>
+
+<p><b>Category:</b> social-networking </p>
+
+</div>
+
+</body>
+
+</html>
+
+;document.getElementById("tweet-18472").innerHTML = tweet["html"];</script><p></p>
 <p>This won’t stop the networks from ascribing the win/loss to very specific campaign issues (I’ve already seen quite a few folks ascribe Youngkin’s win to education, race, suburban-reversion, etc., without any evidence to back up such claims). Until there are deep dives into data regarding the election, I’d treat any comments from pundits with a hefty grain of salt.</p>
 <section id="some-closing-thoughts" class="level3">
 <h3 class="anchored" data-anchor-id="some-closing-thoughts">Some closing thoughts</h3>
@@ -1369,7 +1887,7 @@ Mark Rieke. 2021. <span>“Diamonds Are Forever.”</span> November 14,
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Election {Night:} {Some} {Closing} {Thoughts} on the {VA}
     {Governor} {Race}},
@@ -1449,7 +1967,7 @@ Governor Race.”</span> November 2, 2021. <a href="https://www.thedatadiary.net
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Polling {Average} of the {VA} {Governor’s} {Race} Using
     Purrr::map Functions},
@@ -1488,7 +2006,7 @@ Purrr::map Functions.”</span> October 19, 2021. <a href="https://www.thedatadi
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {RStudio’s {Call} for {Documentation}},
   date = {2021-10-05},
@@ -1537,7 +2055,7 @@ October 5, 2021. <a href="https://www.thedatadiary.net/posts/2021-10-05-rstudio-
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Catching {Up} (Again)},
   date = {2021-09-23},
@@ -1614,7 +2132,7 @@ Mark Rieke. 2021. <span>“Catching Up (Again).”</span> September 23,
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Tidymodels and the {Titanic}},
   date = {2021-08-08},
@@ -1659,7 +2177,7 @@ Mark Rieke. 2021. <span>“Tidymodels and the Titanic.”</span> August 8,
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {The {Gas} {Price} {Fallacy}},
   date = {2021-07-18},
@@ -1714,7 +2232,7 @@ Mark Rieke. 2021. <span>“The Gas Price Fallacy.”</span> July 18, 2021.
 </section>
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Blexas?},
   date = {2021-07-11},
@@ -1753,7 +2271,7 @@ Mark Rieke. 2021. <span>“Blexas?”</span> July 11, 2021. <a href="https://www
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {COVID {Cases} {Improve} with {Introduction} of {Vaccines}},
   date = {2021-06-03},
@@ -1789,7 +2307,7 @@ Vaccines.”</span> June 3, 2021. <a href="https://www.thedatadiary.net/posts/20
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {President of the {Polls}},
   date = {2021-05-05},
@@ -1826,7 +2344,7 @@ Mark Rieke. 2021. <span>“President of the Polls.”</span> May 5, 2021. <a hre
 
 
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {A {Lukewarm} {Case} for {DC} {Statehood}},
   date = {2021-04-27},
@@ -1860,7 +2378,7 @@ Mark Rieke. 2021. <span>“A Lukewarm Case for DC Statehood.”</span> April
 
 
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Catching {Up}},
   date = {2021-04-20},
@@ -1927,7 +2445,7 @@ Mark Rieke. 2021. <span>“Catching Up.”</span> April 20, 2021. <a href="https
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Seasonality Is a {Weak} {Predictor} of {Border} {Crossings}},
   date = {2021-04-05},
@@ -1975,7 +2493,7 @@ Crossings.”</span> April 5, 2021. <a href="https://www.thedatadiary.net/posts/
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Recent {Works}},
   date = {2021-03-15},
@@ -2005,7 +2523,7 @@ Mark Rieke. 2021. <span>“Recent Works.”</span> March 15, 2021. <a href="http
 
 
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {aRtwork!},
   date = {2021-03-07},
@@ -2080,7 +2598,7 @@ Mark Rieke. 2021. <span>“aRtwork!”</span> March 7, 2021. <a href="https://ww
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Doug {Collins} {Saved} {Raphael} {Warnock’s} {Senate} {Bid}},
   date = {2021-02-28},
@@ -2126,7 +2644,7 @@ Bid.”</span> February 28, 2021. <a href="https://www.thedatadiary.net/posts/20
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {(Kind of) {Projecting} the 2020 {Election}},
   date = {2021-02-21},
@@ -2173,7 +2691,7 @@ February 21, 2021. <a href="https://www.thedatadiary.net/posts/2021-02-21-kind-o
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Scorecasting},
   date = {2021-02-14},
@@ -2248,7 +2766,7 @@ Mark Rieke. 2021. <span>“Scorecasting.”</span> February 14, 2021. <a href="h
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Some {Worthwhile} {Links}},
   date = {2021-02-08},
@@ -2320,7 +2838,7 @@ Mark Rieke. 2021. <span>“Some Worthwhile Links.”</span> February 8,
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {The {Min-Wage} {Debate}},
   date = {2021-01-31},

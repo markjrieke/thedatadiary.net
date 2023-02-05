@@ -232,7 +232,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li>there are some data oddities to deal with (log scales, interactions, non-linear relations)</li>
 </ul>
 <p>I’ll be doing a bit of feature engineering prior to fitting an tuning a linear model that predicts the each diamond’s <code>price</code> with the <a href="https://glmnet.stanford.edu/index.html"><code>glmnet</code></a> package. This will give a good end-to-end glimpse into the data exploration and model fitting process! Before we get into that, let’s load some packages and get a preview of the dataset.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-1_52eb7fa85098fc0f961f0bee23b6b4a6">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
@@ -261,7 +261,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Since we’re predicting price, let’s look at its distribution first.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-2_8671c2bf7c62e4d9ef60b00ba3f94f42">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>diamonds <span class="sc">%&gt;%</span></span>
@@ -273,7 +273,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>We’re definitely gonna want to apply a transformation to the price when modeling - let’s look at the distribution on a log-10 scale.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-3_ec04d60e73849623d88317b8961753a4">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>diamonds <span class="sc">%&gt;%</span></span>
@@ -286,7 +286,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>That’s a lot more evenly distributed, if not perfect. That’s a fine starting point, so now we’ll look through the rest of the data.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-4_1ce43702bb2b698feafb9af1dcf15754">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>diamonds <span class="sc">%&gt;%</span></span>
@@ -406,7 +406,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>It looks like there may be a good opportunity to try out a few normalization and resampling techniques, but before we get into any of that, let’s build a baseline linear model.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-5_775f1abc0eabd87e927653008e7936fd">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># splits</span></span>
@@ -453,14 +453,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 2 × 6
-  .metric .estimator     mean     n  std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   1137.       10 10.7     Preprocessor1_Model1
-2 rsq     standard      0.919    10  0.00175 Preprocessor1_Model1</code></pre>
+  .metric .estimator     mean     n std_err .config             
+  &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+1 rmse    standard   1135.       10 8.10    Preprocessor1_Model1
+2 rsq     standard      0.919    10 0.00129 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>And right off the bat, we can see a fairly high value for <code>rsq</code>! However, <code>rsq</code> doesn’t tell the whole story, so we should check our predictions and residuals plots.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-6_10a8c8d29e16e7518fa5dab9e23ac327">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(rs01) <span class="sc">%&gt;%</span></span>
@@ -476,7 +476,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>This is <em>definitely</em> not what we want to see! It looks like there’s an odd curve/structure to the graph and we’re actually predicting quite a few negative values. The residuals plot doesn’t look too great either.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-7_e3253f32f12a947a55fc02d9aff4ccec">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">augment</span>(rs01) <span class="sc">%&gt;%</span></span>
@@ -494,7 +494,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <p>What we’d like to see is a 0-correlation plot with errors normally distributed; what we’re seeing instead, however, is a ton of structure.</p>
 <p>That being said, that’s okay! we expected this first pass to be pretty rough! And the price is <em>clearly</em> on a log-10 scale. To make apples-apples comparisons with models going forward, I’ll retrain this basic linear model to predict the <code>log10(price)</code>. This’ll involve a bit of data re-manipulation!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-8_ec66dcd6ef098544c357a5a159308981">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># log transform price</span></span>
@@ -559,7 +559,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>And wow, that <em>one</em> transformation increased our <code>rsq</code> to 0.96! Again, that’s not the whole story, and we’re going to be evaluating models based on the <code>rmse</code>. Let’s look at how our prediction map has updated:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-9_0701ecd4e357da1b73181e8f8e7858c9">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>rs01 <span class="sc">%&gt;%</span></span>
@@ -576,7 +576,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Now <em>that</em> is a much better starting place to be at! Let’s look at our coefficients</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-10_f9fbdbf67537bba7b6a6fcb0faacc62a">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">666</span>) <span class="co"># :thedevilisalive:</span></span>
@@ -601,7 +601,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Another way of looking at it:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-11_39086d7fc89846ac3b52322a0bbc2c1e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">666</span>)</span>
@@ -627,7 +627,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>This is a good, but definitely improvable, starting point. We can likely decrease our overall error with a bit of feature engineering and drop unimportant features by tuning a regularized model. There are some oddities in this initial model that will need to be improved upon; for one, we can definitively say that the <code>carat</code> feature ought to be <em>positively</em> associated with price</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-12_1412bb03fc60774512478bba367fb23e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -642,7 +642,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Another few things that are interesting to note in this plot! It looks like there are clusterings of carat ratings around round-ish numbers. My hypothesis here is that carat ratings tend to get rounded up to the next size. There’s also a clear abscence of diamonds priced at $1,500 (~3.17 on the log10 scale). I suppose there is some industry-specific reason to avoid a diamond price of $,1500?</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-13_fabc275dc0af918cab59afca8f583d67">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -662,7 +662,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <p>How to address all these things? With some feature engineering! Firstly, let’s add some recipe steps to balance classes &amp; normalize continuous variables.</p>
 <p>But before I get into <em>that</em>, I’ll save the resample metrics so that we can compare models!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-14_73d5aa3f138121edc7fe44069d9cf9e5">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> <span class="fu">collect_metrics</span>(rs01) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"model01"</span>)</span>
@@ -677,7 +677,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 2 rsq     standard   0.966     10 0.00494 Preprocessor1_Model1 model01</code></pre>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-15_ab8644a6adc94dcd204963c57e6226f0">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># spec will be the same as model01</span></span>
@@ -697,7 +697,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </details>
 </div>
 <p>Let’s <a href="https://recipes.tidymodels.org/reference/bake.html">bake</a> our recipe to verify that everything looks up-to-snuff in the preprocessed dataset.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-16_f9588de3fe4bc53e956254f0d71938c5">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>baked_rec02 <span class="ot">&lt;-</span> </span>
@@ -727,7 +727,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 #   clarity_other &lt;dbl&gt;</code></pre>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-17_a82128c2cdbc56f3d1f9de39624c49fb">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>baked_rec02 <span class="sc">%&gt;%</span></span>
@@ -795,7 +795,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Everything looks alright with the exception of the <code>table</code> predictor. I wonder if there are a lot of repeated values in the <code>table</code> variable - that may be why we’re seeing a “chunky” histogram. Let’s check</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-18_a270a4cdb76b081d4f1bd7c049dd7640">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a>baked_rec02 <span class="sc">%&gt;%</span></span>
@@ -820,7 +820,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Ooh - okay yeah that’s definitely the issue! I’m not <em>quite</em> sure how to deal with it, so we’re just going to ignore for now! Let’s add a new model &amp; see how it compares against the baseline transformed model.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-19_ee4e1cc9b7f50e6fafc49aaa807c705e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>wf02 <span class="ot">&lt;-</span></span>
@@ -852,7 +852,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Oof - that’s actually slightly worse than our baseline model!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-20_21340b76cd21098cc294178f7f81dfc2">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>rs02 <span class="sc">%&gt;%</span></span>
@@ -869,7 +869,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>It looks like we’ve introduced structure into the residual plot!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-21_0ba2d6c954a2d6b29585a6cd42beb0b3">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>rs02 <span class="sc">%&gt;%</span></span>
@@ -887,7 +887,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Yeah that’s fairly wonky! I’m wondering if it’s due to the SMOTE upsampling method we introduced? To counteract, I’ll build &amp; train new models after each set of recipe steps (e.g., resampling, normalizing, interactions) to buil up a better performing model one step at a time.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-22_5f1ed1a52f4bb54f9653ea481cf8335b">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> </span>
@@ -895,7 +895,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">collect_metrics</span>(rs02) <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">model =</span> <span class="st">"model02"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-23_d4e4a66de9366e84d142da7f76b1d6b1">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># same model spec</span></span>
@@ -936,7 +936,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Interesting! Improved relative to <code>rs02</code>, but still not as good as our first model! Let’s try using <code>step_downsample()</code> to balance classes &amp; see how we fare.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-24_e03b0539bd5a7826146d9580fd0a98ba">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="co"># cleanup some large-ish items eating up memory</span></span>
@@ -981,7 +981,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Wow - still a bit worse! I’ll try upsampling &amp; if there is no improvement, we’ll move on without resampling!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-25_79da622e98d977f1fbc0f7ec4ddfb58e">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb51"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span></span>
@@ -1020,7 +1020,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Okay - resampling gets stricken off our list of recipe steps! Let’s look at how the models compare so far</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-26_bf179ddbfb0904fe5bb034287b5c3270">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span></span>
@@ -1039,7 +1039,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>The first simple linear model was the best as measured by both metrics! Let’s see if we can improve with some normalization of the continuous vars.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-27_815491b6129f102975d33c0ccf6defba">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb54"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(mod03, mod04, rec03, rec04, rs03, rs04, wf03, wf04)</span>
@@ -1077,7 +1077,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Well - that was quite a bit for no improvement! I guess that normalizing the continuous vars in this case isn’t helping. Moving on to adding some interactions - first let’s explore potential interactions a bit.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-28_f7ea4ed820f926556d91a2ea010805f8">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb56"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span></span>
@@ -1095,7 +1095,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><img src="index_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="2100"></p>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-29_c59880c636cba809bc90161b20f6f384">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(splines)</span>
@@ -1114,7 +1114,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>5 spline terms might not be sufficient here - capturing the lower bound well but <em>really</em> not doing well with the higher carat diamonds.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-30_a0f83308804ccf61153ed47cf8b54b5d">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb58"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -1132,7 +1132,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Hmmmm, 10 might be too many. It looks lie we’ll just lose a bit of confidence for the Premium &amp; Very Good diamonds at higher carats. Relative to the total number, I’m not too concerned.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-31_c88ddd4df04a38b9d10a75b7bd7b345b">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -1151,7 +1151,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <p>7 terms feels like the best we’re going to do here - I think this is tuneable, but we’ll leave as is (now &amp; in the final model).</p>
 <p>Next, we’ll look at creating interactions between the <code>color</code> and <code>carat</code> variables:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-32_b1a5c26e1d7ae30c5b78ceb143dcb9cb">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb60"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -1170,7 +1170,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 <p>Adding interactive spline terms with <code>df</code> of 15 seems to add some useful information!</p>
 <p>We have three shape parameters, <code>x</code>, <code>y</code>, and <code>z</code> - I wonder if creating a stand-in for volume by multiplying them all together will provide any useful information?</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-33_0f62ae869f0fa13078cf53e176aae879">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -1184,7 +1184,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Ooh, looks like we’re getting some good info here, but we may want to use <code>log10</code> to scale this back.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-34_0bc6fb25985bbff65d457adc579ad843">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb62"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -1198,7 +1198,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Let’s see if this ought to interact with any other paramaters:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-35_db27896f8cbcacea832e9fb7fa95aa63">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>diamonds_train <span class="sc">%&gt;%</span></span>
@@ -1240,7 +1240,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </div>
 </div>
 <p>Hmm, it doesn’t really look like we’re capturing too great of interactions, so I’ll leave out for now. It looks like the <em>size</em> of the rock is more important than anything else! I could continue to dig further, but I’ll stop there. I’m likely getting diminishing returns, &amp; I’d like to get back into modeling!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-36_42b5a7ec36201328f536fbce7e9d2050">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a>mod07 <span class="ot">&lt;-</span> mod06</span>
@@ -1297,7 +1297,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </details>
 </div>
 <p>This is definitely going to <em>way</em> overfit our data:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-37_d864700160abd35dedd2de0acd173ce2">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>rs07 <span class="sc">%&gt;%</span></span>
@@ -1312,7 +1312,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>Well we (finally) made a modes improvement! Let’s see how the predictions/residuals plot:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-38_fa91ddeaa82d3c2679bbbf15d2d91b82">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a>rs07 <span class="sc">%&gt;%</span></span>
@@ -1329,7 +1329,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>That’s pretty good! We do have one value that’s <strong><em>way</em></strong> off, so let’s see if regulization can help. This will require setting a new baseline model, and we’ll tune our way to the best regularizaion parameters.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-39_9233faaec3229487bf18f9f60160dbb7">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="ot">&lt;-</span> </span>
@@ -1374,7 +1374,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </details>
 </div>
 <p>Some notes but let’s explore our results…</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-40_c2f4e943324d9af635b9226396d50d3b">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb73"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb73-1"><a href="#cb73-1" aria-hidden="true" tabindex="-1"></a>rs08 <span class="sc">%&gt;%</span></span>
@@ -1392,7 +1392,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>Looks like we were performing pretty well with the unregularized model, oddly enough! Let’s select the best and finalize our workflow.</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-41_5058d4040c654b3f17622d8d873982bf">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a>best_metrics <span class="ot">&lt;-</span> </span>
@@ -1425,7 +1425,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>What are the most important variables in this regularized model?</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-42_14f1335d215f8e8ca307faaf2053a43f">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb75"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb75-1"><a href="#cb75-1" aria-hidden="true" tabindex="-1"></a>final_fit <span class="sc">%&gt;%</span></span>
@@ -1443,7 +1443,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 </div>
 <p>As expected, most of our terms get regularized away, which is what we want! Our chart is a little unreadable; let’s plot just the most important variables in a few ways:</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-43_1c7be10a0132493837d50b131d7e343d">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>final_fit <span class="sc">%&gt;%</span></span>
@@ -1462,7 +1462,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <p><img src="index_files/figure-html/unnamed-chunk-43-1.png" class="img-fluid" width="2100"></p>
 </div>
 </div>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-44_d55547ea3ad3135d8112e5328ea203b4">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb77"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb77-1"><a href="#cb77-1" aria-hidden="true" tabindex="-1"></a>final_fit <span class="sc">%&gt;%</span></span>
@@ -1493,7 +1493,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <li>Tuned regularization parameters on our model with feature engineering to arrive at the final model.</li>
 </ul>
 <p>Our models’ performances, ranked from best to worst, show that the final tuned model did indeed perform the best on the test dataset!</p>
-<div class="cell" data-hash="index_cache/html/unnamed-chunk-45_4e128d973dcd62a33d1d17a5f69370d3">
+<div class="cell">
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb78"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb78-1"><a href="#cb78-1" aria-hidden="true" tabindex="-1"></a>final_preds <span class="ot">&lt;-</span></span>
@@ -1527,7 +1527,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 
 
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Reuse</h2><div quarto-reuse="quarto-reuse" class="quarto-appendix-contents"><div>MIT</div></div></section><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
   author = {Mark Rieke},
   title = {Diamonds Are {Forever}},
   date = {2021-11-14},
