@@ -6,9 +6,6 @@ freeze: true
 # enable banner style title blocks
 title-block-banner: true# default fields fo
 
-# enable MIT license appendix
-license: "MIT"
-
 # table of contents
 toc: true
 toc-location: left
