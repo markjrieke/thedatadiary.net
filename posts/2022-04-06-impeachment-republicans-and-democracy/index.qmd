@@ -1,0 +1,111 @@
+---
+title: Impeachment Republicans and Democracy
+date: '2022-04-06'
+categories: [politics]
+subtitle: How republicans who voted to impeach or acquit Donald Trump differ in their votes on democracy
+image: featured.png
+---
+
+```{r}
+#| eval: false
+library(tidyverse)
+
+# setup themes
+extrafont::loadfonts(device = "win")
+theme_set(
+  theme_minimal(base_family = "Roboto Slab",
+                base_size = 13) +
+    theme(plot.title.position = "plot",
+          plot.background = element_rect(fill = "#F9F9FC", color = "#F9F9FC"),
+          plot.title = ggtext::element_markdown(),
+          plot.subtitle = ggtext::element_markdown())
+)
+```
+
+A few months ago, Harrison Lavelle wrote [a piece for Split Ticket](https://split-ticket.org/2022/01/10/impeachment-republicans-where-are-they-now/) reviewing the electoral challenges faced by house republicans who voted to impeach Donald Trump for his role in the assault on the capitol. Examining the voting records of these republicans who broke with their colleagues shows, unsurprisingly, that they tend to be more supportive of bills protecting democratic (note --- small "d") norms.
+
+FiveThirtyEight [developed a democracy index](https://fivethirtyeight.com/features/which-senators-and-representatives-vote-in-favor-of-democracy/) to evaluate how members of congress vote to protect democratic basics and create a more inclusive democracy (higher scores indicate that the congressman/woman is more supportive of bills protecting/expanding democracy). The linked article is well worth reading and walks through the caveats and limitations of the metric, but, notably, house republicans who voted to impeach Donald Trump are on average more supportive of pro-democracy bills than their colleagues who voted to acquit (on bills through September 1st of last year, the day the article was published).
+
+```{r}
+#| eval: false
+# read in democracy scores
+comparisons <- 
+  read_csv("data/democracy_votes.csv")
+
+# impeachment republicans
+impeachment_republicans <-
+  c("Liz Cheney", 
+    "Anthony Gonzalez",
+    "Jaime Herrera Beutler",
+    "John Katko",
+    "Adam Kinzinger",
+    "Peter Meijer",
+    "Dan Newhouse",
+    "Tom Rice",
+    "Fred Upton",
+    "David G. Valadao")
+
+# plot comparisons
+comparisons %>%
+  rename_with(str_to_lower) %>%
+  filter(chamber == "House",
+         party == "Rep.") %>%
+  select(legislator, 
+         democracy_score = `more expansive`) %>%
+  mutate(impeach_vote = if_else(legislator %in% impeachment_republicans, "Impeach", "Acquit")) %>% 
+  ggplot(aes(x = impeach_vote,
+             y = democracy_score,
+             color = impeach_vote)) +
+  geom_boxplot(size = 1) +
+  geom_point(alpha = 0.25, 
+             size = 4,
+             position = position_jitter(width = 0.15)) +
+  scale_color_manual(values = c("#A97684", "#76A99B")) +
+  coord_flip() +
+  theme(legend.position = "none") +
+  shadowtext::geom_shadowtext(x = 1.85,
+                              y = 15.7,
+                              label = "Tom Rice",
+                              size = 5,
+                              family = "Roboto Slab",
+                              color = "#76A99B",
+                              bg.color = "white") +
+  shadowtext::geom_shadowtext(x = 1.2,
+                              y = 66,
+                              label = "Brian\nFitzpatrick",
+                              size = 5,
+                              family = "Roboto Slab",
+                              color = "#A97684",
+                              bg.color = "white") +
+  shadowtext::geom_shadowtext(x = 0.85,
+                              y = 57.9,
+                              label = "Tom Reed",
+                              size = 5,
+                              family = "Roboto Slab",
+                              color = "#A97684",
+                              bg.color = "white") +
+  labs(title = paste("How do House Republicans who voted to",
+                     "<span style=color:'#76A99B'>**impeach**</span>",
+                     "or",
+                     "<span style=color:'#A97684'>**acquit**</span>",
+                     "Donald Trump differ?"),
+       subtitle = "Comparing how often representatives take the more inclusive position on voting rights bills",
+       x = NULL,
+       y = NULL,
+       caption = paste("Plot by @markjrieke\n",
+                       "Data courtesy of @FiveThirtyEight"))
+```
+
+![](featured.png)
+
+There are some outliers: Tom Rice (SC-7) voted to impeach Trump but his votes on (small d) democratic bills are in line with the rest of house republicans whereas Brian Fitzpatrick (PA-1) and Tom Reed (NY-23) voted to acquit but have the highest pro-democracy scores by this ranking (there are other republicans who voted to acquit that have democracy scores similar to their colleagues who voted to impeach, but to avoid cluttering the plot, only the mathematical outliers are shown). 
+
+### Polling bites
+
+There has been very little movement in the generic congressional ballot --- republicans are still *slightly favored* by ~2 points. Biden's presidential approval rating received a slight bump at the onset of Russia's invasion of Ukraine, but the marginal gains since then have faded away and he currently sits at a **-12.6%** net approval.
+
+![](png/generic_ballot_current.png)
+
+![](png/approval_disapproval_current.png)
+
+![](png/net_approval_current.png)

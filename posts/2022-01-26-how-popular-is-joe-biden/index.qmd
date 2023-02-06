@@ -1,0 +1,28 @@
+---
+title: How Popular is Joe Biden?
+date: '2022-01-26'
+categories: [politics]
+description: 'Building a Presidential Approval Model'
+image: featured.png
+---
+
+While the sitting president's party tends to House lose seats in the midterm elections, the president's approval rating can help inform us of the [magnitude of that loss](https://fivethirtyeight.com/features/some-early-clues-about-how-the-midterms-will-go/). In general, the more unpopular the president, the more seats his party tends to lose. As a part of my long-term goal of [building a midterm election model](https://www.thedatadiary.net/posts/2022-01-12-the-data-diary-year-in-review/), I put together a model for estimating Biden's approval, disapproval, and net approval based on [polls collected by FiveThirtyEight](https://projects.fivethirtyeight.com/biden-approval-rating/). 
+
+The methodology to build the approval model is *very similar* to the [Generic Congressional Ballot](https://www.thedatadiary.net/posts/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/) model --- both weight polls by recency, sample size, methodology, pollster, and survey population --- so I won't rehash the details again. If you're so inclined, you can [read the methodology](https://www.thedatadiary.net/posts/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/) from the previous post or [explore the script](https://github.com/markjrieke/2022-midterm-forecasts/blob/main/scripts/approval_trends_weighting.R), but we'll keep this short and sweet and just explore the results!
+
+![](pics/approval_disapproval_current.png)
+
+![](pics/net_approval_current.png)
+
+As of today, Joe Biden's job approval is fairly underwater --- and [history says it's unlikely to improve as the midterms approach](https://www.cnn.com/2021/11/13/politics/midterms-democrats-biden-analysis/index.html). Interestingly, the generic congressional ballot still shows that the country is about even-split on who they'd like to see in congress. As with the president's approval, however, [historical precedent implies a continuous slide away from the president's party](https://twitter.com/geoffreyvs/status/1438509217107701768). 
+
+![](pics/generic_ballot_current.png)
+
+Despite this precedent, politics today are far more polarized than previous midterm cycles, and [modeling that adjusts for this partisanship may imply a lesser midterm shellacking than history would otherwise suggest](https://gelliottmorris.substack.com/p/is-joe-biden-actually-that-unpopular). While Biden would certainly prefer for his approval to be higher, it may not necessarily spell doom for democrats in the midterms (though, to be sure, the strong prior still that they will lose ground this cycle --- the question now is how much). 
+
+
+
+
+
+
+

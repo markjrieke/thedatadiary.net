@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Mark Rieke">
+<meta name="dcterms.date" content="2022-01-12">
+
+<title>the data diary - The Data Diary: Year in Review</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../..//static/img/icon.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+<style>
+    .quarto-title-block .quarto-title-banner {
+      background: true# default fields fo;
+    }
+    </style>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../static/img/icon.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the data diary</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">2022 Midterms</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
+        <li class="dropdown-header">Senate</li>
+        <li class="dropdown-header">House</li>
+        <li class="dropdown-header">Governor</li>
+    </ul>
+  </li>
+  <li class="dropdown-header">
+ <span class="menu-text">Blog</span></li>
+  <li class="dropdown-header">
+ <span class="menu-text">About</span></li>
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">The Data Diary: Year in Review</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">personal</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Mark Rieke </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">January 12, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#some-accomplishments-im-proud-of" id="toc-some-accomplishments-im-proud-of" class="nav-link active" data-scroll-target="#some-accomplishments-im-proud-of">Some accomplishments I’m proud of</a>
+  <ul class="collapse">
+  <li><a href="#learning-r" id="toc-learning-r" class="nav-link" data-scroll-target="#learning-r">Learning R</a></li>
+  <li><a href="#completing-stanfords-machine-learning-course" id="toc-completing-stanfords-machine-learning-course" class="nav-link" data-scroll-target="#completing-stanfords-machine-learning-course">Completing Stanford’s Machine Learning course</a></li>
+  <li><a href="#committing-to-ropensci" id="toc-committing-to-ropensci" class="nav-link" data-scroll-target="#committing-to-ropensci">Committing to rOpenSci</a></li>
+  <li><a href="#putting-together-a-developer-package" id="toc-putting-together-a-developer-package" class="nav-link" data-scroll-target="#putting-together-a-developer-package">Putting together a developer package</a></li>
+  </ul></li>
+  <li><a href="#plots-across-the-year" id="toc-plots-across-the-year" class="nav-link" data-scroll-target="#plots-across-the-year">Plots across the year</a>
+  <ul class="collapse">
+  <li><a href="#baby-steps" id="toc-baby-steps" class="nav-link" data-scroll-target="#baby-steps">Baby Steps</a></li>
+  <li><a href="#r-ggplot2-and-plotly" id="toc-r-ggplot2-and-plotly" class="nav-link" data-scroll-target="#r-ggplot2-and-plotly">R, ggplot2, and plotly</a></li>
+  <li><a href="#kind-of-projecting-the-2020-election" id="toc-kind-of-projecting-the-2020-election" class="nav-link" data-scroll-target="#kind-of-projecting-the-2020-election">(Kind of) Projecting the 2020 Election</a></li>
+  <li><a href="#doug-collins-saved-raphael-warnocks-senate-bid" id="toc-doug-collins-saved-raphael-warnocks-senate-bid" class="nav-link" data-scroll-target="#doug-collins-saved-raphael-warnocks-senate-bid">Doug Collins Saved Raphael Warnock’s Senate Bid</a></li>
+  <li><a href="#artwork" id="toc-artwork" class="nav-link" data-scroll-target="#artwork">aRtwork!</a></li>
+  <li><a href="#tidymodels-and-the-titanic" id="toc-tidymodels-and-the-titanic" class="nav-link" data-scroll-target="#tidymodels-and-the-titanic">Tidymodels and the Titanic</a></li>
+  <li><a href="#diamonds-are-forever-feature-engineering-with-the-diamonds-dataset" id="toc-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset" class="nav-link" data-scroll-target="#diamonds-are-forever-feature-engineering-with-the-diamonds-dataset">Diamonds are Forever: Feature Engineering with the Diamonds Dataset</a></li>
+  <li><a href="#do-voters-want-democrats-or-republicans-in-congress" id="toc-do-voters-want-democrats-or-republicans-in-congress" class="nav-link" data-scroll-target="#do-voters-want-democrats-or-republicans-in-congress">Do Voters Want Democrats or Republicans in Congress?</a></li>
+  </ul></li>
+  <li><a href="#plans-for-2022" id="toc-plans-for-2022" class="nav-link" data-scroll-target="#plans-for-2022">Plans for 2022</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/markjrieke/thedatadiary.net/blob/main/posts/2022-01-12-the-data-diary-year-in-review/index.qmd" class="toc-action">View source</a></p><p><a href="https://github.com/markjrieke/thedatadiary.net/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>In the year since I started this blog, there’s been a lot that’s happened: I learned to use R, picked up the basics of machine learning, and moved into a new job/industry. I spend a lot of time thinking about what’s coming down the pipeline and how much further I have to go on projects that I have planned, but it’s worthwhile every now and then to take a look back and see just how far I’ve come.</p>
+<section id="some-accomplishments-im-proud-of" class="level1">
+<h1>Some accomplishments I’m proud of</h1>
+<section id="learning-r" class="level2">
+<h2 class="anchored" data-anchor-id="learning-r">Learning R</h2>
+<p>A year ago, I couldn’t write a lick of R code — I lived and breathed Excel, and was a bit afraid of the transition from a GUI to an IDE. Now, I’d consider myself pretty well-versed in the language and am <em>so glad</em> I made the switch. Having moved to R, I realized how restrictive Excel was — R (or any other analytics-focused programming language) allows for the freedom of expression needed for any sort of serious analysis. <a href="https://www.youtube.com/watch?v=PURtmHwk_-0">This talk by Hadley Wickham</a> was instrumental in pushing me to pick up R and is well worth a watch if you have the time.</p>
+<div class="quarto-video ratio ratio-16x9"><iframe src="https://www.youtube.com/embed/PURtmHwk_-0" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+</section>
+<section id="completing-stanfords-machine-learning-course" class="level2">
+<h2 class="anchored" data-anchor-id="completing-stanfords-machine-learning-course">Completing Stanford’s Machine Learning course</h2>
+<p>When I started learning R, I was most interested in getting to the point where I’d be able to implement machine learning models (this specifically came from reading <a href="https://projects.economist.com/us-2020-forecast/president/how-this-works">the documentation</a> for <a href="https://github.com/TheEconomist/us-potus-model">The Economist’s POTUS model</a> and wanting to understand what was going on under-the-hood). <a href="https://www.coursera.org/learn/machine-learning?">Stanford’s online Machine Learning course</a> was a thorough, technical introduction to the basics of machine learning. It doesn’t cover every model type, but gives a great foundation for <em>how to understand</em> new models by requiring that you write the models yourself (this was very useful and practical, but you won’t catch me using MATLAB anytime soon!).</p>
+<p><img src="pics/coursera_ml_cert.png" class="img-fluid"></p>
+</section>
+<section id="committing-to-ropensci" class="level2">
+<h2 class="anchored" data-anchor-id="committing-to-ropensci">Committing to rOpenSci</h2>
+<p><a href="https://ropensci.org/">rOpenSci</a> is a non-profit initiative committed to creating and maintaining a variety of open-source R packages. For work, I use one of their packages, <a href="https://docs.ropensci.org/qualtRics/">the qualtRics package</a>, almost daily for extracting survey responses from Qualtrics’ API. I added a small function, <a href="https://docs.ropensci.org/qualtRics/reference/fetch_id.html"><code>fetch_id()</code></a>, that allows you to pull in survey responses based on the survey’s name, rather than looking up the miscellaneous string of numbers that constitute the <code>survey_id</code>. It’s a small helper function, but working on it taught me a lot about documentation, testing, package development, and contributing to open-source software.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(qualtRics)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">all_surveys</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fetch_id</span>(<span class="st">"Mark's Example Survey"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fetch_survey</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+  |                                                                            
+  |                                                                      |   0%
+  |                                                                            
+  |======================================================================| 100%</code></pre>
+</div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 7%">
+<col style="width: 3%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">StartDate</th>
+<th style="text-align: left;">EndDate</th>
+<th style="text-align: left;">Status</th>
+<th style="text-align: left;">IPAddress</th>
+<th style="text-align: right;">Progress</th>
+<th style="text-align: right;">Duration (in seconds)</th>
+<th style="text-align: left;">Finished</th>
+<th style="text-align: left;">RecordedDate</th>
+<th style="text-align: left;">ResponseId</th>
+<th style="text-align: left;">RecipientLastName</th>
+<th style="text-align: left;">RecipientFirstName</th>
+<th style="text-align: left;">RecipientEmail</th>
+<th style="text-align: left;">ExternalReference</th>
+<th style="text-align: right;">LocationLatitude</th>
+<th style="text-align: right;">LocationLongitude</th>
+<th style="text-align: left;">DistributionChannel</th>
+<th style="text-align: left;">UserLanguage</th>
+<th style="text-align: left;">Q1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2022-01-12 09:20:31</td>
+<td style="text-align: left;">2022-01-12 09:20:38</td>
+<td style="text-align: left;">Survey Preview</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">2022-01-12 09:20:40</td>
+<td style="text-align: left;">R_XFVjzAh4MalrLmF</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">29.73351</td>
+<td style="text-align: right;">-95.5564</td>
+<td style="text-align: left;">preview</td>
+<td style="text-align: left;">EN</td>
+<td style="text-align: left;">Strongly agree</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="putting-together-a-developer-package" class="level2">
+<h2 class="anchored" data-anchor-id="putting-together-a-developer-package">Putting together a developer package</h2>
+<p>At some point this past year, I found myself either re-writing the same chunks of code repeatedly or re-defining functions across every project. After a lengthy period of hesitation, I finally picked up the <a href="https://r-pkgs.org/">R Packages</a> book by Hadley Wickham and Jenny Bryan and put together my own personal package, <a href="https://github.com/markjrieke/riekelib"><code>{riekelib}</code></a>. It’s just a collection of small helper functions that I use regularly for both personal and professional projects, but it’s really helped speed up workflows, since I can just load the library rather than re-write code or functions! Here are a few examples:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(riekelib)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># beta_interval() gives lower &amp; upper bounds of a beta distribution's confidence interval </span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>tibble<span class="sc">::</span><span class="fu">tibble</span>(<span class="at">alpha =</span> <span class="fu">c</span>(<span class="dv">85</span>, <span class="dv">100</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>               <span class="at">beta =</span> <span class="fu">c</span>(<span class="dv">15</span>, <span class="dv">500</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">beta_interval</span>(alpha, beta) <span class="sc">%&gt;%</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: right;">alpha</th>
+<th style="text-align: right;">beta</th>
+<th style="text-align: right;">ci_lower</th>
+<th style="text-align: right;">ci_upper</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0.7741265</td>
+<td style="text-align: right;">0.9126452</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">500</td>
+<td style="text-align: right;">0.1379480</td>
+<td style="text-align: right;">0.1974895</td>
+</tr>
+</tbody>
+</table>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># percent() returns the percentage each value or combination of values appear in a tibble</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>iris <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">percent</span>(Species) <span class="sc">%&gt;%</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Species</th>
+<th style="text-align: right;">pct</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">setosa</td>
+<td style="text-align: right;">0.3333333</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">versicolor</td>
+<td style="text-align: right;">0.3333333</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">virginica</td>
+<td style="text-align: right;">0.3333333</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="plots-across-the-year" class="level1">
+<h1>Plots across the year</h1>
+<p>Possibly the most visually-engaging way to track growth throughout the past year is to look back on how different plots have evolved. Here’s a walkthrough of some choice plots that I’ve made throughout the year.</p>
+<section id="baby-steps" class="level2">
+<h2 class="anchored" data-anchor-id="baby-steps"><a href="https://www.thedatadiary.net/posts/2021-01-10-baby-steps/">Baby Steps</a></h2>
+<p>The first plot I ever created in R, made with base R’s <code>plot()</code> function, compares speed &amp; distance from the <code>cars</code> dataset. There’s not really anything visually compelling here, but it gives the starting point.</p>
+<p><img src="pics/baby_steps.png" class="img-fluid"></p>
+</section>
+<section id="r-ggplot2-and-plotly" class="level2">
+<h2 class="anchored" data-anchor-id="r-ggplot2-and-plotly"><a href="https://www.thedatadiary.net/posts/2021-01-17-r-ggplot2-plotly/">R, ggplot2, and plotly</a></h2>
+<p>This next plot shows my first attempt at creating a <code>ggplot</code>. I remember struggling <em>a lot</em> with this when trying to learn the ins and outs of putting together and formatting the plot, but that struggle was well worth it. I learned not only the basics of how to put together a plot with <code>ggplot</code>, but also, more importantly, how to search and troubleshoot issues. I also like that I was able to explore a topic visually with this plot: while the winner of the presidential election overperforms in the electoral college relative to the popular vote, republican candidates consistently have a slightly stronger electoral college overperformance due to small-state bias.</p>
+<p><img src="pics/r_ggplot2_plotly.png" class="img-fluid"></p>
+</section>
+<section id="kind-of-projecting-the-2020-election" class="level2">
+<h2 class="anchored" data-anchor-id="kind-of-projecting-the-2020-election"><a href="https://www.thedatadiary.net/posts/2021-02-21-kind-of-projecting-the-2020-election/">(Kind of) Projecting the 2020 Election</a></h2>
+<p>I started playing around with custom themes, and even setup my own <a href="https://github.com/markjrieke/thedatadiary/blob/main/dd_theme_elements/dd_theme_elements.R">theme elements</a> so that I could reference them easily. This was the first time I broke away from the default theme for <code>ggplot</code>. Additionally, this was the first time I used any sort of statistical methods to make a projection. The projection itself is pretty bad/underconfident, but the methodology was sound.</p>
+<p><img src="pics/projecting_2020_election.png" class="img-fluid"></p>
+</section>
+<section id="doug-collins-saved-raphael-warnocks-senate-bid" class="level2">
+<h2 class="anchored" data-anchor-id="doug-collins-saved-raphael-warnocks-senate-bid"><a href="https://www.thedatadiary.net/posts/2021-02-28-doug-collins-saved-raphael-warnock-s-senate-bid/">Doug Collins Saved Raphael Warnock’s Senate Bid</a></h2>
+<p>Of all the posts I wrote in 2021, this may be the one I’m most proud of. Firstly, I learned a lot of new techniques needed to create maps and animations in R, but I also made a data-backed point: Raphael Warnock, one of the current Democratic senators from Georgia, likely won his election because Republican voters split their ticket between Kelly Loeffler and Doug Collins.</p>
+<p><img src="pics/ga_sen_01.png" class="img-fluid"> <img src="pics/ga_sen_02.png" class="img-fluid"> <img src="pics/ga_sen_03.gif" class="img-fluid"></p>
+</section>
+<section id="artwork" class="level2">
+<h2 class="anchored" data-anchor-id="artwork"><a href="https://www.thedatadiary.net/posts/2021-03-07-artwork/">aRtwork!</a></h2>
+<p>This next one is just fun, but I used R to make some artwork! I liked it so much, that I ended up making this my site header.</p>
+<p><img src="pics/artwork.png" class="img-fluid"></p>
+</section>
+<section id="tidymodels-and-the-titanic" class="level2">
+<h2 class="anchored" data-anchor-id="tidymodels-and-the-titanic"><a href="https://www.thedatadiary.net/posts/2021-08-08-tidymodels-and-the-titanic/">Tidymodels and the Titanic</a></h2>
+<p>I spent a lot of time this past year learning how to implement machine learning methods, but eventually got to the point where I feel confident building and troubleshooting models with the tidymodel framework. I had an “aha” moment when working on a classifier for everyone’s favorite dataset, the <a href="https://www.kaggle.com/c/titanic">Titanic survival dataset</a>, and everything <em>finally</em> clicked. The model wasn’t great, but being able to quickly build and iterate was game-changing.</p>
+<p><img src="pics/titanic.png" class="img-fluid"></p>
+</section>
+<section id="diamonds-are-forever-feature-engineering-with-the-diamonds-dataset" class="level2">
+<h2 class="anchored" data-anchor-id="diamonds-are-forever-feature-engineering-with-the-diamonds-dataset"><a href="https://www.thedatadiary.net/posts/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/">Diamonds are Forever: Feature Engineering with the Diamonds Dataset</a></h2>
+<p>With some machine learning under my belt, I spent some time practicing feature engineering with the <a href="https://ggplot2.tidyverse.org/reference/diamonds.html">diamonds dataset</a>. From the variable importance plot, I found that some of the engineered features were among the most important for predicting a diamond’s price!</p>
+<p><img src="pics/diamonds_01.png" class="img-fluid"> <img src="pics/diamonds_02.png" class="img-fluid"></p>
+</section>
+<section id="do-voters-want-democrats-or-republicans-in-congress" class="level2">
+<h2 class="anchored" data-anchor-id="do-voters-want-democrats-or-republicans-in-congress"><a href="https://www.thedatadiary.net/posts/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/">Do Voters Want Democrats or Republicans in Congress?</a></h2>
+<p>Most recently, I created a <a href="https://github.com/markjrieke/2022-midterm-forecasts/blob/main/scripts/generic_ballot_weighting.R">congressional ballot aggregator</a> that weights polls by pollster, recency, sample size, and methodology. This was a huge effort to create a custom regression methodology, and I’m very happy with how it turned out! As of today, voters are just about even-split between Democrats and Republicans in the upcoming 2022 midterms.</p>
+<p><img src="pics/generic_ballot.png" class="img-fluid"></p>
+</section>
+</section>
+<section id="plans-for-2022" class="level1">
+<h1>Plans for 2022</h1>
+<p>I think I’ve come a long way in 2021 and I hope that in 2023, I can look back on 2022 and see a similar level of growth throughout the year. Here are a few things I plan on working on this year:</p>
+<ul>
+<li><strong>Writing</strong>: I’ve spent a lot of time in 2021 working on technical skills, but haven’t really taken time to work on my writing. This will be an important focus for me in 2022, since technical information is useless if I’m not able to communicate it well.</li>
+<li><strong>Bringing ML projects to the office</strong>: In my current job, we’ve been spending the majority of the last six months focusing on troubleshooting the errors and getting over the speed-bumps involved with changing our primary survey vendor. We haven’t had the bandwidth to work on higher level/higher value projects, but should be able to do so in the upcoming year. Some projects I’m excited to work on this year include:
+<ul>
+<li>Variable importance in predicting positive sentiment in surveys;</li>
+<li>Patient segmentation with k-means clustering;</li>
+<li>Shiny App - “How confident am I?” - for educating our non-technical counterparts on confidence intervals vs.&nbsp;point estimates;</li>
+<li>Using NLP for predicting positive sentiment from patient comments;</li>
+<li>Topic modeling from comments for easier comment segmentation.</li>
+</ul></li>
+<li><strong>Natural Language Processing</strong>: As alluded to above, I’d like to work with text data for predictive analysis this year — there’s a lot of valuable insight that can be drawn from text data once I understand how to extract it!</li>
+<li><strong>Enrolling in a Master’s of D.S. program</strong>: While I’ve been able to pick up a lot of knowledge from free/low-cost resources online (as well as spending countless hours on StackOverflow), I believe it’s time to further my formal education by pursuing a Master’s of Data Science part-time. Enrolling in a master’s program should help improve both my technical and non-technical skills, as well as formalize my transition from engineering to data science with a degree.</li>
+<li><strong>Forecasting the 2022 Midterms</strong>: A long-term goal since starting this blog was to learn how to and ultimately deploy a forecast model for the 2022 midterms. I believe I’m well on my way, and hope to be able to publish midterm forecast models for the House, Senate, and Gubernatorial races sometime in the summer this year.</li>
+</ul>
+<p>All-in-all, I’ve got a lot on my plate for 2022, but I’m confident that I’ll be able to tackle the challenges that come my way this year! My schedule is in a good place — full but manageable. As a preview of the next post I have scheduled, here’s a model I built to estimate Biden’s approval:</p>
+<p><img src="pics/biden_01.png" class="img-fluid"> <img src="pics/biden_02.png" class="img-fluid"></p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {The {Data} {Diary:} {Year} in {Review}},
+  date = {2022-01-12},
+  url = {https://www.thedatadiary.net/posts/2022-01-12-the-data-diary-year-in-review},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
+Mark Rieke. 2022. <span>“The Data Diary: Year in Review.”</span> January
+12, 2022. <a href="https://www.thedatadiary.net/posts/2022-01-12-the-data-diary-year-in-review">https://www.thedatadiary.net/posts/2022-01-12-the-data-diary-year-in-review</a>.
+</div></div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left"> Mark Rieke, 2023<br> All content licensed under <a href="https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE">MIT License</a><br> Made with and <a href="https://quarto.org">Quarto</a></div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/markjrieke">
+      <i class="bi bi-github" role="img" aria-label="github">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/markjrieke">
+      <i class="bi bi-twitter" role="img" aria-label="twitter">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/markjrieke/">
+      <i class="bi bi-linkedin" role="img" aria-label="linkedin">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
