@@ -16,6 +16,10 @@ execute:
   message: false
   warning: false
   fig-dpi: 300
+  
+knitr: 
+  opts_chunk: 
+    dev: "agg_png"
 
 # default author fields
 author: 
