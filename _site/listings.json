@@ -2,6 +2,14 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/2022-04-06-impeachment-republicans-and-democracy/index.html",
+      "/posts/2022-03-14-introducing-workboots/index.html",
+      "/posts/2022-02-22-the-data-science-hierarchy-of-needs/index.html",
+      "/posts/2022-02-08-pull-yourself-up-by-your-bootstraps/index.html",
+      "/posts/2022-01-26-how-popular-is-joe-biden/index.html",
+      "/posts/2022-01-12-the-data-diary-year-in-review/index.html",
+      "/posts/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/index.html",
+      "/posts/2021-11-28-technical-books/index.html",
       "/posts/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index.html",
       "/posts/2021-11-02-election-night-some-closing-thoughts-on-the-va-governor-race/index.html",
       "/posts/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index.html",
