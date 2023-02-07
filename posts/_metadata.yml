@@ -4,7 +4,7 @@
 freeze: true
 
 # enable banner style title blocks
-title-block-banner: true# default fields fo
+title-block-banner: true
 
 # table of contents
 toc: true
