@@ -1,0 +1,186 @@
+---
+title: Introducing {nplyr}
+date: '2022-07-24'
+categories: [rstats, nplyr]
+subtitle: A grammar of (nested) data manipulation
+image: logo.png
+code-fold: show
+---
+
+Data manipulation and transformation is a fundamental part of any analysis. There are excellent tools in the R ecosystem for manipulating data frames ([dplyr](https://dplyr.tidyverse.org/), [data.table](https://rdatatable.gitlab.io/data.table/), and [arrow](https://arrow.apache.org/docs/r/), to name a few). Sometimes, however, it is desirable to work with *nested* data frames, for which few tools are readily available.
+
+This is where [nplyr](https://markjrieke.github.io/nplyr/) comes into play! nplyr is a grammar of nested data manipulation that allows users to perform dplyr-like manipulations on data frames nested within a list-col of another data frame. Most dplyr verbs have nested equivalents in nplyr. For example:
+
+* `nest_mutate()` is the nested equivalent of `mutate()`
+* `nest_select()` is the nested equivalent of `select()`
+* `nest_filter()` is the nested equivalent of `filter()`
+* `nest_summarise()` is the nested equivalent of `summarise()`
+* `nest_group_by()` is the nested equivalent of `group_by()`
+
+### Installation
+
+nplyr 0.1.0 is available on [CRAN](https://cran.r-project.org/web/packages/nplyr/index.html). Alternatively, you can install the development version from github with the [devtools](https://cran.r-project.org/package=devtools) or [remotes](https://cran.r-project.org/package=remotes) package:
+
+```{r}
+#| eval: false
+# install from CRAN
+install.packages("nplyr")
+
+# install from github
+devtools::install_github("markjrieke/nplyr")
+```
+
+### Usage
+
+To get started, we'll create a nested column for the country data within each continent from the [gapminder](https://cran.r-project.org/package=gapminder) dataset.
+
+```{r}
+library(nplyr)
+
+gm_nest <-
+  gapminder::gapminder_unfiltered %>%
+  tidyr::nest(country_data = -continent)
+
+gm_nest
+```
+
+dplyr can perform operations on the top-level data frame, but with nplyr, we can perform operations on the nested data frames:
+
+```{r}
+gm_nest_example <-
+  gm_nest %>%
+  nest_filter(country_data, year == max(year)) %>%
+  nest_mutate(country_data, pop_millions = pop/1000000)
+
+# each nested tibble is now filtered to the most recent year
+gm_nest_example
+
+# if we unnest, we can see that a new column for pop_millions has been created
+gm_nest_example %>%
+  slice_head(n = 1) %>%
+  tidyr::unnest(country_data)
+```
+
+nplyr also supports grouped operations with `nest_group_by()`:
+
+```{r}
+gm_nest_example <-
+  gm_nest %>%
+  nest_group_by(country_data, year) %>%
+  nest_summarise(
+    country_data,
+    n = n(),
+    lifeExp = median(lifeExp),
+    pop = median(pop),
+    gdpPercap = median(gdpPercap)
+  )
+
+gm_nest_example
+
+# unnesting shows summarised tibbles for each continent
+gm_nest_example %>%
+  slice(2) %>%
+  tidyr::unnest(country_data)
+```
+
+### Other use cases
+
+In the previous set of examples, the output from nplyr's nested operations could be obtained by unnesting and performing grouped dplyr operations.
+
+```{r}
+# we can use nplyr to perform operations on the nested data
+gm_nest %>%
+  nest_filter(country_data, year == max(year)) %>%
+  nest_mutate(country_data, pop_millions = pop/1000000) %>%
+  slice_head(n = 1) %>%
+  tidyr::unnest(country_data)
+
+# in this case, we could have obtained the same result with tidyr and dplyr
+gm_nest %>%
+  tidyr::unnest(country_data) %>%
+  group_by(continent) %>%
+  filter(year == max(year)) %>%
+  mutate(pop_millions = pop/1000000) %>%
+  ungroup() %>%
+  filter(continent == "Asia")
+```
+
+Why, then, might we need to use nplyr? Well, in other scenarios, it may be far more convenient to work with nested data frames or it may not even be possible to unnest!
+
+Consider a set of surveys that an organization might use to gather market data. It is common for organization to have separate surveys for separate purposes but to gather the same baseline set of data across all surveys (for example , a respondent's age and gender may be recorded across all surveys, but each survey will have a different set of questions). Let's use two fake surveys with the below questions for this example:
+
+###### Survey 1: Job
+
+1. How old are you? (multiple choice)
+2. What city do you live in? (multiple choice)
+3. What field do you work in? (multiple choice)
+4. Overall, how satisfied are you with your job? (multiple choice)
+5. What is your annual salary? (numeric entry)
+
+###### Survey 2: Personal Life
+
+1. How old are you? (multiple choice)
+2. What city do you live in? (multiple choice)
+3. What field do you work in? (mulitple choice)
+4. Overall, how satisfied are you with your personal life (multiple choice)
+5. Please provide any additional detail (text entry)
+
+In this scenario, both surveys are collecting demographic information --- age, location, and industry --- but differ in the remaining questions. A convenient way to get the response files into the environment would be to use `purrr::map()` to read each file to a nested data frame.
+
+```{r}
+path <- "https://raw.githubusercontent.com/markjrieke/nplyr/main/data-raw/"
+
+surveys <- 
+  tibble::tibble(survey_file = c("job_survey", "personal_survey")) %>%
+  mutate(survey_data = purrr::map(survey_file, ~readr::read_csv(paste0(path, .x, ".csv"))))
+
+surveys
+```
+
+`tidyr::unnest()` can usually handle idiosyncracies in layout when unnesting, but in this case unnesting throws an error!
+
+```{r}
+#| error: true
+surveys %>%
+  tidyr::unnest(survey_data)
+```
+
+This is because the surveys share column names but not necessarily column types! In this case, both data frames contain a column named `Q5`, but in `job_survey` it's a double and in `personal_survey` it's a character.
+
+```{r}
+surveys %>%
+  slice(1) %>%
+  tidyr::unnest(survey_data) %>%
+  glimpse()
+
+surveys %>%
+  slice(2) %>%
+  tidyr::unnest(survey_data) %>%
+  glimpse()
+```
+
+We could potentially get around this issue with unnesting by reading in all columns as characters via `readr::read_csv(x, col_types = cols(.default = "c"))`, but this presents its own challenges. `Q5` would still be better represented as a double in `job_survey` and, from the survey question text, `Q4` has similar, but distinctly different, meanings across the survey files.
+
+This is where nplyr can assist! Rather than malign the data types or create separate objects for each survey file, we can use nplyr to perform operations directly on the nested data frames.
+
+```{r}
+surveys <- 
+  surveys %>%
+  nest_mutate(survey_data,
+              age_group = if_else(Q1 < 65, "Adult", "Retirement Age")) %>%
+  nest_group_by(survey_data, Q3) %>%
+  nest_add_count(survey_data, 
+                 name = "n_respondents_in_industry") %>%
+  nest_mutate(survey_data, 
+              median_industry_age = median(Q1)) %>%
+  nest_ungroup(survey_data)
+
+surveys %>%
+  slice(1) %>%
+  tidyr::unnest(survey_data)
+
+surveys %>%
+  slice(2) %>%
+  tidyr::unnest(survey_data)
+```
+
