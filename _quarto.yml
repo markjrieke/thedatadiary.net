@@ -46,3 +46,6 @@ format:
     code-block-border-left: "#78c2ad"
     code-fold: true
     code-tools: false
+    fig-width: 9
+    fig-height: 6
+    fig-align: center

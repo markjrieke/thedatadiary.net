@@ -10,7 +10,1198 @@
 <atom:link href="https://www.thedatadiary.net/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.2.335</generator>
-<lastBuildDate>Wed, 06 Apr 2022 05:00:00 GMT</lastBuildDate>
+<lastBuildDate>Tue, 05 Jul 2022 05:00:00 GMT</lastBuildDate>
+<item>
+  <title>The Math Behind workboots</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1">ggplot2<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">theme_set</span>(</span>
+<span id="cb1-2">  ggplot2<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">theme_minimal</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb1-3">    ggplot2<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">theme</span>(<span class="at" style="color: #657422;">plot.title.position =</span> <span class="st" style="color: #20794D;">"plot"</span>,</span>
+<span id="cb1-4">                   <span class="at" style="color: #657422;">plot.background =</span> ggplot2<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">element_rect</span>(<span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"white"</span>, <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"white"</span>))</span>
+<span id="cb1-5">)</span></code></pre></div>
+</details>
+</div>
+<p>Generating prediction intervals with workboots hinges on a few core concepts: bootstrap resampling, estimating prediction error for each resample, and aggregating the resampled prediction errors for each observation. The <a href="https://rsample.tidymodels.org/reference/bootstraps.html"><code>bootstraps()</code> documentation from {rsample}</a> gives a concise definition of bootstrap resampling:</p>
+<blockquote class="blockquote">
+<p>A bootstrap sample is a sample that is the same size as the original data set that is made using replacement. This results in analysis samples that have multiple replicates of some of the original rows of the data. The assessment set is defined as the rows of the original data that were not included in the bootstrap sample. This is often referred to as the “out-of-bag” (OOB) sample.</p>
+</blockquote>
+<p>This vignette will walk through the details of estimating and aggregating prediction errors — additional resources can be found in Davison and Hinkley’s book, <a href="https://www.cambridge.org/core/books/bootstrap-methods-and-their-application/ED2FD043579F27952363566DC09CBD6A"><em>Bootstrap Methods and their Application</em></a>, or Efron and Tibshirani’s paper, <a href="https://www.jstor.org/stable/2965703"><em>Improvements on Cross-Validation: The Bootstrap .632+ Method</em></a>.</p>
+<section id="the-bootstrap-.632-method" class="level3">
+<h3 class="anchored" data-anchor-id="the-bootstrap-.632-method">The Bootstrap .632+ Method</h3>
+<div class="alert-info">
+<p>What follows here is largely a summary of <a href="https://stats.stackexchange.com/questions/96739/what-is-the-632-rule-in-bootstrapping/96750#96750">this explanation</a> of the .632+ error rate by Benjamin Deonovic.</p>
+</div>
+<p>When working with bootstrap resamples of a dataset, there are two error estimates we can work with: the bootstrap training error and the out-of-bag (oob) error. Using the <a href="https://modeldata.tidymodels.org/reference/Sacramento.html">Sacramento housing dataset</a>, we can estimate the training and oob error for a single bootstrap.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="fu" style="color: #4758AB;">library</span>(tidymodels)</span>
+<span id="cb2-2"><span class="co" style="color: #5E5E5E;"># setup our data</span></span>
+<span id="cb2-3"><span class="fu" style="color: #4758AB;">data</span>(<span class="st" style="color: #20794D;">"Sacramento"</span>)</span>
+<span id="cb2-4"></span>
+<span id="cb2-5">Sacramento <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb2-6">  Sacramento <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-7">  <span class="fu" style="color: #4758AB;">select</span>(sqft, type, price) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-8">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="fu" style="color: #4758AB;">across</span>(<span class="fu" style="color: #4758AB;">c</span>(sqft, price), log10)) </span>
+<span id="cb2-9"></span>
+<span id="cb2-10"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">987</span>)</span>
+<span id="cb2-11">sacramento_split <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">initial_split</span>(Sacramento)</span>
+<span id="cb2-12">sacramento_train <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">training</span>(sacramento_split)</span>
+<span id="cb2-13">sacramento_test <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">testing</span>(sacramento_split)</span>
+<span id="cb2-14"></span>
+<span id="cb2-15"><span class="co" style="color: #5E5E5E;"># setup bootstrapped dataset for .632+ example</span></span>
+<span id="cb2-16">sacramento_boots <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">bootstraps</span>(sacramento_train, <span class="at" style="color: #657422;">times =</span> <span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb2-17"></span>
+<span id="cb2-18">sacramento_boots</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code># Bootstrap sampling 
+# A tibble: 1 × 2
+  splits            id        
+  &lt;list&gt;            &lt;chr&gt;     
+1 &lt;split [699/261]&gt; Bootstrap1</code></pre>
+</div>
+</div>
+<p>Using a <a href="https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm#k-NN_regression">k-nearest-neighbor regression model</a> and <a href="https://en.wikipedia.org/wiki/Root-mean-square_deviation#:~:text=The%20root%2Dmean%2Dsquare%20deviation,estimator%20and%20the%20values%20observed.">rmse</a> as our error metric, we find that the training and oob error differ, with the training error lesser than the oob error.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;"># setup a workflow to predict price using a knn regressor</span></span>
+<span id="cb4-2">sacramento_recipe <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb4-3">  <span class="fu" style="color: #4758AB;">recipe</span>(price <span class="sc" style="color: #5E5E5E;">~</span> ., <span class="at" style="color: #657422;">data =</span> sacramento_train) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-4">  <span class="fu" style="color: #4758AB;">step_dummy</span>(<span class="fu" style="color: #4758AB;">all_nominal</span>())</span>
+<span id="cb4-5"></span>
+<span id="cb4-6">sacramento_spec <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb4-7">  <span class="fu" style="color: #4758AB;">nearest_neighbor</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-8">  <span class="fu" style="color: #4758AB;">set_mode</span>(<span class="st" style="color: #20794D;">"regression"</span>)</span>
+<span id="cb4-9"></span>
+<span id="cb4-10">sacramento_wf <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb4-11">  <span class="fu" style="color: #4758AB;">workflow</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-12">  <span class="fu" style="color: #4758AB;">add_recipe</span>(sacramento_recipe) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-13">  <span class="fu" style="color: #4758AB;">add_model</span>(sacramento_spec)</span>
+<span id="cb4-14"></span>
+<span id="cb4-15"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">876</span>)</span>
+<span id="cb4-16">sacramento_fit <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb4-17">  sacramento_wf <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-18">  <span class="fu" style="color: #4758AB;">fit</span>(<span class="fu" style="color: #4758AB;">training</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])) </span>
+<span id="cb4-19"></span>
+<span id="cb4-20"><span class="co" style="color: #5E5E5E;"># get bootstrap training error</span></span>
+<span id="cb4-21">sacramento_train_err <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb4-22">  Metrics<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">rmse</span>(</span>
+<span id="cb4-23">    <span class="fu" style="color: #4758AB;">training</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])<span class="sc" style="color: #5E5E5E;">$</span>price,</span>
+<span id="cb4-24">    sacramento_fit <span class="sc" style="color: #5E5E5E;">%&gt;%</span> <span class="fu" style="color: #4758AB;">predict</span>(<span class="fu" style="color: #4758AB;">training</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> <span class="fu" style="color: #4758AB;">pull</span>(.pred)</span>
+<span id="cb4-25">  )</span>
+<span id="cb4-26"></span>
+<span id="cb4-27"><span class="co" style="color: #5E5E5E;"># get oob error</span></span>
+<span id="cb4-28">sacramento_oob_err <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb4-29">  Metrics<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">rmse</span>(</span>
+<span id="cb4-30">    <span class="fu" style="color: #4758AB;">testing</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])<span class="sc" style="color: #5E5E5E;">$</span>price,</span>
+<span id="cb4-31">    sacramento_fit <span class="sc" style="color: #5E5E5E;">%&gt;%</span> <span class="fu" style="color: #4758AB;">predict</span>(<span class="fu" style="color: #4758AB;">testing</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> <span class="fu" style="color: #4758AB;">pull</span>(.pred)</span>
+<span id="cb4-32">  )</span>
+<span id="cb4-33"></span>
+<span id="cb4-34">sacramento_train_err</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.08979873</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1">sacramento_oob_err</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1661675</code></pre>
+</div>
+</div>
+<p>The training error is overly optimistic in the model’s performance and likely to under-estimate the prediction error. We are interested in the model’s performance on new data. The oob error, on the other hand, is likely to over-estimate the prediction error! This is due to non-distinct observations in the bootstrap sample that results from sampling with replacement. Given that <a href="https://stats.stackexchange.com/questions/88980/why-on-average-does-each-bootstrap-sample-contain-roughly-two-thirds-of-observat?lq=1">the average number of distinct observations in a bootstrap training set is about <code>0.632 * total_observations</code></a>, Efron and Tibshirani proposed a blend of the training and oob error with the 0.632 estimate:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0AErr_%7B.632%7D%20&amp;%20=%200.368%20Err_%7Btrain%7D%20+%200.632%20Err_%7Boob%7D%0A%5Cend%7Balign*%7D%0A"></p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1">sacramento_632 <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fl" style="color: #AD0000;">0.368</span> <span class="sc" style="color: #5E5E5E;">*</span> sacramento_train_err <span class="sc" style="color: #5E5E5E;">+</span> <span class="fl" style="color: #AD0000;">0.632</span> <span class="sc" style="color: #5E5E5E;">*</span> sacramento_oob_err</span>
+<span id="cb8-2">sacramento_632</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1380638</code></pre>
+</div>
+</div>
+<p>If, however, the model is highly overfit to the bootstrap training set, the training error will approach 0 and the 0.632 estimate will <em>under estimate</em> the prediction error.</p>
+<p>An example from <a href="http://appliedpredictivemodeling.com/"><em>Applied Predictive Modeling</em></a> shows that as model complexity increases, the reported resample accuracy by the 0.632 estimate continues to increase whereas other resampling strategies report diminishing returns:</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots/https:/user-images.githubusercontent.com/5731043/157986232-9c32c1c2-a7ed-4f9f-b28e-7d8ccb7ac41c.png" class="img-fluid"></p>
+<p>As an alternative to the 0.632 estimate, Efron &amp; Tibshirani also propose the 0.632+ estimate, which re-weights the blend of training and oob error based on the model overfit rate:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0AErr_%7B0.632+%7D%20&amp;%20=%20(1%20-%20w)%20Err_%7Btrain%7D%20+%20w%20Err_%7Boob%7D%20%5C%5C%0A%5C%5C%0Aw%20&amp;%20=%20%5Cfrac%7B0.632%7D%7B1%20-%200.368%20R%7D%20%5C%5C%0A%5C%5C%0AR%20&amp;%20=%20%5Cfrac%7BErr_%7Boob%7D%20-%20Err_%7Btrain%7D%7D%7B%5Cgamma%20-%20Err_%7Btrain%7D%7D%0A%5Cend%7Balign*%7D%0A"></p>
+<p>Here, <img src="https://latex.codecogs.com/png.latex?R"> represents the overfit rate and <img src="https://latex.codecogs.com/png.latex?%5Cgamma"> is the no-information error rate, estimated by evaulating all combinations of predictions and actual values in the bootstrap training set.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><span class="co" style="color: #5E5E5E;"># estimate the no-information error rate</span></span>
+<span id="cb10-2">preds_train <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb10-3">  <span class="fu" style="color: #4758AB;">predict</span>(sacramento_fit, <span class="fu" style="color: #4758AB;">training</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> </span>
+<span id="cb10-4">  <span class="fu" style="color: #4758AB;">pull</span>(.pred)</span>
+<span id="cb10-5"></span>
+<span id="cb10-6">actuals_train <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb10-7">  <span class="fu" style="color: #4758AB;">training</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]]) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> </span>
+<span id="cb10-8">  <span class="fu" style="color: #4758AB;">pull</span>(price)</span>
+<span id="cb10-9"></span>
+<span id="cb10-10">all_combinations <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb10-11">  <span class="fu" style="color: #4758AB;">crossing</span>(actuals_train, preds_train)</span>
+<span id="cb10-12"></span>
+<span id="cb10-13">rmse_ni <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb10-14">  Metrics<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">rmse</span>(all_combinations<span class="sc" style="color: #5E5E5E;">$</span>actuals_train, all_combinations<span class="sc" style="color: #5E5E5E;">$</span>preds_train)</span>
+<span id="cb10-15"></span>
+<span id="cb10-16"><span class="co" style="color: #5E5E5E;"># estimate the overfit rate</span></span>
+<span id="cb10-17">overfit <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb10-18">  (sacramento_oob_err <span class="sc" style="color: #5E5E5E;">-</span> sacramento_train_err)<span class="sc" style="color: #5E5E5E;">/</span>(rmse_ni <span class="sc" style="color: #5E5E5E;">-</span> sacramento_train_err)</span>
+<span id="cb10-19"></span>
+<span id="cb10-20"><span class="co" style="color: #5E5E5E;"># estimate weight</span></span>
+<span id="cb10-21">w <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fl" style="color: #AD0000;">0.632</span> <span class="sc" style="color: #5E5E5E;">/</span> (<span class="dv" style="color: #AD0000;">1</span> <span class="sc" style="color: #5E5E5E;">-</span> <span class="fl" style="color: #AD0000;">0.368</span> <span class="sc" style="color: #5E5E5E;">*</span> overfit)</span>
+<span id="cb10-22"></span>
+<span id="cb10-23">sacramento_632_plus <span class="ot" style="color: #003B4F;">&lt;-</span> (<span class="dv" style="color: #AD0000;">1</span> <span class="sc" style="color: #5E5E5E;">-</span> w) <span class="sc" style="color: #5E5E5E;">*</span> sacramento_train_err <span class="sc" style="color: #5E5E5E;">+</span> w <span class="sc" style="color: #5E5E5E;">*</span> sacramento_oob_err</span>
+<span id="cb10-24">sacramento_632_plus</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.1450502</code></pre>
+</div>
+</div>
+<p>When there is no overfitting (i.e., <img src="https://latex.codecogs.com/png.latex?R%20=%200">) the 0.632+ estimate will equal the 0.632 estimate. In this case, however, the model is overfitting the training set and the 0.632+ error estimate is pushed a bit closer to the oob error.</p>
+</section>
+<section id="prediction-intervals-with-many-bootstraps" class="level3">
+<h3 class="anchored" data-anchor-id="prediction-intervals-with-many-bootstraps">Prediction intervals with many bootstraps</h3>
+<p><a href="https://en.wikipedia.org/wiki/Root-mean-square_deviation#Formula">For an unbiased estimator, rmse is the standard deviation of the residuals</a>. With this in mind, we can modify our predictions to include a sample from the residual distribution (for more information, see Algorithm 6.4 from Davison and Hinkley’s <em>Bootstrap Methods and their Application</em>):</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">999</span>)</span>
+<span id="cb12-2">resid_train_add <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">rnorm</span>(<span class="fu" style="color: #4758AB;">length</span>(preds_train), <span class="dv" style="color: #AD0000;">0</span>, sacramento_632_plus)</span>
+<span id="cb12-3">preds_train_mod <span class="ot" style="color: #003B4F;">&lt;-</span> preds_train <span class="sc" style="color: #5E5E5E;">+</span> resid_train_add</span></code></pre></div>
+</details>
+</div>
+<p>Thus far, we’ve been working with a single bootstrap resample. When working with a single bootstrap resample, adding this residual term gives a pretty poor estimate for each observation:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="fu" style="color: #4758AB;">library</span>(ggplot2)</span>
+<span id="cb13-2"></span>
+<span id="cb13-3"><span class="fu" style="color: #4758AB;">tibble</span>(<span class="at" style="color: #657422;">.pred =</span> preds_train_mod) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb13-4">  <span class="fu" style="color: #4758AB;">bind_cols</span>(<span class="fu" style="color: #4758AB;">training</span>(sacramento_boots<span class="sc" style="color: #5E5E5E;">$</span>splits[[<span class="dv" style="color: #AD0000;">1</span>]])) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb13-5">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="fu" style="color: #4758AB;">across</span>(<span class="fu" style="color: #4758AB;">c</span>(.pred, price), <span class="sc" style="color: #5E5E5E;">~</span><span class="dv" style="color: #AD0000;">10</span><span class="sc" style="color: #5E5E5E;">^</span>.x)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb13-6">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> .pred, <span class="at" style="color: #657422;">y =</span> price)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb13-7">  <span class="fu" style="color: #4758AB;">geom_point</span>(<span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.25</span>,</span>
+<span id="cb13-8">             <span class="at" style="color: #657422;">size =</span> <span class="fl" style="color: #AD0000;">2.5</span>,</span>
+<span id="cb13-9">             <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"midnightblue"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb13-10">  <span class="fu" style="color: #4758AB;">geom_abline</span>(<span class="at" style="color: #657422;">linetype =</span> <span class="st" style="color: #20794D;">"dashed"</span>,</span>
+<span id="cb13-11">              <span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>, </span>
+<span id="cb13-12">              <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"gray"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb13-13">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Predicted sale price of home in Sacramento"</span>,</span>
+<span id="cb13-14">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Adding a single error estimate produces poor predictions of price"</span>,</span>
+<span id="cb13-15">       <span class="at" style="color: #657422;">x =</span> <span class="st" style="color: #20794D;">"Predicted price"</span>,</span>
+<span id="cb13-16">       <span class="at" style="color: #657422;">y =</span> <span class="st" style="color: #20794D;">"Actual price"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb13-17">  <span class="fu" style="color: #4758AB;">scale_x_log10</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">label_dollar</span>(<span class="at" style="color: #657422;">scale_cut =</span> <span class="fu" style="color: #4758AB;">cut_short_scale</span>())) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb13-18">  <span class="fu" style="color: #4758AB;">scale_y_log10</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">label_dollar</span>(<span class="at" style="color: #657422;">scale_cut =</span> <span class="fu" style="color: #4758AB;">cut_short_scale</span>())) </span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots/index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>With workboots, however, we can repeat this process over many bootstrap datasets to generate a prediction distribution for each observation:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="fu" style="color: #4758AB;">library</span>(workboots)</span>
+<span id="cb14-2"></span>
+<span id="cb14-3"><span class="co" style="color: #5E5E5E;"># fit and predict price in sacramento_test from 100 models</span></span>
+<span id="cb14-4"><span class="co" style="color: #5E5E5E;"># the default number of resamples is 2000 - dropping here to speed up knitting</span></span>
+<span id="cb14-5"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">555</span>)</span>
+<span id="cb14-6">sacramento_pred_int <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb14-7">  sacramento_wf <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-8">  <span class="fu" style="color: #4758AB;">predict_boots</span>(</span>
+<span id="cb14-9">    <span class="at" style="color: #657422;">n =</span> <span class="dv" style="color: #AD0000;">100</span>,</span>
+<span id="cb14-10">    <span class="at" style="color: #657422;">training_data =</span> sacramento_train,</span>
+<span id="cb14-11">    <span class="at" style="color: #657422;">new_data =</span> sacramento_test</span>
+<span id="cb14-12">  )</span>
+<span id="cb14-13"></span>
+<span id="cb14-14">sacramento_pred_int <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-15">  <span class="fu" style="color: #4758AB;">summarise_predictions</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-16">  <span class="fu" style="color: #4758AB;">bind_cols</span>(sacramento_test) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-17">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="fu" style="color: #4758AB;">across</span>(<span class="fu" style="color: #4758AB;">c</span>(.pred<span class="sc" style="color: #5E5E5E;">:</span>.pred_upper, price), <span class="sc" style="color: #5E5E5E;">~</span> <span class="dv" style="color: #AD0000;">10</span><span class="sc" style="color: #5E5E5E;">^</span>.x)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-18">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> .pred,</span>
+<span id="cb14-19">             <span class="at" style="color: #657422;">y =</span> price,</span>
+<span id="cb14-20">             <span class="at" style="color: #657422;">ymin =</span> .pred_lower,</span>
+<span id="cb14-21">             <span class="at" style="color: #657422;">ymax =</span> .pred_upper)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb14-22">  <span class="fu" style="color: #4758AB;">geom_point</span>(<span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.25</span>,</span>
+<span id="cb14-23">             <span class="at" style="color: #657422;">size =</span> <span class="fl" style="color: #AD0000;">2.5</span>,</span>
+<span id="cb14-24">             <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"midnightblue"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb14-25">  <span class="fu" style="color: #4758AB;">geom_errorbar</span>(<span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.25</span>,</span>
+<span id="cb14-26">                <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"midnightblue"</span>,</span>
+<span id="cb14-27">                <span class="at" style="color: #657422;">width =</span> <span class="fl" style="color: #AD0000;">0.0125</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb14-28">  <span class="fu" style="color: #4758AB;">scale_x_log10</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">label_dollar</span>(<span class="at" style="color: #657422;">scale_cut =</span> <span class="fu" style="color: #4758AB;">cut_short_scale</span>())) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb14-29">  <span class="fu" style="color: #4758AB;">scale_y_log10</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">label_dollar</span>(<span class="at" style="color: #657422;">scale_cut =</span> <span class="fu" style="color: #4758AB;">cut_short_scale</span>())) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb14-30">  <span class="fu" style="color: #4758AB;">geom_abline</span>(<span class="at" style="color: #657422;">linetype =</span> <span class="st" style="color: #20794D;">"dashed"</span>,</span>
+<span id="cb14-31">              <span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>,</span>
+<span id="cb14-32">              <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"gray"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb14-33">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Predicted sale price of home in Sacramento"</span>,</span>
+<span id="cb14-34">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Using many resamples allows us to generate prediction intervals"</span>,</span>
+<span id="cb14-35">       <span class="at" style="color: #657422;">x =</span> <span class="st" style="color: #20794D;">"Predicted price"</span>,</span>
+<span id="cb14-36">       <span class="at" style="color: #657422;">y =</span> <span class="st" style="color: #20794D;">"Actual price"</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots/index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>This methodology produces prediction distributions that are <a href="https://markjrieke.github.io/workboots/articles/Estimating-Linear-Intervals.html">consistent with what we might expect from linear models</a> while making no assumptions about model type (i.e., we can use a non-parametric model; in this case, a k-nearest neighbors regression).</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {The {Math} {Behind} Workboots},
+  date = {2022-07-05},
+  url = {https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2022. <span>“The Math Behind Workboots.”</span> July 5,
+2022. <a href="https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots">https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots</a>.
+</div></div></section></div> ]]></description>
+  <category>rstats</category>
+  <category>workboots</category>
+  <category>tidymodels</category>
+  <guid>https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots/index.html</guid>
+  <pubDate>Tue, 05 Jul 2022 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2022-07-05-the-math-behind-workboots/featured.png" medium="image" type="image/png" height="103" width="144"/>
+</item>
+<item>
+  <title>Estimate your uncertainty</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;">library</span>(tidyverse)</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;"># setup themes</span></span>
+<span id="cb1-4"><span class="fu" style="color: #4758AB;">theme_set</span>(</span>
+<span id="cb1-5">  <span class="fu" style="color: #4758AB;">theme_minimal</span>(<span class="at" style="color: #657422;">base_family =</span> <span class="st" style="color: #20794D;">"Roboto Slab"</span>,</span>
+<span id="cb1-6">                <span class="at" style="color: #657422;">base_size =</span> <span class="dv" style="color: #AD0000;">15</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb1-7">    <span class="fu" style="color: #4758AB;">theme</span>(<span class="at" style="color: #657422;">plot.title.position =</span> <span class="st" style="color: #20794D;">"plot"</span>,</span>
+<span id="cb1-8">          <span class="at" style="color: #657422;">plot.background =</span> <span class="fu" style="color: #4758AB;">element_rect</span>(<span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"#F9F9FC"</span>, <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#F9F9FC"</span>),</span>
+<span id="cb1-9">          <span class="at" style="color: #657422;">plot.title =</span> ggtext<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">element_markdown</span>(),</span>
+<span id="cb1-10">          <span class="at" style="color: #657422;">plot.subtitle =</span> ggtext<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">element_markdown</span>())</span>
+<span id="cb1-11">)</span></code></pre></div>
+</details>
+</div>
+<p>I recently picked up <a href="http://varianceexplained.org/about/">David Robinson’s</a> book, <a href="http://varianceexplained.org/r/empirical-bayes-book/">Introduction to Empirical Bayes</a>. It’s available online for a price of your own choosing (operating under a “pay-what-you-want” model), so you can technically pick it up for free, but it’s well worth the suggested price of $9.95. The book has a particular focus on practical steps for implementing Bayesian methods with code, which I appreciate. I’ve made it through Part I (of four), which makes for a good stopping point to practice what I’ve read.</p>
+<p>The first section is highly focused on modeling the probability of success/failure of some binary outcome using a <a href="https://en.wikipedia.org/wiki/Beta_distribution">beta distribution</a>. This is highly relevant to my work as an analyst, where whether or not a patient responded positively to a particular question on a survey can be modeled with this method. Thus far, however, I’ve taken the <a href="https://en.wikipedia.org/wiki/Frequentist_inference">frequentist</a> approach to analyses, which assumes we know nothing about what the data ought to look like prior to analyzing it. This is largely because I didn’t know of a robust way to estimate a <a href="https://en.wikipedia.org/wiki/Prior_probability">prior</a> for a Bayesian analysis.</p>
+<p>Thankfully, however, the book walks through examples of exactly how to do this! We can use a <a href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">maximum likelihood estimator</a> to estimate a reasonable prior given the current data. That’s quite a bit of statistical mumbo-jumbo — in this post I’ll walk through an example that spells it out a bit more clearly using fake hospital satisfaction data (N.B.; this is largely a recreation of the steps taken in the book — practice makes perfect!).</p>
+<section id="setting-up-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="setting-up-the-data">Setting up the data</h2>
+<p>First, let’s simulate responses to patient satisfaction surveys. I tend to look at patient satisfaction scores across individual hospital units (e.g., ED, ICU, IMU, etc.). Units can have varying numbers of discharges, so we’ll use a <a href="https://en.wikipedia.org/wiki/Log-normal_distribution">log-normal</a> distribution to estimate the number of responses for each unit.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;"># simulate 1,500 hospital units with an average of 150 survey returns per unit</span></span>
+<span id="cb2-2"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">123</span>)</span>
+<span id="cb2-3">survey_data <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb2-4">  <span class="fu" style="color: #4758AB;">rlnorm</span>(<span class="dv" style="color: #AD0000;">1500</span>, <span class="fu" style="color: #4758AB;">log</span>(<span class="dv" style="color: #AD0000;">150</span>), <span class="fl" style="color: #AD0000;">1.5</span>) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-5">  <span class="fu" style="color: #4758AB;">as_tibble</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-6">  <span class="fu" style="color: #4758AB;">rename</span>(<span class="at" style="color: #657422;">n =</span> value)</span>
+<span id="cb2-7"></span>
+<span id="cb2-8">survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-9">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> n)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-10">  <span class="fu" style="color: #4758AB;">geom_histogram</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-11">  <span class="fu" style="color: #4758AB;">scale_x_log10</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">comma_format</span>()) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-12">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Simulation of hospital satisfaction data"</span>,</span>
+<span id="cb2-13">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Distribution of the number of survey returns per hospital unit"</span>,</span>
+<span id="cb2-14">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb2-15">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>) </span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>The spectrum of responses is incredibly broad — some units have a massive number of returns (in the tens of thousands!) while others have just a handful. This is fairly consistent with the real-world data that I’ve seen (though the units on the high-side are a bit over-represented here).</p>
+<p>Next, let’s assume that there is some true satisfaction rate that is associated with each unit. If each unit had an infinite number of survey returns, the satisfaction rate from the survey returns would approach this true value. In this case, we’ll set the true satisfaction for each unit randomly but have it hover around 66%.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><span class="co" style="color: #5E5E5E;"># set the true satisfaction to be different for each unit, but hover around 66%</span></span>
+<span id="cb3-2"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">234</span>)</span>
+<span id="cb3-3">survey_data <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb3-4">  survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb3-5">  <span class="fu" style="color: #4758AB;">rowwise</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb3-6">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">true_satisfaction =</span> <span class="fu" style="color: #4758AB;">rbeta</span>(<span class="dv" style="color: #AD0000;">1</span>, <span class="dv" style="color: #AD0000;">66</span>, <span class="dv" style="color: #AD0000;">34</span>))</span></code></pre></div>
+</details>
+</div>
+<p>Although there is a true satisfaction associated with each unit, we wouldn’t expect that the reported survey scores would match this exactly. This is especially true when there are few responses — if a unit has a true satisfaction rate of 75% but only 3 responses, it’s impossible for the reported score to match the underlying true rate!</p>
+<p>We can simulate the number of patients who responded positively (in survey terms, the number of “topbox” responses) by generating <code>n</code> responses for each unit using a <a href="https://en.wikipedia.org/wiki/Binomial_distribution">binomial distribution</a>.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><span class="co" style="color: #5E5E5E;"># simulate the number of patients responding with the topbox value</span></span>
+<span id="cb4-2"><span class="co" style="color: #5E5E5E;"># we *know* the true value, but the actual score may vary!</span></span>
+<span id="cb4-3"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">345</span>)</span>
+<span id="cb4-4">survey_data <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb4-5">  survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-6">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">n =</span> <span class="fu" style="color: #4758AB;">round</span>(n),</span>
+<span id="cb4-7">         <span class="at" style="color: #657422;">topbox =</span> <span class="fu" style="color: #4758AB;">rbinom</span>(<span class="dv" style="color: #AD0000;">1</span>, n, true_satisfaction)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-8">  <span class="fu" style="color: #4758AB;">ungroup</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-9">  </span>
+<span id="cb4-10">  <span class="co" style="color: #5E5E5E;"># name each unit</span></span>
+<span id="cb4-11">  <span class="fu" style="color: #4758AB;">rowid_to_column</span>() <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-12">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">unit =</span> <span class="fu" style="color: #4758AB;">paste</span>(<span class="st" style="color: #20794D;">"Unit"</span>, rowid)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-13">  <span class="fu" style="color: #4758AB;">relocate</span>(unit) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-14">  </span>
+<span id="cb4-15">  <span class="co" style="color: #5E5E5E;"># remove the true satisfaction so we don't know what it is!</span></span>
+<span id="cb4-16">  <span class="fu" style="color: #4758AB;">select</span>(<span class="sc" style="color: #5E5E5E;">-</span>rowid, <span class="sc" style="color: #5E5E5E;">-</span>true_satisfaction)</span>
+<span id="cb4-17"></span>
+<span id="cb4-18"><span class="co" style="color: #5E5E5E;"># find patient satisfaction scores</span></span>
+<span id="cb4-19">survey_data <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb4-20">  survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-21">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">score =</span> topbox<span class="sc" style="color: #5E5E5E;">/</span>n)</span>
+<span id="cb4-22"></span>
+<span id="cb4-23">survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb4-24">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> score)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb4-25">  <span class="fu" style="color: #4758AB;">geom_histogram</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb4-26">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">percent_format</span>(<span class="at" style="color: #657422;">accuracy =</span> <span class="dv" style="color: #AD0000;">1</span>)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb4-27">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Simulation of hospital satisfaction data"</span>,</span>
+<span id="cb4-28">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Distribution of patient satisfaction scores per hospital unit"</span>,</span>
+<span id="cb4-29">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb4-30">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>As expected, most of our simulated data hovers around a score of 66%. However, there are a few scores at the extremes of 0% and 100% — given how we simulated the data, it is unlikely that these units are <em>really</em> performing so poorly/so well and it’s likelier that they just have few returns.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><span class="co" style="color: #5E5E5E;"># which units have the highest scores?</span></span>
+<span id="cb5-2">survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb5-3">  <span class="fu" style="color: #4758AB;">arrange</span>(<span class="fu" style="color: #4758AB;">desc</span>(score)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb5-4">  <span class="fu" style="color: #4758AB;">slice_head</span>(<span class="at" style="color: #657422;">n =</span> <span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb5-5">  knitr<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">kable</span>()</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">topbox</th>
+<th style="text-align: right;">score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Unit 26</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 591</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 616</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 811</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 943</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1217</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 1435</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1437</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 863</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: right;">0.9473684</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 372</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0.9230769</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><span class="co" style="color: #5E5E5E;"># which units have the lowest scores?</span></span>
+<span id="cb6-2">survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb6-3">  <span class="fu" style="color: #4758AB;">arrange</span>(score) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb6-4">  <span class="fu" style="color: #4758AB;">slice_head</span>(<span class="at" style="color: #657422;">n =</span> <span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb6-5">  knitr<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">kable</span>()</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">topbox</th>
+<th style="text-align: right;">score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Unit 1092</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 248</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.2500000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 1120</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.2857143</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 416</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.3333333</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 456</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0.3333333</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 972</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0.3333333</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 113</td>
+<td style="text-align: right;">13</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0.3846154</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 260</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.4000000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 695</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.4000000</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1352</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">0.4117647</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>As expected, the units on either end of the spectrum aren’t necessarily outperforming/underperforming — they simply don’t have a lot of survey responses! We can use Bayesian inference to estimate the true satisfaction rate by specifying and updating a prior!</p>
+</section>
+<section id="generating-a-prior-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="generating-a-prior-distribution">Generating a prior distribution</h2>
+<p>When looking at the entire dataset, the distribution of scores is thrown off a bit by the units with few responses. If we restrict the dataset to only the units that have more than 30 responses (which, <a href="https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/">as I’ve written about before</a>, isn’t necessarily a data-driven cutoff for analysis) we can get a clearer idea of the distribution of the scores.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1">survey_data_filtered <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb7-2">  survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb7-3">  <span class="fu" style="color: #4758AB;">filter</span>(n <span class="sc" style="color: #5E5E5E;">&gt;</span> <span class="dv" style="color: #AD0000;">30</span>)</span>
+<span id="cb7-4"></span>
+<span id="cb7-5">survey_data_filtered <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb7-6">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> score)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb7-7">  <span class="fu" style="color: #4758AB;">geom_histogram</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb7-8">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">percent_format</span>(<span class="at" style="color: #657422;">accuracy =</span> <span class="dv" style="color: #AD0000;">1</span>)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb7-9">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Simulation of hospital satisfaction data"</span>,</span>
+<span id="cb7-10">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Distribution of patient satisfaction scores for units with more than 30 responses"</span>,</span>
+<span id="cb7-11">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb7-12">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>Alternatively, we can represent this distribution with a density plot:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1">survey_data_filtered <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb8-2">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> score)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb8-3">  <span class="fu" style="color: #4758AB;">geom_density</span>(<span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb8-4">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">percent_format</span>(<span class="at" style="color: #657422;">accuracy =</span> <span class="dv" style="color: #AD0000;">1</span>)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb8-5">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Simulation of hospital satisfaction data"</span>,</span>
+<span id="cb8-6">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Distribution of patient satisfaction scores for units with more than 30 responses"</span>,</span>
+<span id="cb8-7">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb8-8">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>This looks suspiciously like a beta distribution! A beta distribution’s shape can be defined by two parameters — alpha and beta. Varying these parameters lets us adjust the center and width to match any possible beta distribution.</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/https:/upload.wikimedia.org/wikipedia/commons/7/78/PDF_of_the_Beta_distribution.gif" class="img-fluid"></p>
+<p>What may make sense would be to use <em>this distribution</em> as our prior. I.e., if we have no responses for a unit, we can probably guess that their score would be somewhere around 66% with some healthy room on either side for variability. To do so, we need to estimate an appropriate alpha and beta — rather than guess the values using trial and error we can pass the work off to our computer to find parameters that <strong>maximize</strong> the <strong>likelihood</strong> that our <strong>estimated distribution</strong> matches the true distribution (hence the name, <em>maximum likelihood estimator</em>).</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><span class="fu" style="color: #4758AB;">library</span>(stats4)</span>
+<span id="cb9-2"></span>
+<span id="cb9-3"><span class="co" style="color: #5E5E5E;"># log-likelihood function</span></span>
+<span id="cb9-4">log_likelihood <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="cf" style="color: #003B4F;">function</span>(alpha, beta) {</span>
+<span id="cb9-5">  <span class="sc" style="color: #5E5E5E;">-</span><span class="fu" style="color: #4758AB;">sum</span>(<span class="fu" style="color: #4758AB;">dbeta</span>(survey_data_filtered<span class="sc" style="color: #5E5E5E;">$</span>score, alpha, beta, <span class="at" style="color: #657422;">log =</span> <span class="cn" style="color: #8f5902;">TRUE</span>))</span>
+<span id="cb9-6">}</span>
+<span id="cb9-7"></span>
+<span id="cb9-8"><span class="co" style="color: #5E5E5E;"># pass various alphas &amp; betas to `log_likelihood` </span></span>
+<span id="cb9-9"><span class="co" style="color: #5E5E5E;"># to find combination that maximizes the likelihood!</span></span>
+<span id="cb9-10">params <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb9-11">  <span class="fu" style="color: #4758AB;">mle</span>(</span>
+<span id="cb9-12">    log_likelihood, </span>
+<span id="cb9-13">    <span class="at" style="color: #657422;">start =</span> <span class="fu" style="color: #4758AB;">list</span>(<span class="at" style="color: #657422;">alpha =</span> <span class="dv" style="color: #AD0000;">50</span>, <span class="at" style="color: #657422;">beta =</span> <span class="dv" style="color: #AD0000;">50</span>),</span>
+<span id="cb9-14">    <span class="at" style="color: #657422;">lower =</span> <span class="fu" style="color: #4758AB;">c</span>(<span class="dv" style="color: #AD0000;">1</span>, <span class="dv" style="color: #AD0000;">1</span>)</span>
+<span id="cb9-15">  )</span>
+<span id="cb9-16"></span>
+<span id="cb9-17"><span class="co" style="color: #5E5E5E;"># extract alpha &amp; beta</span></span>
+<span id="cb9-18">params <span class="ot" style="color: #003B4F;">&lt;-</span> <span class="fu" style="color: #4758AB;">coef</span>(params)</span>
+<span id="cb9-19">alpha0 <span class="ot" style="color: #003B4F;">&lt;-</span> params[<span class="dv" style="color: #AD0000;">1</span>]</span>
+<span id="cb9-20">beta0 <span class="ot" style="color: #003B4F;">&lt;-</span> params[<span class="dv" style="color: #AD0000;">2</span>]</span>
+<span id="cb9-21"></span>
+<span id="cb9-22"><span class="fu" style="color: #4758AB;">print</span>(<span class="fu" style="color: #4758AB;">paste</span>(<span class="st" style="color: #20794D;">"alpha:"</span>, <span class="fu" style="color: #4758AB;">round</span>(alpha0, <span class="dv" style="color: #AD0000;">1</span>), <span class="st" style="color: #20794D;">"beta:"</span>, <span class="fu" style="color: #4758AB;">round</span>(beta0, <span class="dv" style="color: #AD0000;">1</span>)))</span></code></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "alpha: 39.7 beta: 20.5"</code></pre>
+</div>
+</div>
+<p>How well does a beta distribution defined by these parameters match our actual data?</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1">survey_data_filtered <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb11-2">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">density =</span> <span class="fu" style="color: #4758AB;">dbeta</span>(score, alpha0, beta0)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb11-3">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> score)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb11-4">  <span class="fu" style="color: #4758AB;">geom_density</span>(<span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb11-5">  <span class="fu" style="color: #4758AB;">geom_line</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">y =</span> density),</span>
+<span id="cb11-6">            <span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>,</span>
+<span id="cb11-7">            <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#BD43BF"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb11-8">  <span class="fu" style="color: #4758AB;">scale_x_continuous</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">percent_format</span>(<span class="at" style="color: #657422;">accuracy =</span> <span class="dv" style="color: #AD0000;">1</span>)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb11-9">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Simulation of hospital satisfaction data"</span>,</span>
+<span id="cb11-10">       <span class="at" style="color: #657422;">subtitle =</span> glue<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">glue</span>(<span class="st" style="color: #20794D;">"**Actual distribution of scores** and the **{riekelib::color_text('distribution estimated by maximum likelihood', '#BD43BF')}**"</span>),</span>
+<span id="cb11-11">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb11-12">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>This is a pretty good representation of our initial data! When we have no survey responses, we can use a beta distribution with the initial parameters as specified by the maximum likelihood estimation. As a unit gets more responses, we can update our estimation to rely more heavily on the data rather than the prior:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><span class="co" style="color: #5E5E5E;"># update alpha &amp; beta as new responses come in!</span></span>
+<span id="cb12-2">alpha_new <span class="ot" style="color: #003B4F;">&lt;-</span> alpha0 <span class="sc" style="color: #5E5E5E;">+</span> n_topbox</span>
+<span id="cb12-3">beta_new <span class="ot" style="color: #003B4F;">&lt;-</span> beta0 <span class="sc" style="color: #5E5E5E;">+</span> n <span class="sc" style="color: #5E5E5E;">-</span> n_topbox</span></code></pre></div>
+</details>
+</div>
+</section>
+<section id="updating-our-priors" class="level2">
+<h2 class="anchored" data-anchor-id="updating-our-priors">Updating our priors</h2>
+<p>With a prior distribution defined by <code>alpha0</code> and <code>beta0</code>, we can upgrade our frequentest estimation of each unit’s score to a Bayesian estimation!</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><span class="co" style="color: #5E5E5E;"># empirical bayes estimation of satisfaction score</span></span>
+<span id="cb13-2">survey_eb <span class="ot" style="color: #003B4F;">&lt;-</span></span>
+<span id="cb13-3">  survey_data <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb13-4">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">eb_estimate =</span> (topbox <span class="sc" style="color: #5E5E5E;">+</span> alpha0) <span class="sc" style="color: #5E5E5E;">/</span> (n <span class="sc" style="color: #5E5E5E;">+</span> alpha0 <span class="sc" style="color: #5E5E5E;">+</span> beta0))</span></code></pre></div>
+</details>
+</div>
+<p>What are the top and bottom performing units by this new Bayesian estimation?</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><span class="co" style="color: #5E5E5E;"># which units have the highest estimated scores?</span></span>
+<span id="cb14-2">survey_eb <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-3">  <span class="fu" style="color: #4758AB;">arrange</span>(<span class="fu" style="color: #4758AB;">desc</span>(eb_estimate)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-4">  <span class="fu" style="color: #4758AB;">slice_head</span>(<span class="at" style="color: #657422;">n =</span> <span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb14-5">  knitr<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">kable</span>()</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">topbox</th>
+<th style="text-align: right;">score</th>
+<th style="text-align: right;">eb_estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Unit 133</td>
+<td style="text-align: right;">160</td>
+<td style="text-align: right;">133</td>
+<td style="text-align: right;">0.8312500</td>
+<td style="text-align: right;">0.7841640</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1004</td>
+<td style="text-align: right;">123</td>
+<td style="text-align: right;">103</td>
+<td style="text-align: right;">0.8373984</td>
+<td style="text-align: right;">0.7787827</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 172</td>
+<td style="text-align: right;">165</td>
+<td style="text-align: right;">133</td>
+<td style="text-align: right;">0.8060606</td>
+<td style="text-align: right;">0.7667547</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1042</td>
+<td style="text-align: right;">372</td>
+<td style="text-align: right;">291</td>
+<td style="text-align: right;">0.7822581</td>
+<td style="text-align: right;">0.7650930</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 1294</td>
+<td style="text-align: right;">1409</td>
+<td style="text-align: right;">1083</td>
+<td style="text-align: right;">0.7686302</td>
+<td style="text-align: right;">0.7641391</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 892</td>
+<td style="text-align: right;">349</td>
+<td style="text-align: right;">273</td>
+<td style="text-align: right;">0.7822350</td>
+<td style="text-align: right;">0.7641085</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 306</td>
+<td style="text-align: right;">247</td>
+<td style="text-align: right;">195</td>
+<td style="text-align: right;">0.7894737</td>
+<td style="text-align: right;">0.7639102</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1249</td>
+<td style="text-align: right;">1234</td>
+<td style="text-align: right;">943</td>
+<td style="text-align: right;">0.7641815</td>
+<td style="text-align: right;">0.7592901</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 427</td>
+<td style="text-align: right;">5469</td>
+<td style="text-align: right;">4151</td>
+<td style="text-align: right;">0.7590053</td>
+<td style="text-align: right;">0.7579168</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 920</td>
+<td style="text-align: right;">1637</td>
+<td style="text-align: right;">1243</td>
+<td style="text-align: right;">0.7593158</td>
+<td style="text-align: right;">0.7557585</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><span class="co" style="color: #5E5E5E;"># which units have the lowest estimated scores?</span></span>
+<span id="cb15-2">survey_eb <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb15-3">  <span class="fu" style="color: #4758AB;">arrange</span>(eb_estimate) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb15-4">  <span class="fu" style="color: #4758AB;">slice_head</span>(<span class="at" style="color: #657422;">n =</span> <span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb15-5">  knitr<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">kable</span>()</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">topbox</th>
+<th style="text-align: right;">score</th>
+<th style="text-align: right;">eb_estimate</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Unit 613</td>
+<td style="text-align: right;">1886</td>
+<td style="text-align: right;">932</td>
+<td style="text-align: right;">0.4941676</td>
+<td style="text-align: right;">0.4992689</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 760</td>
+<td style="text-align: right;">112</td>
+<td style="text-align: right;">49</td>
+<td style="text-align: right;">0.4375000</td>
+<td style="text-align: right;">0.5149645</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 363</td>
+<td style="text-align: right;">226</td>
+<td style="text-align: right;">112</td>
+<td style="text-align: right;">0.4955752</td>
+<td style="text-align: right;">0.5299674</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 316</td>
+<td style="text-align: right;">431</td>
+<td style="text-align: right;">224</td>
+<td style="text-align: right;">0.5197216</td>
+<td style="text-align: right;">0.5368008</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 1032</td>
+<td style="text-align: right;">235</td>
+<td style="text-align: right;">119</td>
+<td style="text-align: right;">0.5063830</td>
+<td style="text-align: right;">0.5375222</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 1093</td>
+<td style="text-align: right;">354</td>
+<td style="text-align: right;">183</td>
+<td style="text-align: right;">0.5169492</td>
+<td style="text-align: right;">0.5376064</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 749</td>
+<td style="text-align: right;">5286</td>
+<td style="text-align: right;">2839</td>
+<td style="text-align: right;">0.5370791</td>
+<td style="text-align: right;">0.5384528</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 291</td>
+<td style="text-align: right;">865</td>
+<td style="text-align: right;">460</td>
+<td style="text-align: right;">0.5317919</td>
+<td style="text-align: right;">0.5400741</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unit 515</td>
+<td style="text-align: right;">60</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">0.4333333</td>
+<td style="text-align: right;">0.5463929</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unit 622</td>
+<td style="text-align: right;">242</td>
+<td style="text-align: right;">127</td>
+<td style="text-align: right;">0.5247934</td>
+<td style="text-align: right;">0.5515432</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>There are a few things that are worth noting with these estimates:</p>
+<ul>
+<li>The estimated score is not the same as the actual reported score! As more responses come in, however, the estimated score converges to the actual.</li>
+<li>The prior pulls estimated scores towards the prior mean — low scores are pulled up a bit and high scores are pulled down a bit.</li>
+<li>The top (and bottom) performing units are no longer dominated by units with few returns!</li>
+</ul>
+<p>We can also estimate the uncertainty around the estimated score with a <a href="https://en.wikipedia.org/wiki/Credible_interval">credible interval</a>. Credible intervals are the Bayesian counterpart to a frequentist’s <a href="https://en.wikipedia.org/wiki/Confidence_interval">confidence interval</a> — both estimate the region that the true value could fall in given a certain probability — credible intervals, however, are informed by the prior distribution.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><span class="fu" style="color: #4758AB;">set.seed</span>(<span class="dv" style="color: #AD0000;">777</span>)</span>
+<span id="cb16-2">survey_eb <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-3">  <span class="fu" style="color: #4758AB;">slice_sample</span>(<span class="at" style="color: #657422;">n =</span> <span class="dv" style="color: #AD0000;">10</span>) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-4">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">alpha =</span> alpha0 <span class="sc" style="color: #5E5E5E;">+</span> topbox,</span>
+<span id="cb16-5">         <span class="at" style="color: #657422;">beta =</span> beta0 <span class="sc" style="color: #5E5E5E;">+</span> n <span class="sc" style="color: #5E5E5E;">-</span> topbox) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-6">  riekelib<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">beta_interval</span>(alpha, beta) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-7">  <span class="fu" style="color: #4758AB;">rename_with</span>(<span class="at" style="color: #657422;">.cols =</span> <span class="fu" style="color: #4758AB;">starts_with</span>(<span class="st" style="color: #20794D;">"ci"</span>), <span class="at" style="color: #657422;">.fn =</span> <span class="sc" style="color: #5E5E5E;">~</span><span class="fu" style="color: #4758AB;">paste0</span>(<span class="st" style="color: #20794D;">"bayes_"</span>, .x)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-8">  riekelib<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">beta_interval</span>(topbox, n <span class="sc" style="color: #5E5E5E;">-</span> topbox) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-9">  <span class="fu" style="color: #4758AB;">rename_with</span>(<span class="at" style="color: #657422;">.cols =</span> <span class="fu" style="color: #4758AB;">starts_with</span>(<span class="st" style="color: #20794D;">"ci"</span>), <span class="at" style="color: #657422;">.fn =</span> <span class="sc" style="color: #5E5E5E;">~</span><span class="fu" style="color: #4758AB;">paste0</span>(<span class="st" style="color: #20794D;">"freq_"</span>, .x)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span> </span>
+<span id="cb16-10">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">unit =</span> <span class="fu" style="color: #4758AB;">paste0</span>(unit, <span class="st" style="color: #20794D;">" (n="</span>, n, <span class="st" style="color: #20794D;">")"</span>),</span>
+<span id="cb16-11">         <span class="at" style="color: #657422;">unit =</span> <span class="fu" style="color: #4758AB;">fct_reorder</span>(unit, <span class="sc" style="color: #5E5E5E;">-</span>n)) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb16-12">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> unit)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-13">  <span class="fu" style="color: #4758AB;">geom_point</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">y =</span> score),</span>
+<span id="cb16-14">             <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#FF8655"</span>,</span>
+<span id="cb16-15">             <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.75</span>,</span>
+<span id="cb16-16">             <span class="at" style="color: #657422;">size =</span> <span class="fl" style="color: #AD0000;">2.5</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-17">  <span class="fu" style="color: #4758AB;">geom_errorbar</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">ymin =</span> freq_ci_lower,</span>
+<span id="cb16-18">                    <span class="at" style="color: #657422;">ymax =</span> freq_ci_upper),</span>
+<span id="cb16-19">                <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#FF8655"</span>,</span>
+<span id="cb16-20">                <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.75</span>,</span>
+<span id="cb16-21">                <span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-22">  <span class="fu" style="color: #4758AB;">geom_point</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">y =</span> eb_estimate),</span>
+<span id="cb16-23">             <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#55CEFF"</span>,</span>
+<span id="cb16-24">             <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.75</span>,</span>
+<span id="cb16-25">             <span class="at" style="color: #657422;">size =</span> <span class="fl" style="color: #AD0000;">2.5</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-26">  <span class="fu" style="color: #4758AB;">geom_errorbar</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">ymin =</span> bayes_ci_lower,</span>
+<span id="cb16-27">                    <span class="at" style="color: #657422;">ymax =</span> bayes_ci_upper),</span>
+<span id="cb16-28">                <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#55CEFF"</span>,</span>
+<span id="cb16-29">                <span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.75</span>,</span>
+<span id="cb16-30">                <span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-31">  <span class="fu" style="color: #4758AB;">coord_flip</span>() <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-32">  <span class="fu" style="color: #4758AB;">scale_y_continuous</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">percent_format</span>(<span class="at" style="color: #657422;">accuracy =</span> <span class="dv" style="color: #AD0000;">1</span>)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb16-33">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Random sampling of hospital units"</span>,</span>
+<span id="cb16-34">       <span class="at" style="color: #657422;">subtitle =</span> glue<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">glue</span>(<span class="st" style="color: #20794D;">"Comparison of 95% **{riekelib::color_text('credible intervals', '#55CEFF')}** and **{riekelib::color_text('confidence intervals', '#Ff8655')}**"</span>),</span>
+<span id="cb16-35">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb16-36">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>Because credible intervals are informed in part by the prior, they are tighter than their confidence interval counterparts. Like with the estimated score, however, as n-size increases, the Bayesian and frequentist interval estimations converge. In the absence of larger swathes of data, Bayesian methods can offer additional insight into our data by means of a prior distribution.</p>
+</section>
+<section id="some-closing-thoughts" class="level2">
+<h2 class="anchored" data-anchor-id="some-closing-thoughts">Some closing thoughts</h2>
+<p>Overall, this has been a fairly glowing review of the methods laid out in the first section of <em>Introduction to Empirical Bayes</em>. That being said, Bayesian methods of inference are not inherently <em>better</em> than frequentist methods — while they can offer additional context via a prior, there are situations where frequentist methods are preferred. From a math perspective, the prior provides diminishing returns as sample size increases, so it may be better forgoe Bayesian analysis when sample sizes are large. From an organizational perspective, Bayesian inference may be difficult to explain. In my own work, it’s highly unlikely that I’ll use Bayesian inference in any critical projects any time soon — I can imagine a lengthy uphill battle trying to explain the difference between the reported score and the estimated score informed by a prior.</p>
+<p>Finally, there are a few things in this toy analysis that I am hoping to improve upon as I progress further through the book:</p>
+<ul>
+<li>As I mentioned above and <a href="https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/">in previous writings</a>, using <code>n = 30</code> is a relatively arbitrary cutoff point for analysis. In this case, the prior distribution is fairly sensitive to the cutoff point selected — I am hoping that later sections in the book highilight more robust ways of partitioning data for setting priors.</li>
+<li>In the above analysis we’re only examining one variable (univariate analysis) — I am looking forward to extending these methods to multivariate analyses and regressions.</li>
+<li>The beta distribution is appropriate for modeling the probability distribution of binary outcomes. In this example, where the outcome is simply the proportion of patients that responded favorably to the survey, modeling the outcome with a beta distribution is appropriate (responses can either be in the “topbox” or not). When there are more than two possible outcomes — for example, when trying to model <a href="https://en.wikipedia.org/wiki/Net_promoter_score">Net Promoter Score</a> as the proportion of “promoters,” “passives,” and “detractors” — the more general <a href="https://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet distribution</a> is more appropriate.</li>
+<li>I’m hoping also that the book covers methods for dealing with time-dependent data. For example, we’d expect that concerted efforts (or lack thereof) by the hospital units could significantly impact the underlying “true satisfaction” that we’re attempting to estimate via surveying. We expect that more recent survey responses should be more impactful in informing our posterior estimation, but I’ve yet to find any robust literature on how to weight the recency of responses. In the past, I’ve used <a href="https://en.wikipedia.org/wiki/Exponential_decay">exponentional decay</a> to reduce the weight of old responses, but this feels a bit arbitrary.</li>
+</ul>
+<p>Overall, this has been a long way of saying that I’m happy with the book so far and I’m excited to see what comes next as I continue reading!</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {Estimate Your Uncertainty},
+  date = {2022-06-12},
+  url = {https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2022. <span>“Estimate Your Uncertainty.”</span> June 12,
+2022. <a href="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty">https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty</a>.
+</div></div></section></div> ]]></description>
+  <category>rstats</category>
+  <category>bayes</category>
+  <guid>https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/index.html</guid>
+  <pubDate>Sun, 12 Jun 2022 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2022-06-12-estimate-your-uncertainty/featured.png" medium="image" type="image/png" height="96" width="144"/>
+</item>
+<item>
+  <title>Practical Data Visualization Tips for Excel Users</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>I am an avid R user and will always advocate that others use R (or another programming language) for generating reproducible visualizations. In just about every organization, however, Excel plays an important role in an analyst’s toolkit. In this post, I’ll share some visualization design practices that I picked up while learning R but are ubiquitous and transferable to Excel (most of these suggestions are ripped directly from <a href="https://www.williamrchase.com/about/">Will Chase’s</a> <a href="https://www.youtube.com/watch?v=h5cTacaWE6I">“Glamour of Graphics”</a> talk from rstudio::conf(2020), which has <em>heavily informed</em> how I think about visualization design).</p>
+<section id="a-motivating-example" class="level2">
+<h2 class="anchored" data-anchor-id="a-motivating-example">A motivating example</h2>
+<p>For the purposes of this exercise, let’s use fake patient satisfaction data from the Sesame Street Health System, which includes several hospitals and campuses. Let’s say that our system-wide patient satisfaction for the current fiscal year looks like this:</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/system_px.png" class="img-fluid"></p>
+<p>Most of the hospitals have pretty high satisfaction scores — generally greater than <strong>75%</strong>! The overall system score, however, sits at <strong>65%</strong>. Concerned that there may be an error in the data pipeline or dashboard, your boss asks that you investigate what’s going on and provide an update at the next team meeting.</p>
+<p>At first glance, it may be pretty obvious what’s going on — Big Bird Emergency has a pretty low satisfaction score and you know from experience that it’s a larger hospital that generates a lot of survey returns, which may be driving the score down. Since you’re presenting, however, it’s best to use a visualization to communicate this.</p>
+</section>
+<section id="putting-together-a-bad-plot" class="level2">
+<h2 class="anchored" data-anchor-id="putting-together-a-bad-plot">Putting together a bad plot</h2>
+<p>Downloading the hospital data and opening in Excel confirms that Big Bird Emergency has far more survey returns than other hospitals.</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/system_raw.png" class="img-fluid"></p>
+<p>A quick plot that <em>technically</em> includes all the information needed may look something like this:</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_01.png" class="img-fluid"></p>
+<p>While this does answer the question originally asked, the answer is not <strong>clearly communicated by a quick glance</strong>. Viewers who know what was originally asked have to do some extra mental work to decode the plot, and viewers who see this without the original context may not find anything useful. Our goal should be to provide a visualization that:</p>
+<ol type="1">
+<li>Clearly communicates the message we want to convey.</li>
+<li>Is able to stand alone in other contexts and still communicate the same message.</li>
+<li>Is visually appealing.</li>
+</ol>
+<p>Let’s get started!</p>
+</section>
+<section id="putting-together-a-good-plot" class="level2">
+<h2 class="anchored" data-anchor-id="putting-together-a-good-plot">Putting together a good plot</h2>
+<section id="changing-to-a-bar-plot" class="level3">
+<h3 class="anchored" data-anchor-id="changing-to-a-bar-plot">Changing to a bar plot</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_02.png" class="img-fluid"></p>
+<p>The first order of business is to convert the plot from a pie chart to a bar plot. Pie charts are loved by executives but loathed by visualization practitioners, since information is encoded in each slice’s angle and <a href="https://en.wikipedia.org/wiki/Graphical_perception">differences in angle are difficult for the human eye to detect</a>. Bar plots encode the same information with relative position on a scale, which is the most effective method for showing differences. This also has the added benefit in Excel of automatically converting each hospital to the same color, which reduces a lot of the visual noise that was in the original plot.</p>
+</section>
+<section id="flipping-axes" class="level3">
+<h3 class="anchored" data-anchor-id="flipping-axes">Flipping axes</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_03.png" class="img-fluid"></p>
+<p>In order to read the hospital names in the previous plot, viewers need to crane their necks to align with the axis text. The angled text also takes up a lot of whitespace and makes the important part — the actual data — look a bit squished. Changing to a horizontal bar plot alleviates both of these issues (horizontal bar plots are preferred over vertical ones in general for this reason).</p>
+</section>
+<section id="ordering-the-data" class="level3">
+<h3 class="anchored" data-anchor-id="ordering-the-data">Ordering the data</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_04.png" class="img-fluid"></p>
+<p>Unordered categories in a plot can be messy and visually confusing — the viewer’s eye needs to dart around to determine which values are greater than other ones. Ordering the categories reduces this cognitive load and allows the viewer to simply read through the list. In this case (and in most cases), we don’t care about the exact values (just the <em>relative difference</em> between values), so we can also remove the data labels.</p>
+<p>To order a plot in Excel, we don’t actually need to do anything to the plot itself — simply turn the raw data into a table then arrange the rows by <code>survey_returns</code>:</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/ordered_campuses.png" class="img-fluid"></p>
+</section>
+<section id="giving-the-plot-a-narrative" class="level3">
+<h3 class="anchored" data-anchor-id="giving-the-plot-a-narrative">Giving the plot a narrative</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_05.png" class="img-fluid"></p>
+<p>The original title, “FYTD Surveys”, while technically informative, is uninspiring. We’re putting together this plot to answer the specific question, <em>why is the system satisfaction score 65% when most hospitals have a higher score?</em> A good visualization will directly answer this without needing additional context from the analyst — the title is a great place to state that <em>Big Bird Emergency is driving the system score down</em>.</p>
+<p>Also note that there are no axis labels on this plot. Axis labels are often unnecessary — they take up valuable whitespace with information that is either readily apparent (I don’t need a label to know that the y-axis refers to each hospital!) or encoded elsewhere. When possible, remove axis labels and describe the necessary detail elsewhere (i.e., the title or subtitle).</p>
+</section>
+<section id="highlighting-the-important-bits" class="level3">
+<h3 class="anchored" data-anchor-id="highlighting-the-important-bits">Highlighting the important bits</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_06.png" class="img-fluid"></p>
+<p>Color can be a great way to draw our attention to a particular portion of a plot. In this case, not all of the hospitals are equally important in this plot’s narrative — we’re making a distinct point regarding Big Bird Emergency. Highlighting the text and bar for Big Bird Emergency in yellow (Big Bird is, after all, a big yellow bird) while graying out the other bars visually communicates to the viewer this is the hospital deserving the most attention in this plot.</p>
+</section>
+<section id="realigning-the-plot" class="level3">
+<h3 class="anchored" data-anchor-id="realigning-the-plot">Realigning the plot</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_07.png" class="img-fluid"></p>
+<p>In the vast majority of cases, a left-aligned the title/subtitle is strongly preferred over center-aligned one. In western countries, we tend to naturally orient our attention in the top-left corner of plots when we first view them, then migrate our gaze downwards and leftwards (eye-tracking studies confirm this, however I can’t seem to find the source I heard this from, so you’ll just have to take my word for it here). By aligning the title to the left, we reduce how much the viewer needs to dart their eyes around the plot to understand it.</p>
+</section>
+<section id="adding-the-final-touches" class="level3">
+<h3 class="anchored" data-anchor-id="adding-the-final-touches">Adding the final touches</h3>
+<p><img src="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/pics/plot_08.png" class="img-fluid"></p>
+<p>Adding some final formatting touches to polish up the visualization not only improves the quality of the plot but also shows the viewer that you’re serious about your craft and willing to go the extra mile to really make a visualization shine. In this case, applying comma-formatting to the x-axis, changing the font, and updating the background to an off-white are all minor edits, but their effects have a big impact on the visualization’s overall presentation.</p>
+<p></p><div id="tweet-48693"></div><script>tweet={"url":"https:\/\/twitter.com\/flyosity\/status\/1495087213150879747","author_name":"Mike Rundle","author_url":"https:\/\/twitter.com\/flyosity","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EMy buddy is an electrician and told me a few months ago that he always leaves the screws in a vertical position on jobs as a sign of craftsmanship. Been thinking ever since what my “vertical screws” equivalent is for product design. \u003Ca href=\"https:\/\/t.co\/dM9CFEG8MF\"\u003Epic.twitter.com\/dM9CFEG8MF\u003C\/a\u003E\u003C\/p\u003E&mdash; Mike Rundle (@flyosity) \u003Ca href=\"https:\/\/twitter.com\/flyosity\/status\/1495087213150879747?ref_src=twsrc%5Etfw\"\u003EFebruary 19, 2022\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-48693").innerHTML = tweet["html"];</script><p></p>
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {Practical {Data} {Visualization} {Tips} for {Excel} {Users}},
+  date = {2022-05-31},
+  url = {https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2022. <span>“Practical Data Visualization Tips for Excel
+Users.”</span> May 31, 2022. <a href="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users">https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users</a>.
+</div></div></section></div> ]]></description>
+  <category>rstats</category>
+  <guid>https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/index.html</guid>
+  <pubDate>Tue, 31 May 2022 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2022-05-31-practical-data-vizualization-tips-for-excel-users/featured.png" medium="image" type="image/png" height="82" width="144"/>
+</item>
+<item>
+  <title>“30 is not Statistical”</title>
+  <dc:creator>Mark Rieke</dc:creator>
+  <link>https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><span class="fu" style="color: #4758AB;">library</span>(tidyverse)</span>
+<span id="cb1-2"></span>
+<span id="cb1-3"><span class="co" style="color: #5E5E5E;"># setup themes</span></span>
+<span id="cb1-4"><span class="fu" style="color: #4758AB;">theme_set</span>(</span>
+<span id="cb1-5">  <span class="fu" style="color: #4758AB;">theme_minimal</span>(<span class="at" style="color: #657422;">base_family =</span> <span class="st" style="color: #20794D;">"Roboto Slab"</span>,</span>
+<span id="cb1-6">                <span class="at" style="color: #657422;">base_size =</span> <span class="dv" style="color: #AD0000;">13</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb1-7">    <span class="fu" style="color: #4758AB;">theme</span>(<span class="at" style="color: #657422;">plot.title.position =</span> <span class="st" style="color: #20794D;">"plot"</span>,</span>
+<span id="cb1-8">          <span class="at" style="color: #657422;">plot.background =</span> <span class="fu" style="color: #4758AB;">element_rect</span>(<span class="at" style="color: #657422;">fill =</span> <span class="st" style="color: #20794D;">"#F9F9FC"</span>, <span class="at" style="color: #657422;">color =</span> <span class="st" style="color: #20794D;">"#F9F9FC"</span>),</span>
+<span id="cb1-9">          <span class="at" style="color: #657422;">plot.title =</span> ggtext<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">element_markdown</span>(),</span>
+<span id="cb1-10">          <span class="at" style="color: #657422;">plot.subtitle =</span> ggtext<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">element_markdown</span>())</span>
+<span id="cb1-11">)</span></code></pre></div>
+</details>
+</div>
+<p>In my role as an analyst, my team and I are required to put together reports that summarize each hospital’s patient satisfaction performance in a table. These are reviewed by our system’s executive leadership team and the hospital directors in monthly operational reviews (MORs). The format I inherited, loosely recreated below with fake data, color codes each month’s performance against the hospital’s goal: green when outperforming and red when underperforming.</p>
+<p><img src="https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical/pics/table.png" class="img-fluid"></p>
+<p>“But wait!” you may ask, “what do the gray cells mean?” <em>That</em>, dear reader, has been the source of most of my organizational frustration in this role. When the number of surveys returned is less than 30 for a given month, we simply gray-out that cell under the guise of the phrase, “30 is not statistical.”</p>
+<p>I don’t think this practice (or something similar) is unique to my organization — I’ve seen similar outputs from previous employers and in other companies’ published reports. While this isn’t the best use of the underlying data, I understand <em>why</em> this sort of method gets adapted into so many organizational lexicons: companies want their decisions to be based on data and their understanding, albeit incorrect, is that a sample size less than 30 doesn’t provide meaningful info. For this reason, I think it’s important to explore <strong>where</strong> this sentiment came from, <strong>what</strong> the problems with this data-presentation style are, <strong>what</strong> I think would be a better way of presenting the data, and ultimately <strong>why</strong> companies may be hesitant to update their methodology.</p>
+<section id="where-does-this-come-from" class="level2">
+<h2 class="anchored" data-anchor-id="where-does-this-come-from">Where does this come from?</h2>
+<p>At first glance, 30 is a pretty arbitrary number to use as a cutoff. In this case, this cutoff can cause downstream issues with interpreting the data because the difference between <code>n = 30</code> and <code>n = 31</code> is so visually distinct! In our case, the cutoff of 30 was passed down from one of our previous survey vendors, but I believe that the wider root of why this value appears has to do with the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">central limit theorem</a>.</p>
+<p>The central limit theorem states that as a sample size increases, the probability distribution of the sample mean approaches a normal distribution, <em>regardless of the source distribution!</em> As a rule of thumb, this theorem holds true when the <a href="https://stats.stackexchange.com/questions/2541/what-references-should-be-cited-to-support-using-30-as-a-large-enough-sample-siz">sample size is at least 30</a>. In practice, this means that when there are at least 30 samples, we can generally approximate the distribution as normal. The central limit theorem is incredibly useful and an important foundation for a wide array of statistical techniques. Stating that the data doesn’t meet the criteria for the central limit theorem to hold, however, is very different from saying that data is worthless when the sample size is less than 30!</p>
+</section>
+<section id="problems-with-this-approach" class="level2">
+<h2 class="anchored" data-anchor-id="problems-with-this-approach">Problems with this approach</h2>
+<ol type="1">
+<li>Sometimes, the source distribution is known, and whether or not the central limit theorem holds is irrelevant! In my particular case, I am often dealing with patient satisfaction data that lies on a 0-100% scale. This is the perfect use case for modeling the sample with the <a href="https://en.wikipedia.org/wiki/Beta_distribution">beta distribution</a> (which is bound by 0 and 1).</li>
+<li>As mentioned above, graying-out samples where the sample size is less than 30 visually communicates that some months can be ignored. This is a waste of valuable data! While it is true that a larger sample size implies greater confidence in the score, the confidence interval widths for <code>n = 30</code> and <code>n = 31</code> are not <em>so different</em> and we can still estimate the uncertainty with the smaller sample.</li>
+<li>Tabular data is incredibly difficult to parse at-a-glance! <a href="https://www.rstudio.com/resources/rstudioconf-2020/effective-visualizations/">Research shows</a> that spatial encoding (e.g., length, position) is the most interpretable mode of data presentation. Intuitively, it makes sense — there’s a lot less mental overhead involved in looking at a set of points and comparing positions <em>collectively</em> than stringing together several comparisons of individual pairs of numbers in your head.</li>
+</ol>
+</section>
+<section id="a-better-approach" class="level2">
+<h2 class="anchored" data-anchor-id="a-better-approach">A better approach</h2>
+<p>When the underlying distribution is known, a better approach would be to display the data in a plot, regardless of n-size, and use a confidence interval to indicate uncertainty. In this case, we can plot each survey’s scores over time with a line and use a shaded area for the confidence interval.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;"># copied via datapasta</span></span>
+<span id="cb2-2">responses <span class="ot" style="color: #003B4F;">&lt;-</span> </span>
+<span id="cb2-3">  tibble<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">tribble</span>(</span>
+<span id="cb2-4">    <span class="sc" style="color: #5E5E5E;">~</span>survey, <span class="sc" style="color: #5E5E5E;">~</span>goal, <span class="sc" style="color: #5E5E5E;">~</span>month, <span class="sc" style="color: #5E5E5E;">~</span>score, <span class="sc" style="color: #5E5E5E;">~</span>n,</span>
+<span id="cb2-5">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Jul"</span>, <span class="fl" style="color: #AD0000;">65.8</span>,   <span class="dv" style="color: #AD0000;">277</span>,</span>
+<span id="cb2-6">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Aug"</span>, <span class="fl" style="color: #AD0000;">66.5</span>,   <span class="dv" style="color: #AD0000;">264</span>,</span>
+<span id="cb2-7">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Sep"</span>, <span class="fl" style="color: #AD0000;">50.2</span>,   <span class="dv" style="color: #AD0000;">279</span>,</span>
+<span id="cb2-8">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Oct"</span>, <span class="fl" style="color: #AD0000;">57.4</span>,   <span class="dv" style="color: #AD0000;">287</span>,</span>
+<span id="cb2-9">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Nov"</span>, <span class="fl" style="color: #AD0000;">63.9</span>,   <span class="dv" style="color: #AD0000;">265</span>,</span>
+<span id="cb2-10">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Dec"</span>, <span class="fl" style="color: #AD0000;">60.7</span>,   <span class="dv" style="color: #AD0000;">270</span>,</span>
+<span id="cb2-11">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Jan"</span>,   <span class="dv" style="color: #AD0000;">60</span>,   <span class="dv" style="color: #AD0000;">263</span>,</span>
+<span id="cb2-12">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Feb"</span>, <span class="fl" style="color: #AD0000;">57.1</span>,   <span class="dv" style="color: #AD0000;">281</span>,</span>
+<span id="cb2-13">    <span class="st" style="color: #20794D;">"Survey A"</span>, 60L, <span class="st" style="color: #20794D;">"Mar"</span>, <span class="fl" style="color: #AD0000;">49.6</span>,   <span class="dv" style="color: #AD0000;">267</span>,</span>
+<span id="cb2-14">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Jul"</span>, <span class="fl" style="color: #AD0000;">74.5</span>,    <span class="dv" style="color: #AD0000;">35</span>,</span>
+<span id="cb2-15">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Aug"</span>, <span class="fl" style="color: #AD0000;">82.9</span>,    <span class="dv" style="color: #AD0000;">32</span>,</span>
+<span id="cb2-16">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Sep"</span>, <span class="fl" style="color: #AD0000;">73.7</span>,    <span class="dv" style="color: #AD0000;">39</span>,</span>
+<span id="cb2-17">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Oct"</span>, <span class="fl" style="color: #AD0000;">86.2</span>,    <span class="dv" style="color: #AD0000;">27</span>,</span>
+<span id="cb2-18">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Nov"</span>,   <span class="dv" style="color: #AD0000;">79</span>,    <span class="dv" style="color: #AD0000;">31</span>,</span>
+<span id="cb2-19">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Dec"</span>,   <span class="dv" style="color: #AD0000;">79</span>,    <span class="dv" style="color: #AD0000;">26</span>,</span>
+<span id="cb2-20">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Jan"</span>, <span class="fl" style="color: #AD0000;">73.9</span>,    <span class="dv" style="color: #AD0000;">29</span>,</span>
+<span id="cb2-21">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Feb"</span>, <span class="fl" style="color: #AD0000;">71.9</span>,    <span class="dv" style="color: #AD0000;">20</span>,</span>
+<span id="cb2-22">    <span class="st" style="color: #20794D;">"Survey B"</span>, 75L, <span class="st" style="color: #20794D;">"Mar"</span>, <span class="fl" style="color: #AD0000;">47.3</span>,    <span class="dv" style="color: #AD0000;">26</span>,</span>
+<span id="cb2-23">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Jul"</span>, <span class="fl" style="color: #AD0000;">52.7</span>,    <span class="dv" style="color: #AD0000;">73</span>,</span>
+<span id="cb2-24">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Aug"</span>, <span class="fl" style="color: #AD0000;">53.7</span>,    <span class="dv" style="color: #AD0000;">96</span>,</span>
+<span id="cb2-25">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Sep"</span>,   <span class="dv" style="color: #AD0000;">53</span>,    <span class="dv" style="color: #AD0000;">81</span>,</span>
+<span id="cb2-26">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Oct"</span>, <span class="fl" style="color: #AD0000;">54.2</span>,    <span class="dv" style="color: #AD0000;">99</span>,</span>
+<span id="cb2-27">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Nov"</span>, <span class="fl" style="color: #AD0000;">50.6</span>,    <span class="dv" style="color: #AD0000;">85</span>,</span>
+<span id="cb2-28">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Dec"</span>, <span class="fl" style="color: #AD0000;">61.8</span>,    <span class="dv" style="color: #AD0000;">83</span>,</span>
+<span id="cb2-29">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Jan"</span>, <span class="fl" style="color: #AD0000;">55.4</span>,    <span class="dv" style="color: #AD0000;">97</span>,</span>
+<span id="cb2-30">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Feb"</span>, <span class="fl" style="color: #AD0000;">58.3</span>,    <span class="dv" style="color: #AD0000;">82</span>,</span>
+<span id="cb2-31">    <span class="st" style="color: #20794D;">"Survey C"</span>, 55L, <span class="st" style="color: #20794D;">"Mar"</span>, <span class="fl" style="color: #AD0000;">62.9</span>,    <span class="dv" style="color: #AD0000;">83</span>,</span>
+<span id="cb2-32">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Jul"</span>, <span class="fl" style="color: #AD0000;">53.7</span>,    <span class="dv" style="color: #AD0000;">29</span>,</span>
+<span id="cb2-33">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Aug"</span>, <span class="fl" style="color: #AD0000;">66.2</span>,    <span class="dv" style="color: #AD0000;">38</span>,</span>
+<span id="cb2-34">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Sep"</span>, <span class="fl" style="color: #AD0000;">85.9</span>,    <span class="dv" style="color: #AD0000;">36</span>,</span>
+<span id="cb2-35">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Oct"</span>, <span class="fl" style="color: #AD0000;">78.8</span>,    <span class="dv" style="color: #AD0000;">28</span>,</span>
+<span id="cb2-36">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Nov"</span>, <span class="fl" style="color: #AD0000;">71.2</span>,    <span class="dv" style="color: #AD0000;">32</span>,</span>
+<span id="cb2-37">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Dec"</span>, <span class="fl" style="color: #AD0000;">71.6</span>,    <span class="dv" style="color: #AD0000;">38</span>,</span>
+<span id="cb2-38">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Jan"</span>, <span class="fl" style="color: #AD0000;">68.7</span>,    <span class="dv" style="color: #AD0000;">39</span>,</span>
+<span id="cb2-39">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Feb"</span>, <span class="fl" style="color: #AD0000;">76.1</span>,    <span class="dv" style="color: #AD0000;">37</span>,</span>
+<span id="cb2-40">    <span class="st" style="color: #20794D;">"Survey D"</span>, 70L, <span class="st" style="color: #20794D;">"Mar"</span>, <span class="fl" style="color: #AD0000;">74.9</span>,    <span class="dv" style="color: #AD0000;">36</span></span>
+<span id="cb2-41">  )</span>
+<span id="cb2-42"></span>
+<span id="cb2-43">responses <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-44">  <span class="fu" style="color: #4758AB;">mutate</span>(<span class="at" style="color: #657422;">month =</span> <span class="fu" style="color: #4758AB;">paste</span>(month, <span class="st" style="color: #20794D;">"1st, 2022"</span>),</span>
+<span id="cb2-45">         <span class="at" style="color: #657422;">month =</span> lubridate<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">mdy</span>(month),</span>
+<span id="cb2-46">         <span class="at" style="color: #657422;">month =</span> lubridate<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">month</span>(month),</span>
+<span id="cb2-47">         <span class="at" style="color: #657422;">month =</span> <span class="fu" style="color: #4758AB;">case_when</span>(month <span class="sc" style="color: #5E5E5E;">&lt;</span> <span class="dv" style="color: #AD0000;">7</span> <span class="sc" style="color: #5E5E5E;">~</span> <span class="fu" style="color: #4758AB;">paste</span>(<span class="st" style="color: #20794D;">"2022"</span>, month, <span class="st" style="color: #20794D;">"1"</span>, <span class="at" style="color: #657422;">sep =</span> <span class="st" style="color: #20794D;">"-"</span>), </span>
+<span id="cb2-48">                           month <span class="sc" style="color: #5E5E5E;">&gt;</span> <span class="dv" style="color: #AD0000;">6</span> <span class="sc" style="color: #5E5E5E;">~</span> <span class="fu" style="color: #4758AB;">paste</span>(<span class="st" style="color: #20794D;">"2021"</span>, month, <span class="st" style="color: #20794D;">"1"</span>, <span class="at" style="color: #657422;">sep =</span> <span class="st" style="color: #20794D;">"-"</span>)),</span>
+<span id="cb2-49">         <span class="at" style="color: #657422;">month =</span> lubridate<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">ymd</span>(month),</span>
+<span id="cb2-50">         <span class="at" style="color: #657422;">score =</span> score<span class="sc" style="color: #5E5E5E;">/</span><span class="dv" style="color: #AD0000;">100</span>,</span>
+<span id="cb2-51">         <span class="at" style="color: #657422;">alpha =</span> score <span class="sc" style="color: #5E5E5E;">*</span> n,</span>
+<span id="cb2-52">         <span class="at" style="color: #657422;">beta =</span> n <span class="sc" style="color: #5E5E5E;">-</span> alpha) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-53">  riekelib<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">beta_interval</span>(alpha, beta) <span class="sc" style="color: #5E5E5E;">%&gt;%</span></span>
+<span id="cb2-54">  <span class="fu" style="color: #4758AB;">ggplot</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">x =</span> month,</span>
+<span id="cb2-55">             <span class="at" style="color: #657422;">y =</span> score,</span>
+<span id="cb2-56">             <span class="at" style="color: #657422;">ymin =</span> ci_lower,</span>
+<span id="cb2-57">             <span class="at" style="color: #657422;">ymax =</span> ci_upper,</span>
+<span id="cb2-58">             <span class="at" style="color: #657422;">color =</span> survey,</span>
+<span id="cb2-59">             <span class="at" style="color: #657422;">fill =</span> survey)) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-60">  <span class="fu" style="color: #4758AB;">geom_ribbon</span>(<span class="at" style="color: #657422;">alpha =</span> <span class="fl" style="color: #AD0000;">0.25</span>,</span>
+<span id="cb2-61">              <span class="at" style="color: #657422;">color =</span> <span class="cn" style="color: #8f5902;">NA</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-62">  <span class="fu" style="color: #4758AB;">geom_line</span>(<span class="at" style="color: #657422;">size =</span> <span class="dv" style="color: #AD0000;">1</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-63">  <span class="fu" style="color: #4758AB;">geom_hline</span>(<span class="fu" style="color: #4758AB;">aes</span>(<span class="at" style="color: #657422;">yintercept =</span> goal<span class="sc" style="color: #5E5E5E;">/</span><span class="dv" style="color: #AD0000;">100</span>),</span>
+<span id="cb2-64">             <span class="at" style="color: #657422;">linetype =</span> <span class="st" style="color: #20794D;">"dashed"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-65">  <span class="fu" style="color: #4758AB;">facet_wrap</span>(<span class="sc" style="color: #5E5E5E;">~</span>survey) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-66">  <span class="fu" style="color: #4758AB;">labs</span>(<span class="at" style="color: #657422;">title =</span> <span class="st" style="color: #20794D;">"Monthly Patient Satisfaction Scores at **Hospital ABCD**"</span>,</span>
+<span id="cb2-67">       <span class="at" style="color: #657422;">subtitle =</span> <span class="st" style="color: #20794D;">"Dashed line shows survey goal; shaded area represents 95% conidence interval"</span>,</span>
+<span id="cb2-68">       <span class="at" style="color: #657422;">x =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb2-69">       <span class="at" style="color: #657422;">y =</span> <span class="cn" style="color: #8f5902;">NULL</span>,</span>
+<span id="cb2-70">       <span class="at" style="color: #657422;">caption =</span> <span class="st" style="color: #20794D;">"*Fake data that I made up for this example."</span>) <span class="sc" style="color: #5E5E5E;">+</span> </span>
+<span id="cb2-71">  <span class="fu" style="color: #4758AB;">scale_y_continuous</span>(<span class="at" style="color: #657422;">labels =</span> scales<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">label_percent</span>()) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-72">  MetBrewer<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">scale_color_met_d</span>(<span class="st" style="color: #20794D;">"Egypt"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-73">  MetBrewer<span class="sc" style="color: #5E5E5E;">::</span><span class="fu" style="color: #4758AB;">scale_fill_met_d</span>(<span class="st" style="color: #20794D;">"Egypt"</span>) <span class="sc" style="color: #5E5E5E;">+</span></span>
+<span id="cb2-74">  <span class="fu" style="color: #4758AB;">theme</span>(<span class="at" style="color: #657422;">legend.position =</span> <span class="st" style="color: #20794D;">"none"</span>)</span></code></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical/index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="2100"></p>
+</div>
+</div>
+<p>This, I believe, has a few benefits.</p>
+<ol type="1">
+<li>This is simply more visually appealing than the table. I (along with most people, I’d assume) prefer the look of a well formatted plot over a well formatted table (even if well formatted, a table is still a big block of text).</li>
+<li>It is far easier to discern the overall trend. Instead of reading and trying to compare values, we can simply see which direction the line is moving!</li>
+<li>Most imortantly, <em>we do not throw out valuable data because of sample size.</em> We actually end up encoding <em>more</em> information — n-size, which was missing from the table, is encoded in the width of the confidence interval (a smaller confidence interval indicates a larger sample). In this toy example, surveys B and D included a few months with fewer than 30 returns — can you tell which months they were without looking at the table?</li>
+</ol>
+<p>The tradeoff is that we can no longer explicitly see each month’s score and it is a bit harder to tell if a hospital is meeting the goal when the score is close. In my experience, however, this is not how formatted tables are used — executives that I interact with typically try to determine overall trends from tabular data!</p>
+</section>
+<section id="organizational-resistance" class="level2">
+<h2 class="anchored" data-anchor-id="organizational-resistance">Organizational resistance</h2>
+<p>While the changes suggested here have clear benefits over the table, I’ve thus far been unsuccessful in any attempts to change the reporting methodology and I suspect that similar efforts at other companies would encounter similar organizational resistance. Much of what’s stated below is anec-data, but I assume will ring true to anyone who has struggled with getting their proposed operational changes implemented.</p>
+<p>As companies scale, it becomes more &amp; more difficult to implement change. On top of that, some industries (including Healthcare, the one I work in) are similarly inertial on an industry level. In this particular case, changing a report’s format may seem small in the grand scheme of things, but this is the same format the executive team has been seeing since 2017! The system executives and individual hospital leaders have a rapport and vernacular built around these monthly reports in this format — updating the format similarly requires that the executives and leaders update their long-held understanding and language built around tabular data.</p>
+<p>Tabular data in general shows up in reports across industries. My hunch is that the main driver of this is the widespread integration of Microsoft Excel as the workhorse for most analysts’ tasks. Excel get wide use as a calculator, a data storage system (eek!), and a presentation tool. Most analysts are incredibly comfortable working in Excel and while it is possible to create plots that show both the score and confidence interval, it is far simpler to apply a bit of conditional formatting and submit the raw data as the report itself.</p>
+<p>This is not to say that tabular reports have no use — when individual values are important, tabular reports are preferred! If, however, the goal is to understand trends over time or relationships between values, plots are a far better option!</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {“30 Is Not {Statistical}”},
+  date = {2022-04-28},
+  url = {https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical},
+  langid = {en}
+}
+</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas">
+Mark Rieke. 2022. <span>“<span>‘30 Is Not Statistical’</span>.”</span>
+April 28, 2022. <a href="https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical">https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical</a>.
+</div></div></section></div> ]]></description>
+  <category>rstats</category>
+  <guid>https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical/index.html</guid>
+  <pubDate>Thu, 28 Apr 2022 05:00:00 GMT</pubDate>
+  <media:content url="https://www.thedatadiary.net/posts/2022-04-28-30-is-not-statistical/pics/table.png" medium="image" type="image/png" height="29" width="144"/>
+</item>
 <item>
   <title>Impeachment Republicans and Democracy</title>
   <dc:creator>Mark Rieke</dc:creator>
@@ -3251,536 +4442,18 @@ Mark Rieke. 2021. <span>“Diamonds Are Forever.”</span> November 14,
 
 <p>A few weeks ago I had <a href="https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/">written about the VA Governor’s race</a> before going on vacation - in that time it seems as though Terry McAuliffe’s campaign had lost a lot of steam and Youngkin made up a lot of ground in the final weeks of the campaign. At the time of this writing, it seems overwhelmingly likely that Glenn Youngkin will become the next governor of Virginia. To avoid some of the <a href="https://twitter.com/rp_griffin/status/1455696452915802122">galaxy-brain takes that will inevitabely wind up twitter</a>, I thought I’d distract myself by following up on my previous post.</p>
 <p>Firstly, I should share the updated polling average. A few weeks ago, McAullife appeared to have a sizeable lead in the polls:</p>
-<p></p><div id="tweet-18336"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/markjrieke/status/1444454926399254535%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-18336").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-25877"></div><script>tweet={"url":"https:\/\/twitter.com\/markjrieke\/status\/1444454926399254535","author_name":"Mark Rieke","author_url":"https:\/\/twitter.com\/markjrieke","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EFiveThirtyEight&#39;s poll tracker for the VA governor race (\u003Ca href=\"https:\/\/t.co\/HKVw7RcsJN\"\u003Ehttps:\/\/t.co\/HKVw7RcsJN\u003C\/a\u003E) shows the moving averages - as a weekend coding project, I revamped with a weighted avg., 95% CI, and win probability based on an election day distribution\uD83D\uDCC8 \u003Ca href=\"https:\/\/t.co\/hM6vzLUZnM\"\u003Epic.twitter.com\/hM6vzLUZnM\u003C\/a\u003E\u003C\/p\u003E&mdash; Mark Rieke (@markjrieke) \u003Ca href=\"https:\/\/twitter.com\/markjrieke\/status\/1444454926399254535?ref_src=twsrc%5Etfw\"\u003EOctober 3, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-25877").innerHTML = tweet["html"];</script><p></p>
 <p>However, as of election day, the race had significantly tightened to effectively a coin-toss:</p>
-<p></p><div id="tweet-29400"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/markjrieke/status/1455164731749175304%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-29400").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-46263"></div><script>tweet={"url":"https:\/\/twitter.com\/markjrieke\/status\/1455164731749175304","author_name":"Mark Rieke","author_url":"https:\/\/twitter.com\/markjrieke","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EFinal update - p_win ~ 55% McAuliffe; again, the win probability is just the portion of the polling avg. distribution above 50% for each candidate. For *actual* models, go check out the work by \u003Ca href=\"https:\/\/twitter.com\/lxeagle17?ref_src=twsrc%5Etfw\"\u003E@lxeagle17\u003C\/a\u003E\/\u003Ca href=\"https:\/\/twitter.com\/Thorongil16?ref_src=twsrc%5Etfw\"\u003E@Thorongil16\u003C\/a\u003E or \u003Ca href=\"https:\/\/twitter.com\/jhkersting?ref_src=twsrc%5Etfw\"\u003E@jhkersting\u003C\/a\u003E, among others \u003Ca href=\"https:\/\/t.co\/W9bDf1OumZ\"\u003Epic.twitter.com\/W9bDf1OumZ\u003C\/a\u003E\u003C\/p\u003E&mdash; Mark Rieke (@markjrieke) \u003Ca href=\"https:\/\/twitter.com\/markjrieke\/status\/1455164731749175304?ref_src=twsrc%5Etfw\"\u003ENovember 1, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-46263").innerHTML = tweet["html"];</script><p></p>
 <p>As I mention in the above tweet, the win probability isn’t a true forecast, just the portion of each candidate’s election day distribution <em>above 50%</em>. That being said, actual forecasts similarly had the race down to a near 50-50 split as of this morning:</p>
-<p></p><div id="tweet-15029"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/gelliottmorris/status/1454130028149620737%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-15029").innerHTML = tweet["html"];</script><p></p>
-<p></p><div id="tweet-88769"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/jhkersting/status/1455545666999042056%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-88769").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-44175"></div><script>tweet={"url":"https:\/\/twitter.com\/gelliottmorris\/status\/1454130028149620737","author_name":"G. Elliott Morris","author_url":"https:\/\/twitter.com\/gelliottmorris","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003ESpecial for Twitter: Updated VA polling trends with the new Fox and Post\/GMU polls \u003Ca href=\"https:\/\/t.co\/hLNa3pFCpR\"\u003Ehttps:\/\/t.co\/hLNa3pFCpR\u003C\/a\u003E \u003Ca href=\"https:\/\/t.co\/6cz0JXa0xm\"\u003Epic.twitter.com\/6cz0JXa0xm\u003C\/a\u003E\u003C\/p\u003E&mdash; G. Elliott Morris (@gelliottmorris) \u003Ca href=\"https:\/\/twitter.com\/gelliottmorris\/status\/1454130028149620737?ref_src=twsrc%5Etfw\"\u003EOctober 29, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-44175").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-50356"></div><script>tweet={"url":"https:\/\/twitter.com\/jhkersting\/status\/1455545666999042056","author_name":"Jack Kersting","author_url":"https:\/\/twitter.com\/jhkersting","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003E\u003Ca href=\"https:\/\/twitter.com\/hashtag\/FINAL?src=hash&amp;ref_src=twsrc%5Etfw\"\u003E#FINAL\u003C\/a\u003E Virginia Gov. Projection.\u003Ca href=\"https:\/\/twitter.com\/GlennYoungkin?ref_src=twsrc%5Etfw\"\u003E@GlennYoungkin\u003C\/a\u003E is ever so slightly favored in this tossup for the governorship.\u003Cbr\u003E\u003Cbr\u003EFull Projection&gt;&gt;\u003Ca href=\"https:\/\/t.co\/PcM2qSjUYK\"\u003Ehttps:\/\/t.co\/PcM2qSjUYK\u003C\/a\u003E \u003Ca href=\"https:\/\/t.co\/NGCirjkkG4\"\u003Epic.twitter.com\/NGCirjkkG4\u003C\/a\u003E\u003C\/p\u003E&mdash; Jack Kersting (@jhkersting) \u003Ca href=\"https:\/\/twitter.com\/jhkersting\/status\/1455545666999042056?ref_src=twsrc%5Etfw\"\u003ENovember 2, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-50356").innerHTML = tweet["html"];</script><p></p>
 <p>Even the model most confident in McAuliffe built by <a href="https://twitter.com/lxeagle17">Lakshya Jain</a> and <a href="https://twitter.com/Thorongil16">Thorongil</a> had dropped McAuliffe’s win probability from ~85% to 67% over the course of a few weeks:</p>
-<p></p><div id="tweet-25652"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/lxeagle17/status/1455544487149592576%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-25652").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-15485"></div><script>tweet={"url":"https:\/\/twitter.com\/lxeagle17\/status\/1455544487149592576","author_name":"Lakshya Jain","author_url":"https:\/\/twitter.com\/lxeagle17","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003E\uD83D\uDEA8FINAL \u003Ca href=\"https:\/\/twitter.com\/hashtag\/VAGov?src=hash&amp;ref_src=twsrc%5Etfw\"\u003E#VAGov\u003C\/a\u003E FORECAST\uD83D\uDEA8\u003Cbr\u003E\u003Cbr\u003EAt the end of a long campaign, here&#39;s where the model made by me and \u003Ca href=\"https:\/\/twitter.com\/Thorongil16?ref_src=twsrc%5Etfw\"\u003E@Thorongil16\u003C\/a\u003E stands. The race is rated as Lean Democratic, with a forecasted margin of D+3.6 and a win probability of 67%. An interactive map is over at \u003Ca href=\"https:\/\/t.co\/Kmvj6sRElC\"\u003Ehttps:\/\/t.co\/Kmvj6sRElC\u003C\/a\u003E. \u003Ca href=\"https:\/\/t.co\/kuaJc82HML\"\u003Epic.twitter.com\/kuaJc82HML\u003C\/a\u003E\u003C\/p\u003E&mdash; Lakshya Jain (@lxeagle17) \u003Ca href=\"https:\/\/twitter.com\/lxeagle17\/status\/1455544487149592576?ref_src=twsrc%5Etfw\"\u003ENovember 2, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-15485").innerHTML = tweet["html"];</script><p></p>
 <p>While I definitely plan on utilizing a more scientific poll-weighting methodology in the future, I do find it interesting that even a simple averaging method can produce relatively accurate results in line with the majority of other forecasters.</p>
 <p>Regarding post-hoc analysis of <em>why</em> McAuliffe lost, I won’t dredge up any of my own (partially because it’d be irresponsible &amp; pundit-y to do so without referencing any data and partially because it’s getting late &amp; I’m a bit tired), but I’ll point out a few tweets from <a href="https://twitter.com/Nate_Cohn">Nate Cohn</a> that show that the results appear to show a near uniform shift across precincts and different voting groups. This would suggest that McAuliffe’s loss is tied more closely to the national environment, rather than shifts amongst specific groups/counties.</p>
-<p></p><div id="tweet-80788"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/Nate_Cohn/status/1455693099062153217%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-80788").innerHTML = tweet["html"];</script><p></p>
-<p></p><div id="tweet-18472"></div><script>tweet=<html>
-
-<head>
-
-<img src="https://mhconnect.mhhs.org/dana-na/auth/url_default/welcome.cgi?p=logo&signinId=url_default">
-
-<title>Web Page Blocked</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-
-<META HTTP-EQUIV="PRAGMA" CONTENT="NO-CACHE">
-
-<meta name="viewport" content="initial-scale=1.0">
-
-<style>
-
-  #content {
-
-    border:3px solid#aaa;
-
-    background-color:#fff;
-
-    margin:1.5em;
-
-    padding:1.5em;
-
-    font-family:Tahoma,Helvetica,Arial,sans-serif;
-
-    font-size:1em;
-
-  }
-
-  h1 {
-
-    font-size:1.3em;
-
-    font-weight:bold;
-
-    color:#196390;
-
-  }
-
-  b {
-
-    font-weight:normal;
-
-    color:#196390;
-
-  }
-
-</style>
-
-</head>
-
-<body bgcolor="#e7e8e9">
-
-<div id="content">
-
-<h1>Web Page Blocked</h1>
-
-<p>Access to the web page you were trying to visit has been blocked in accordance with company policy. Please <a href="https://memorialhermann.service-now.com/ssp?id=sc_cat_item&sys_id=09722aa04f6b2bc41f0a8d9f9310c79e&sysparm_category=baf362704f9923c01f0a8d9f9310c7c6a">open a ticket</a> if you believe this was in error.</p>
-
-<p><b>User:</b> memorial\e1735399 </p>
-
-<p><b>URL:</b> publish.twitter.com/oembed?url=https://twitter.com/Nate_Cohn/status/1455717564772986884%26align=center </p>
-
-<p><b>Category:</b> social-networking </p>
-
-</div>
-
-</body>
-
-</html>
-
-;document.getElementById("tweet-18472").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-83781"></div><script>tweet={"url":"https:\/\/twitter.com\/Nate_Cohn\/status\/1455693099062153217","author_name":"Nate Cohn","author_url":"https:\/\/twitter.com\/Nate_Cohn","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EUpdate at nearly 1500 precincts: Youngkin is still on track for victory, running a ahead of what he needs across basically every dimension worth looking at.\u003Cbr\u003EBut it&#39;s worth noting just how close things are to &#39;expectations,&#39; which is simply shifting the 2020 result to the right \u003Ca href=\"https:\/\/t.co\/Mbe3pg7NFB\"\u003Epic.twitter.com\/Mbe3pg7NFB\u003C\/a\u003E\u003C\/p\u003E&mdash; Nate Cohn (@Nate_Cohn) \u003Ca href=\"https:\/\/twitter.com\/Nate_Cohn\/status\/1455693099062153217?ref_src=twsrc%5Etfw\"\u003ENovember 3, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-83781").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-75300"></div><script>tweet={"url":"https:\/\/twitter.com\/Nate_Cohn\/status\/1455717564772986884","author_name":"Nate Cohn","author_url":"https:\/\/twitter.com\/Nate_Cohn","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003EAnd btw, if you&#39;re doing pundit things I&#39;d look at that red column. McAuliffe fell short of expectations--a more-or-less uniform shift--by basically the same amount, just about everywhere\u003C\/p\u003E&mdash; Nate Cohn (@Nate_Cohn) \u003Ca href=\"https:\/\/twitter.com\/Nate_Cohn\/status\/1455717564772986884?ref_src=twsrc%5Etfw\"\u003ENovember 3, 2021\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-75300").innerHTML = tweet["html"];</script><p></p>
 <p>This won’t stop the networks from ascribing the win/loss to very specific campaign issues (I’ve already seen quite a few folks ascribe Youngkin’s win to education, race, suburban-reversion, etc., without any evidence to back up such claims). Until there are deep dives into data regarding the election, I’d treat any comments from pundits with a hefty grain of salt.</p>
 <section id="some-closing-thoughts" class="level3">
 <h3 class="anchored" data-anchor-id="some-closing-thoughts">Some closing thoughts</h3>
@@ -4149,151 +4822,6 @@ Mark Rieke. 2021. <span>“Blexas?”</span> July 11, 2021. <a href="https://www
   <guid>https://www.thedatadiary.net/posts/2021-07-11-blexas/index.html</guid>
   <pubDate>Sun, 11 Jul 2021 05:00:00 GMT</pubDate>
   <media:content url="https://www.thedatadiary.net/posts/2021-07-11-blexas/featured.png" medium="image" type="image/png" height="96" width="144"/>
-</item>
-<item>
-  <title>COVID Cases Improve with Introduction of Vaccines</title>
-  <dc:creator>Mark Rieke</dc:creator>
-  <link>https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/index.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>As vaccines have become widely available in the US, new COVID cases and deaths have dropped significantly from winter peak, with the 7-day average for both cases and deaths nearing the averages reported during the initial lockdown in the summer of last year (note that, in the chart for the 7-day average of deaths below, the scale is restricted to 15 deaths per million; this cuts off some of the state surges, but shows the US average better than a <a href="https://github.com/markjrieke/thedatadiary/raw/main/2021.05.30-COVID/p3.png">chart with an unedited scale</a>).</p>
-<p><img src="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/pics/plot_01.png" class="img-fluid"></p>
-<p><img src="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/pics/plot_03.png" class="img-fluid"></p>
-<p>According to the US Vaccine Tracker, <a href="https://twitter.com/USVaccineCount">41% of Americans are fully vaccinated</a> as of today. Even more heartening is the fact that the partisan divide regarding vaccine hesitancy, while still existent, <a href="https://twitter.com/gelliottmorris/status/1397579777448550404">is shrinking</a>.</p>
-<p>While this is certainly good news about the country as a whole, individual states, counties, and cities may have varying levels of success in curbing the spread of the virus in the local community. The New York Times created a <a href="https://www.nytimes.com/interactive/2021/us/covid-cases-deaths-tracker.html">helpful dashboard</a> that lets you look at the spread of the virus on a state, county, or metro area scale.</p>
-<p>All this is to say that, while the pandemic is still not (and possibly will never be) a thing of the past, the introduction of vaccines certainly has appeared to help curb the spread.</p>
-<section id="catching-up" class="level3">
-<h3 class="anchored" data-anchor-id="catching-up">Catching Up</h3>
-<p>It’s been a while since I’ve written, due to a flurry of weddings and trips. While I had originally hoped to get back onto a regular weekly writing schedule, I will again have to push out the next post until late June, due to some exciting personal news: June 21st, I’ll be starting a new job! I’ll be transitioning from engineering in the oil &amp; gas industry to healthcare analytics, which I’m really excited about! In the meantime, however, there’s a flurry of work to do in my current job to ensure that the person backfilling me is prepared to pick up the projects I’m working on. Hopefully after that, I can get back to a regular schedule.</p>
-<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.05.30-COVID">github</a>.</p>
-
-
-</section>
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
-  author = {Mark Rieke},
-  title = {COVID {Cases} {Improve} with {Introduction} of {Vaccines}},
-  date = {2021-06-03},
-  url = {https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
-Mark Rieke. 2021. <span>“COVID Cases Improve with Introduction of
-Vaccines.”</span> June 3, 2021. <a href="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines">https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines</a>.
-</div></div></section></div> ]]></description>
-  <category>archive</category>
-  <guid>https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/index.html</guid>
-  <pubDate>Thu, 03 Jun 2021 05:00:00 GMT</pubDate>
-  <media:content url="https://www.thedatadiary.net/posts/2021-06-03-covid-cases-improve-with-introduction-of-vaccines/featured.png" medium="image" type="image/png" height="96" width="144"/>
-</item>
-<item>
-  <title>President of the Polls</title>
-  <dc:creator>Mark Rieke</dc:creator>
-  <link>https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/index.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>Elliot Morris wrote in his <a href="https://gelliottmorris.substack.com/p/are-preferences-for-more-government">newsletter last week</a> about the increase in the public’s opinion that the government ought to be doing more. A summary of the last twenty years of polling by NBC shows that, while there seems to be a reactive effect based on the party of the president, support for increased government activity has generally been on the rise.</p>
-<p><img src="https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/govt.png" class="img-fluid"></p>
-<p>The combination of Biden’s <a href="https://www.pewresearch.org/politics/2021/03/11/biden-viewed-positively-on-many-issues-but-public-is-less-confident-he-can-unify-country/">approval across several categories</a>, <a href="https://www.nytimes.com/2021/02/04/us/politics/biden-approval-rating-republicans.html">public support of his proposals</a> (with the exception of his original cap on refugees, which he then <a href="https://www.cnn.com/2021/05/03/politics/refugee-cap/index.html">raised after public outcry</a>), and the public support of increased government activity gives Biden a strong argument in pressing congress to get his progressive policies pushed through to his desk. Despite the popularity, his $4 trillion <a href="https://www.nytimes.com/2021/04/28/upshot/biden-families-plan-american-rescue-infrastructure.html">infrastructure and families plan</a> largely depends on what the senate parliamentarian will allow into a reconciliation bill (which only needs majority approval, rather than a filibuster-proof 60 votes) and the votes of a few moderate Democratic senators, since the bills will receive <a href="https://nypost.com/2021/05/04/mcconnell-no-gop-senator-will-back-bidens-4-trillion-infrastructure-plan/">no Republican support in the senate</a>.</p>
-<section id="outlook-for-the-coming-weeks" class="level3">
-<h3 class="anchored" data-anchor-id="outlook-for-the-coming-weeks">Outlook for the Coming Weeks</h3>
-<p>I’ll be taking a break for the next few weeks, due to a flurry of weekend trips/weddings now that I/most of my friends are fully vaccinated. I’ll continue to work on the database in the background (notably, I need to dive deep into the census bureau demographic data, which needs a lot of fixing). I’ll likely write a short update in either late May or early June.</p>
-<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.05.03-misc_ish">Github</a>.</p>
-
-
-</section>
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
-  author = {Mark Rieke},
-  title = {President of the {Polls}},
-  date = {2021-05-05},
-  url = {https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
-Mark Rieke. 2021. <span>“President of the Polls.”</span> May 5, 2021. <a href="https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls">https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls</a>.
-</div></div></section></div> ]]></description>
-  <category>archive</category>
-  <category>politics</category>
-  <guid>https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/index.html</guid>
-  <pubDate>Wed, 05 May 2021 05:00:00 GMT</pubDate>
-  <media:content url="https://www.thedatadiary.net/posts/2021-05-05-president-of-the-polls/featured.png" medium="image" type="image/png" height="96" width="144"/>
-</item>
-<item>
-  <title>A Lukewarm Case for DC Statehood</title>
-  <dc:creator>Mark Rieke</dc:creator>
-  <link>https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/index.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on <a href="https://github.com/markjrieke/electionsimulator/tree/main/notepad">building out the demographic/economic database</a>. I, did, however, sneak in some time to explore the <a href="https://www.census.gov/data/tables/2020/dec/2020-apportionment-data.html">2020 Census Apportionment Results</a> that were released yesterday. Some surprises came out of the release: Texas and Florida underperformed expectations, only gaining two and one seat, respectively; Arizona didn’t gain a seat; and New York lost a seat but was apparently <a href="https://www.nytimes.com/2021/04/26/nyregion/new-york-census-congress.html">89 people short of retaining its seats</a>. Given that Texas and Florida each gained one less seat than was generally expected, there’s been some speculation online that <a href="https://www.washingtonpost.com/business/are-you-a-citizen-the-trump-census-controversy-explained/2021/04/26/1cfe6ed8-a6e1-11eb-a8a7-5f45ddcdf364_story.html">Donald Trump’s attempt to undercount Hispanics</a> was successful, but backfired. I’ll hold my judgments on this theory until I can read some more in-depth opinions (if they get written).</p>
-<p>With the new apportionment and population data, each individual’s representative power in congress has shifted. Including both Senators and House Representatives, states with smaller populations continue to have outsized representation in congress: Wyoming and Vermont have significantly more representatives per million residents than California or Texas, for example. Residents of Washington D.C., however, receive no representation in congress.</p>
-<p><img src="https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/plot.png" class="img-fluid"></p>
-
-<div class="no-row-height column-margin column-container"><div class="">
-<p>As a side note, the reps-per-million will be greater than the total number of congressional representatives in states with less than one million residents. This chart is really meant to compare the uneven representative power of each state.</p>
-</div></div><p>If D.C. were to become a state, it would have outsized representative power, similar to Wyoming and Vermont, due to its size. That, however, isn’t really a justification to deny ~700,000 Americans national representation, and the arguments against D.C. statehood have been <a href="https://www.washingtonpost.com/opinions/treating-fellow-citizens-as-landfill/2021/03/24/f4c16d34-8c1a-11eb-a6bd-0eb91c03305a_story.html">weak at best</a> and <a href="https://www.cnn.com/2020/06/26/politics/tom-cotton-wyoming-dc-statehood/index.html">implicitly racist at worst</a>, given D.C.’s <a href="https://en.wikipedia.org/wiki/Washington,_D.C.#Demographics">majority-minority population</a>.</p>
-<p>Still, it’s virtually impossible that D.C. statehood receive the filibuster-proof 60 votes in the Senate (I’d doubt that even a compromise of <a href="https://www.forbes.com/sites/andrewsolender/2021/04/22/gop-senator-introduces-bill-to-give-dc-to-maryland-as-statehood-bill-heads-to-senate/?sh=c66ab4c2ca30">retrocession into Maryland</a> would pass). For the time being, residents of D.C. will have to wait for representation until polarized ideological walls come down and Republicans vote for D.C. statehood, Democrats gain enough seats for a supermajority, or the filibuster is abolished.</p>
-<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.04.27-bureau_results">Github</a>.</p>
-
-
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
-  author = {Mark Rieke},
-  title = {A {Lukewarm} {Case} for {DC} {Statehood}},
-  date = {2021-04-27},
-  url = {https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
-Mark Rieke. 2021. <span>“A Lukewarm Case for DC Statehood.”</span> April
-27, 2021. <a href="https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood">https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood</a>.
-</div></div></section></div> ]]></description>
-  <category>archive</category>
-  <category>politics</category>
-  <guid>https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/index.html</guid>
-  <pubDate>Tue, 27 Apr 2021 05:00:00 GMT</pubDate>
-  <media:content url="https://www.thedatadiary.net/posts/2021-04-27-a-lukewarm-case-for-dc-statehood/featured.png" medium="image" type="image/png" height="96" width="144"/>
-</item>
-<item>
-  <title>Catching Up</title>
-  <dc:creator>Mark Rieke</dc:creator>
-  <link>https://www.thedatadiary.net/posts/2021-04-20-catching-up/index.html</link>
-  <description><![CDATA[ 
-
-
-
-
-<p>The past few weeks have been a bit lite (read::absent) in terms of posting updates. When not taking the machine learning course, I’ve been spending quite a bit of time working on <a href="https://github.com/markjrieke/electionsimulator/tree/main/data/tidy">building out a database</a> of demographic data (from 1980 to 2019). The goal is to be able to build this database out once, then reference it repeatedly for future projects. If you’re so inclined, you can read my unedited ad-hoc thoughts while working on the database <a href="https://github.com/markjrieke/electionsimulator/tree/main/notepad">here</a>. There’s lots of code interspersed with prose, so it’s a bit of a slog to read through, but gives a really detailed account of how I worked through the different problems that arose.</p>
-<p>That being said, I did have a bit of time to squeeze in a quick chart. YouGov recently conducted a <a href="https://today.yougov.com/topics/politics/articles-reports/2021/04/14/best-and-worst-states-democrats-republicans">poll</a> on each state’s favorability rating according to Democrats and Republicans. Not surprisingly, state favorability is closely aligned with Biden’s voteshare in November.</p>
-<p><img src="https://www.thedatadiary.net/posts/2021-04-20-catching-up/yougov.png" class="img-fluid"></p>
-<p>I’ll keep this short and sweet. I may continue to write sparsely over the next month or so, due to a few trips (now that I have the COVID vaccine), but will continue to work on the database in the background.</p>
-<p>As always, you can find my work on <a href="https://github.com/markjrieke/thedatadiary/tree/main/2021.04.18-misc">Github</a>.</p>
-
-
-
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2021,
-  author = {Mark Rieke},
-  title = {Catching {Up}},
-  date = {2021-04-20},
-  url = {https://www.thedatadiary.net/posts/2021-04-20-catching-up},
-  langid = {en}
-}
-</code></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2021" class="csl-entry quarto-appendix-citeas">
-Mark Rieke. 2021. <span>“Catching Up.”</span> April 20, 2021. <a href="https://www.thedatadiary.net/posts/2021-04-20-catching-up">https://www.thedatadiary.net/posts/2021-04-20-catching-up</a>.
-</div></div></section></div> ]]></description>
-  <category>archive</category>
-  <guid>https://www.thedatadiary.net/posts/2021-04-20-catching-up/index.html</guid>
-  <pubDate>Tue, 20 Apr 2021 05:00:00 GMT</pubDate>
-  <media:content url="https://www.thedatadiary.net/posts/2021-04-20-catching-up/featured.png" medium="image" type="image/png" height="96" width="144"/>
 </item>
 </channel>
 </rss>
