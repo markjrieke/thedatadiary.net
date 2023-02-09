@@ -19,7 +19,7 @@ execute:
   
 knitr: 
   opts_chunk: 
-    dev: "agg_png"
+    dev: "ragg_png"
 
 # default author fields
 author: 

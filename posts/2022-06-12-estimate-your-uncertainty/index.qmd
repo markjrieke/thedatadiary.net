@@ -1,0 +1,300 @@
+---
+title: 'Estimate your uncertainty'
+date: '2022-06-12'
+categories: [rstats, bayes]
+subtitle: 'Modeling patient satisfaction data with empirical Bayesian methods'
+image: featured.png
+code-fold: show
+---
+
+```{r}
+#| code-fold: true
+library(tidyverse)
+
+# setup themes
+theme_set(
+  theme_minimal(base_family = "Roboto Slab",
+                base_size = 15) +
+    theme(plot.title.position = "plot",
+          plot.background = element_rect(fill = "#F9F9FC", color = "#F9F9FC"),
+          plot.title = ggtext::element_markdown(),
+          plot.subtitle = ggtext::element_markdown())
+)
+```
+
+I recently picked up [David Robinson's](http://varianceexplained.org/about/) book, [Introduction to Empirical Bayes](http://varianceexplained.org/r/empirical-bayes-book/). It's available online for a price of your own choosing (operating under a "pay-what-you-want" model), so you can technically pick it up for free, but it's well worth the suggested price of $9.95. The book has a particular focus on practical steps for implementing Bayesian methods with code, which I appreciate. I've made it through Part I (of four), which makes for a good stopping point to practice what I've read.
+
+The first section is highly focused on modeling the probability of success/failure of some binary outcome using a [beta distribution](https://en.wikipedia.org/wiki/Beta_distribution). This is highly relevant to my work as an analyst, where whether or not a patient responded positively to a particular question on a survey can be modeled with this method. Thus far, however, I've taken the [frequentist](https://en.wikipedia.org/wiki/Frequentist_inference) approach to analyses, which assumes we know nothing about what the data ought to look like prior to analyzing it. This is largely because I didn't know of a robust way to estimate a [prior](https://en.wikipedia.org/wiki/Prior_probability) for a Bayesian analysis.
+
+Thankfully, however, the book walks through examples of exactly how to do this! We can use a [maximum likelihood estimator](https://en.wikipedia.org/wiki/Maximum_likelihood_estimation) to estimate a reasonable prior given the current data. That's quite a bit of statistical mumbo-jumbo --- in this post I'll walk through an example that spells it out a bit more clearly using fake hospital satisfaction data (N.B.; this is largely a recreation of the steps taken in the book --- practice makes perfect!).
+
+## Setting up the data
+
+First, let's simulate responses to patient satisfaction surveys. I tend to look at patient satisfaction scores across individual hospital units (e.g., ED, ICU, IMU, etc.). Units can have varying numbers of discharges, so we'll use a [log-normal](https://en.wikipedia.org/wiki/Log-normal_distribution) distribution to estimate the number of responses for each unit.
+
+```{r}
+# simulate 1,500 hospital units with an average of 150 survey returns per unit
+set.seed(123)
+survey_data <- 
+  rlnorm(1500, log(150), 1.5) %>%
+  as_tibble() %>%
+  rename(n = value)
+
+survey_data %>%
+  ggplot(aes(x = n)) +
+  geom_histogram() +
+  scale_x_log10(labels = scales::comma_format()) +
+  labs(title = "Simulation of hospital satisfaction data",
+       subtitle = "Distribution of the number of survey returns per hospital unit",
+       x = NULL,
+       y = NULL) 
+```
+
+The spectrum of responses is incredibly broad --- some units have a massive number of returns (in the tens of thousands!) while others have just a handful. This is fairly consistent with the real-world data that I've seen (though the units on the high-side are a bit over-represented here). 
+
+Next, let's assume that there is some true satisfaction rate that is associated with each unit. If each unit had an infinite number of survey returns, the satisfaction rate from the survey returns would approach this true value. In this case, we'll set the true satisfaction for each unit randomly but have it hover around 66%.
+
+```{r}
+# set the true satisfaction to be different for each unit, but hover around 66%
+set.seed(234)
+survey_data <- 
+  survey_data %>%
+  rowwise() %>%
+  mutate(true_satisfaction = rbeta(1, 66, 34))
+```
+
+Although there is a true satisfaction associated with each unit, we wouldn't expect that the reported survey scores would match this exactly. This is especially true when there are few responses --- if a unit has a true satisfaction rate of 75% but only 3 responses, it's impossible for the reported score to match the underlying true rate! 
+
+We can simulate the number of patients who responded positively (in survey terms, the number of "topbox" responses) by generating `n` responses for each unit using a [binomial distribution](https://en.wikipedia.org/wiki/Binomial_distribution).
+
+```{r}
+# simulate the number of patients responding with the topbox value
+# we *know* the true value, but the actual score may vary!
+set.seed(345)
+survey_data <-
+  survey_data %>%
+  mutate(n = round(n),
+         topbox = rbinom(1, n, true_satisfaction)) %>%
+  ungroup() %>%
+  
+  # name each unit
+  rowid_to_column() %>%
+  mutate(unit = paste("Unit", rowid)) %>%
+  relocate(unit) %>%
+  
+  # remove the true satisfaction so we don't know what it is!
+  select(-rowid, -true_satisfaction)
+
+# find patient satisfaction scores
+survey_data <- 
+  survey_data %>%
+  mutate(score = topbox/n)
+
+survey_data %>%
+  ggplot(aes(x = score)) +
+  geom_histogram() +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Simulation of hospital satisfaction data",
+       subtitle = "Distribution of patient satisfaction scores per hospital unit",
+       x = NULL,
+       y = NULL)
+```
+
+As expected, most of our simulated data hovers around a score of 66%. However, there are a few scores at the extremes of 0% and 100% --- given how we simulated the data, it is unlikely that these units are *really* performing so poorly/so well and it's likelier that they just have few returns.
+
+```{r}
+# which units have the highest scores?
+survey_data %>%
+  arrange(desc(score)) %>%
+  slice_head(n = 10) %>%
+  knitr::kable()
+```
+
+```{r}
+# which units have the lowest scores?
+survey_data %>%
+  arrange(score) %>%
+  slice_head(n = 10) %>%
+  knitr::kable()
+```
+
+As expected, the units on either end of the spectrum aren't necessarily outperforming/underperforming --- they simply don't have a lot of survey responses! We can use Bayesian inference to estimate the true satisfaction rate by specifying and updating a prior!
+
+## Generating a prior distribution
+
+When looking at the entire dataset, the distribution of scores is thrown off a bit by the units with few responses. If we restrict the dataset to only the units that have more than 30 responses (which, [as I've written about before](https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/), isn't necessarily a data-driven cutoff for analysis) we can get a clearer idea of the distribution of the scores.
+
+```{r}
+survey_data_filtered <-
+  survey_data %>%
+  filter(n > 30)
+
+survey_data_filtered %>%
+  ggplot(aes(x = score)) +
+  geom_histogram() +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Simulation of hospital satisfaction data",
+       subtitle = "Distribution of patient satisfaction scores for units with more than 30 responses",
+       x = NULL,
+       y = NULL)
+```
+
+Alternatively, we can represent this distribution with a density plot:
+
+```{r}
+survey_data_filtered %>%
+  ggplot(aes(x = score)) +
+  geom_density(size = 1) +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Simulation of hospital satisfaction data",
+       subtitle = "Distribution of patient satisfaction scores for units with more than 30 responses",
+       x = NULL,
+       y = NULL)
+```
+
+This looks suspiciously like a beta distribution! A beta distribution's shape can be defined by two parameters --- alpha and beta. Varying these parameters lets us adjust the center and width to match any possible beta distribution.
+
+![](https://upload.wikimedia.org/wikipedia/commons/7/78/PDF_of_the_Beta_distribution.gif)
+
+What may make sense would be to use *this distribution* as our prior. I.e., if we have no responses for a unit, we can probably guess that their score would be somewhere around 66% with some healthy room on either side for variability. To do so, we need to estimate an appropriate alpha and beta --- rather than guess the values using trial and error we can pass the work off to our computer to find parameters that **maximize** the **likelihood** that our **estimated distribution** matches the true distribution (hence the name, *maximum likelihood estimator*).
+
+```{r}
+library(stats4)
+
+# log-likelihood function
+log_likelihood <- function(alpha, beta) {
+  -sum(dbeta(survey_data_filtered$score, alpha, beta, log = TRUE))
+}
+
+# pass various alphas & betas to `log_likelihood` 
+# to find combination that maximizes the likelihood!
+params <- 
+  mle(
+    log_likelihood, 
+    start = list(alpha = 50, beta = 50),
+    lower = c(1, 1)
+  )
+
+# extract alpha & beta
+params <- coef(params)
+alpha0 <- params[1]
+beta0 <- params[2]
+
+print(paste("alpha:", round(alpha0, 1), "beta:", round(beta0, 1)))
+```
+
+How well does a beta distribution defined by these parameters match our actual data?
+
+```{r}
+survey_data_filtered %>%
+  mutate(density = dbeta(score, alpha0, beta0)) %>%
+  ggplot(aes(x = score)) +
+  geom_density(size = 1) +
+  geom_line(aes(y = density),
+            size = 1,
+            color = "#BD43BF") +
+  scale_x_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Simulation of hospital satisfaction data",
+       subtitle = glue::glue("**Actual distribution of scores** and the **{riekelib::color_text('distribution estimated by maximum likelihood', '#BD43BF')}**"),
+       x = NULL,
+       y = NULL)
+```
+
+This is a pretty good representation of our initial data! When we have no survey responses, we can use a beta distribution with the initial parameters as specified by the maximum likelihood estimation. As a unit gets more responses, we can update our estimation to rely more heavily on the data rather than the prior:
+
+```{r, eval=FALSE}
+# update alpha & beta as new responses come in!
+alpha_new <- alpha0 + n_topbox
+beta_new <- beta0 + n - n_topbox
+```
+
+## Updating our priors
+
+With a prior distribution defined by `alpha0` and `beta0`, we can upgrade our frequentest estimation of each unit's score to a Bayesian estimation!
+
+```{r}
+# empirical bayes estimation of satisfaction score
+survey_eb <-
+  survey_data %>%
+  mutate(eb_estimate = (topbox + alpha0) / (n + alpha0 + beta0))
+```
+
+What are the top and bottom performing units by this new Bayesian estimation?
+
+```{r}
+# which units have the highest estimated scores?
+survey_eb %>%
+  arrange(desc(eb_estimate)) %>%
+  slice_head(n = 10) %>%
+  knitr::kable()
+```
+
+```{r}
+# which units have the lowest estimated scores?
+survey_eb %>%
+  arrange(eb_estimate) %>%
+  slice_head(n = 10) %>%
+  knitr::kable()
+```
+
+There are a few things that are worth noting with these estimates:
+
+* The estimated score is not the same as the actual reported score! As more responses come in, however, the estimated score converges to the actual.
+* The prior pulls estimated scores towards the prior mean --- low scores are pulled up a bit and high scores are pulled down a bit.
+* The top (and bottom) performing units are no longer dominated by units with few returns!
+
+We can also estimate the uncertainty around the estimated score with a [credible interval](https://en.wikipedia.org/wiki/Credible_interval). Credible intervals are the Bayesian counterpart to a frequentist's [confidence interval](https://en.wikipedia.org/wiki/Confidence_interval) --- both estimate the region that the true value could fall in given a certain probability --- credible intervals, however, are informed by the prior distribution.
+
+```{r}
+set.seed(777)
+survey_eb %>%
+  slice_sample(n = 10) %>%
+  mutate(alpha = alpha0 + topbox,
+         beta = beta0 + n - topbox) %>%
+  riekelib::beta_interval(alpha, beta) %>%
+  rename_with(.cols = starts_with("ci"), .fn = ~paste0("bayes_", .x)) %>%
+  riekelib::beta_interval(topbox, n - topbox) %>%
+  rename_with(.cols = starts_with("ci"), .fn = ~paste0("freq_", .x)) %>% 
+  mutate(unit = paste0(unit, " (n=", n, ")"),
+         unit = fct_reorder(unit, -n)) %>%
+  ggplot(aes(x = unit)) +
+  geom_point(aes(y = score),
+             color = "#FF8655",
+             alpha = 0.75,
+             size = 2.5) +
+  geom_errorbar(aes(ymin = freq_ci_lower,
+                    ymax = freq_ci_upper),
+                color = "#FF8655",
+                alpha = 0.75,
+                size = 1) +
+  geom_point(aes(y = eb_estimate),
+             color = "#55CEFF",
+             alpha = 0.75,
+             size = 2.5) +
+  geom_errorbar(aes(ymin = bayes_ci_lower,
+                    ymax = bayes_ci_upper),
+                color = "#55CEFF",
+                alpha = 0.75,
+                size = 1) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(title = "Random sampling of hospital units",
+       subtitle = glue::glue("Comparison of 95% **{riekelib::color_text('credible intervals', '#55CEFF')}** and **{riekelib::color_text('confidence intervals', '#Ff8655')}**"),
+       x = NULL,
+       y = NULL)
+```
+
+Because credible intervals are informed in part by the prior, they are tighter than their confidence interval counterparts. Like with the estimated score, however, as n-size increases, the Bayesian and frequentist interval estimations converge. In the absence of larger swathes of data, Bayesian methods can offer additional insight into our data by means of a prior distribution.
+
+## Some closing thoughts
+
+Overall, this has been a fairly glowing review of the methods laid out in the first section of *Introduction to Empirical Bayes*. That being said, Bayesian methods of inference are not inherently *better* than frequentist methods --- while they can offer additional context via a prior, there are situations where frequentist methods are preferred. From a math perspective, the prior provides diminishing returns as sample size increases, so it may be better forgoe Bayesian analysis when sample sizes are large. From an organizational perspective, Bayesian inference may be difficult to explain. In my own work, it's highly unlikely that I'll use Bayesian inference in any critical projects any time soon --- I can imagine a lengthy uphill battle trying to explain the difference between the reported score and the estimated score informed by a prior. 
+
+Finally, there are a few things in this toy analysis that I am hoping to improve upon as I progress further through the book:
+
+* As I mentioned above and [in previous writings](https://www.thedatadiary.net/blog/2022-04-28-30-is-not-statistical/), using `n = 30` is a relatively arbitrary cutoff point for analysis. In this case, the prior distribution is fairly sensitive to the cutoff point selected --- I am hoping that later sections in the book highilight more robust ways of partitioning data for setting priors.
+* In the above analysis we're only examining one variable (univariate analysis) --- I am looking forward to extending these methods to multivariate analyses and regressions. 
+* The beta distribution is appropriate for modeling the probability distribution of binary outcomes. In this example, where the outcome is simply the proportion of patients that responded favorably to the survey, modeling the outcome with a beta distribution is appropriate (responses can either be in the "topbox" or not). When there are more than two possible outcomes --- for example, when trying to model [Net Promoter Score](https://en.wikipedia.org/wiki/Net_promoter_score) as the proportion of "promoters," "passives," and "detractors" --- the more general [Dirichlet distribution](https://en.wikipedia.org/wiki/Dirichlet_distribution) is more appropriate. 
+* I'm hoping also that the book covers methods for dealing with time-dependent data. For example, we'd expect that concerted efforts (or lack thereof) by the hospital units could significantly impact the underlying "true satisfaction" that we're attempting to estimate via surveying. We expect that more recent survey responses should be more impactful in informing our posterior estimation, but I've yet to find any robust literature on how to weight the recency of responses. In the past, I've used [exponentional decay](https://en.wikipedia.org/wiki/Exponential_decay) to reduce the weight of old responses, but this feels a bit arbitrary.
+
+Overall, this has been a long way of saying that I'm happy with the book so far and I'm excited to see what comes next as I continue reading!
