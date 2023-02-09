@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Mark Rieke">
+<meta name="dcterms.date" content="2022-12-30">
+<meta name="description" content="Ordered categorical models for estimating Net Promoter Score: a hierarchical Bayesian implementation">
+
+<title>the data diary - My 2022 Magnum Opus</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../..//static/img/icon.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../static/img/icon.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the data diary</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">2022 Midterms</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
+        <li class="dropdown-header">Senate</li>
+        <li class="dropdown-header">House</li>
+        <li class="dropdown-header">Governor</li>
+    </ul>
+  </li>
+  <li class="dropdown-header">
+ <span class="menu-text">Blog</span></li>
+  <li class="dropdown-header">
+ <span class="menu-text">About</span></li>
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">My 2022 Magnum Opus</h1>
+                  <div>
+        <div class="description">
+          Ordered categorical models for estimating Net Promoter Score: a hierarchical Bayesian implementation
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">rstats</div>
+                <div class="quarto-category">stan</div>
+                <div class="quarto-category">bayes</div>
+                <div class="quarto-category">healthcare</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Mark Rieke </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 30, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-data-generating-process" id="toc-the-data-generating-process" class="nav-link active" data-scroll-target="#the-data-generating-process">The data generating process</a></li>
+  <li><a href="#simulating-data" id="toc-simulating-data" class="nav-link" data-scroll-target="#simulating-data">Simulating data</a></li>
+  <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a>
+  <ul class="collapse">
+  <li><a href="#raccoon-01" id="toc-raccoon-01" class="nav-link" data-scroll-target="#raccoon-01">Raccoon #01</a></li>
+  <li><a href="#raccoon-02" id="toc-raccoon-02" class="nav-link" data-scroll-target="#raccoon-02">Raccoon #02</a></li>
+  <li><a href="#raccoon-03" id="toc-raccoon-03" class="nav-link" data-scroll-target="#raccoon-03">Raccoon #03</a></li>
+  <li><a href="#raccoon-04" id="toc-raccoon-04" class="nav-link" data-scroll-target="#raccoon-04">Raccoon #04</a></li>
+  </ul></li>
+  <li><a href="#exploring-the-posterior" id="toc-exploring-the-posterior" class="nav-link" data-scroll-target="#exploring-the-posterior">Exploring the posterior</a></li>
+  <li><a href="#in-summary" id="toc-in-summary" class="nav-link" data-scroll-target="#in-summary">In summary…</a></li>
+  <li><a href="#some-additional-closing-thoughts" id="toc-some-additional-closing-thoughts" class="nav-link" data-scroll-target="#some-additional-closing-thoughts">Some (additional) closing thoughts</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/markjrieke/thedatadiary.net/blob/main/posts/2022-12-30-my-2022-magnum-opus/index.qmd" class="toc-action">View source</a></p><p><a href="https://github.com/markjrieke/thedatadiary.net/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>ggplot2<span class="sc">::</span><span class="fu">theme_set</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  ggplot2<span class="sc">::</span><span class="fu">theme_minimal</span>(<span class="at">base_family =</span> <span class="st">"Roboto Slab"</span>,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">base_size =</span> <span class="dv">13</span>) <span class="sc">+</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    ggplot2<span class="sc">::</span><span class="fu">theme</span>(<span class="at">plot.title.position =</span> <span class="st">"plot"</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                   <span class="at">plot.background =</span> ggplot2<span class="sc">::</span><span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">"white"</span>, <span class="at">color =</span> <span class="st">"white"</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>                   <span class="at">plot.title =</span> ggtext<span class="sc">::</span><span class="fu">element_markdown</span>(),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>                   <span class="at">plot.subtitle =</span> ggtext<span class="sc">::</span><span class="fu">element_markdown</span>(),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">plot.caption =</span> ggtext<span class="sc">::</span><span class="fu">element_markdown</span>(<span class="at">color =</span> <span class="st">"gray40"</span>))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Over the past few years, the hospital system I work for has transitioned from the old metric for measuring patient satisfaction, Likelihood to Recommend (LTR), to a newer metric, Net Promoter Score (NPS). Both metrics ask the same question — <em>how likely are you to recommend this hospital to a friend or relative?</em> — but they are measured very differently. The score for LTR is simply the percentage of patients who respond with the “topbox” option of <em>Very likely</em> on a scale from <em>Very likely</em> to <em>Very unlikely</em>. NPS, on the other hand, is a bit more involved. Patients are categorized based on their response on a 0-10 point scale: responses between 0 and 6 are considered <em>detractors</em>, 7 and 8s are considered <em>passives</em>, while 9 and 10s are considered <em>promoters</em>. The score for NPS is then the percentage of promoters <em>minus</em> the percentage of detractors.</p>
+<p><span class="math display">\[
+\begin{gather}
+\text{NPS} = \text{Promoter %} - \text{Detractor %}
+\end{gather}
+\]</span></p>
+<p>As a metric, NPS is a bit better than the alternative of LTR, since it is somewhat able to take into account the distribution of responses along the 0-10 scale. Consider the following set of responses (and let’s just pretend for sake of example that “promoter” here is equivalent to “topbox”). LTR’s topbox isn’t able to detect a difference in scores since promoters comprise 50% of responses in both sets. NPS, however, <em>can</em> detect a difference, since the second set is rewarded for have fewer detractors than the first set.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>tibble<span class="sc">::</span><span class="fu">tribble</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>promoters, <span class="sc">~</span>passives, <span class="sc">~</span>detractors, <span class="sc">~</span>topbox, <span class="sc">~</span>nps,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">"50%"</span>, <span class="st">"25%"</span>, <span class="st">"25%"</span>, <span class="st">"50%"</span>, <span class="st">"25%"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"50%"</span>, <span class="st">"50%"</span>, <span class="st">"0%"</span>, <span class="st">"50%"</span>, <span class="st">"50%"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>) <span class="sc">|&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">promoters</th>
+<th style="text-align: left;">passives</th>
+<th style="text-align: left;">detractors</th>
+<th style="text-align: left;">topbox</th>
+<th style="text-align: left;">nps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">50%</td>
+<td style="text-align: left;">25%</td>
+<td style="text-align: left;">25%</td>
+<td style="text-align: left;">50%</td>
+<td style="text-align: left;">25%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">50%</td>
+<td style="text-align: left;">50%</td>
+<td style="text-align: left;">0%</td>
+<td style="text-align: left;">50%</td>
+<td style="text-align: left;">50%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>With only a few sets of responses to compare, this seems like a trivial improvement — since we have all the data, why don’t we just look at the response distribution for every set? In practice, however, I’m often looking at responses for <em>hundreds</em> of individual hospital units across the system — encoding this extra bit of information into a single number allows for a more nuanced comparison <em>without</em> any costs to the viewer’s cognitive load.</p>
+<p>Unfortunately, there’s no free lunch here, and the additional nuance that NPS provides comes at the cost of modeling complexity. Relative modeling binary choices like LTR’s topbox, the ecosystem for modeling the choice between three or more categories is far smaller. Additionally, the <em>order</em> of the categories matters — a promoter response is better than a passive response, which is better than a detractor response. This adds a layer of complexity over unordered categories (e.g., red, blue, or green).</p>
+<p>Fortunately, I’m not the first person to run into this problem. I’ve been (slowly) working through <a href="https://xcelab.net/rm/">Richard McElreath’s</a> <a href="https://www.routledge.com/Statistical-Rethinking-A-Bayesian-Course-with-Examples-in-R-and-STAN/McElreath/p/book/9780367139919">Statistical Rethinking</a>, which conveniently covers this topic directly (and comes with the added benefit of utilizing a Bayesian approach via <a href="https://mc-stan.org/">Stan</a>).</p>
+<p>Let’s test both my understanding of the ordered categorical data-generating process and my ability to model it by doing a few things:</p>
+<ol type="1">
+<li>Define a data-generating process that links a linear model to an ordered categorical outcome.</li>
+<li>Manually set model parameters and simulate responses.</li>
+<li>See if I can recover those parameters with a model in Stan.</li>
+</ol>
+<section id="the-data-generating-process" class="level2">
+<h2 class="anchored" data-anchor-id="the-data-generating-process">The data generating process</h2>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rethinking)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(riekelib)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom.mixed)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># I've been having ~issues~ with cmdstan, so switching default to rstan</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">set_ulam_cmdstan</span>(<span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Each patient’s response <span class="math inline">\(R_i\)</span> can be described as a probability <span class="math inline">\(p_i\)</span> of selecting from each of the three available categories:</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+\end{gather}
+\]</span></p>
+<p>There’s a useful math trick we can use to enforce the order of the categories. Rather than working with the <em>individual probability</em> of each category directly, we can instead define the probabilities in terms of the <em>cumulative probability</em> of each category. For example, in the set below, the probability of selecting “passive” is 10%, but the <em>cumulative probability</em> of selecting a rating of passive <em>or lower</em> is 30%:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>probs_example <span class="ot">&lt;-</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">nps_group =</span> <span class="fu">as_factor</span>(<span class="fu">c</span>(<span class="st">"detractor"</span>, <span class="st">"passive"</span>, <span class="st">"promoter"</span>)),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.1</span>, <span class="fl">0.7</span>),</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>         <span class="at">cumulative_prob =</span> <span class="fu">cumsum</span>(prob))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>probs_example <span class="sc">%&gt;%</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">ends_with</span>(<span class="st">"prob"</span>), <span class="sc">~</span>scales<span class="sc">::</span><span class="fu">label_percent</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)(.x))) <span class="sc">%&gt;%</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">nps_group</th>
+<th style="text-align: left;">prob</th>
+<th style="text-align: left;">cumulative_prob</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">detractor</td>
+<td style="text-align: left;">20%</td>
+<td style="text-align: left;">20%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">passive</td>
+<td style="text-align: left;">10%</td>
+<td style="text-align: left;">30%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">promoter</td>
+<td style="text-align: left;">70%</td>
+<td style="text-align: left;">100%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>With this in mind, any individual probability can be described as the difference between two cumulative probabilities <span class="math inline">\(q_k\)</span>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>probs_example <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> nps_group,</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>             <span class="at">xend =</span> nps_group)) <span class="sc">+</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.3</span>),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">linetype =</span> <span class="st">"dashed"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> <span class="st">"gray60"</span>) <span class="sc">+</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y =</span> <span class="dv">0</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                   <span class="at">yend =</span> cumulative_prob)) <span class="sc">+</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> cumulative_prob)) <span class="sc">+</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_segment</span>(<span class="fu">aes</span>(<span class="at">y =</span> cumulative_prob <span class="sc">-</span> prob,</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                   <span class="at">yend =</span> cumulative_prob),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>               <span class="at">color =</span> <span class="st">"blue"</span>,</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>               <span class="at">position =</span> <span class="fu">position_nudge</span>(<span class="at">x =</span> <span class="fl">0.125</span>)) <span class="sc">+</span> </span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> cumulative_prob),</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> <span class="st">"blue"</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">position =</span> <span class="fu">position_nudge</span>(<span class="at">x =</span> <span class="fl">0.125</span>)) <span class="sc">+</span> </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">x =</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>            <span class="at">label =</span> <span class="st">"q1: 20%"</span>,</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="st">"right"</span>) <span class="sc">+</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">x =</span> <span class="dv">1</span> <span class="sc">+</span> <span class="fl">0.125</span> <span class="sc">+</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>            <span class="at">label =</span> <span class="st">"p1: 20%"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="st">"left"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span> </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">x =</span> <span class="dv">2</span> <span class="sc">-</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="fl">0.25</span>,</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>            <span class="at">label =</span> <span class="st">"q2: 30%"</span>,</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="st">"right"</span>) <span class="sc">+</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">x =</span> <span class="dv">2</span> <span class="sc">+</span> <span class="fl">0.125</span> <span class="sc">+</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="fl">0.25</span>,</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>            <span class="at">label =</span> <span class="st">"p2: 10%"</span>,</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="st">"left"</span>,</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"blue"</span>) <span class="sc">+</span></span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">x =</span> <span class="dv">3</span> <span class="sc">+</span> <span class="fl">0.125</span> <span class="sc">+</span> <span class="fl">0.1</span>,</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>            <span class="at">y =</span> <span class="fl">0.625</span>,</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>            <span class="at">label =</span> <span class="st">"p3: 70%"</span>,</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> <span class="st">"blue"</span>,</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>            <span class="at">hjust =</span> <span class="st">"left"</span>) <span class="sc">+</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">expand_limits</span>(<span class="at">y =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()) <span class="sc">+</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"**Cumulative** and </span></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="st">                          **{color_text('individual', 'blue')}** </span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="st">                          probabilities of each response"</span>),</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/cumulative-prob-plot-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>The probability of selecting a response less than detractor is 0% and the probability of selecting a response of promoter <em>or lower</em> is 100%, so we can rewrite the individual probabilities in terms of just two cumulative probabilities.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+\color{blue}{p_{\text{detractor}[i]} = q_{1, i} \\
+p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i}}
+\end{gather}
+\]</span></p>
+<p>In the <a href="https://en.wikipedia.org/wiki/Logit">logit</a> space, these two cumulative probabilities can be represented by a linear model’s output <span class="math inline">\(\phi_i\)</span> <em>relative</em> to a set of <span class="math inline">\(k = 2\)</span> “cutpoints” <span class="math inline">\(\kappa_k\)</span>.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+p_{\text{detractor}[i]} = q_{1, i} \\
+p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i} \\
+\color{blue}{\text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
+\phi_i = \text{some linear model}}
+\end{gather}
+\]</span></p>
+<p>This is all a bit involved but I wouldn’t worry about the details too much. The important takeaway is that we now have a linear model <span class="math inline">\(\phi\)</span> that maps to a categorical outcome while preserving the order of the categories.</p>
+</section>
+<section id="simulating-data" class="level2">
+<h2 class="anchored" data-anchor-id="simulating-data">Simulating data</h2>
+<p>In this case, let’s let <span class="math inline">\(\phi\)</span> vary by the patient’s age and the hospital unit they visit:</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Categorical}(p_i) \\
+p_i = \langle p_{\text{detractor}[i]}, \ p_{\text{passive}[i]}, \ p_{\text{promoter}[i]} \rangle \\
+p_{\text{detractor}[i]} = q_{1, i} \\
+p_{\text{passive}[i]} = q_{2,i} - q_{1,i} \\
+p_{\text{promoter}[i]} = 1 - q_{2,i} \\
+\text{logit}(q_{k, i}) = \kappa_k - \phi_i \\
+\phi_i = \color{blue}{\beta_{\text{unit}[i]} + \beta_{\text{age}} \ \text{age}_i}
+\end{gather}
+\]</span></p>
+<p>We’ll manually fix the <span class="math inline">\(\beta_{\text{unit}}\)</span> term for each unit. Additionally, let’s define a sampling weight so that the simulated data ends up with a wide range of response counts.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>unit_params <span class="ot">&lt;-</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tribble</span>(</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="sc">~</span>unit, <span class="sc">~</span>beta, <span class="sc">~</span>weight,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"A"</span>, <span class="fl">1.00</span>, <span class="dv">2</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"B"</span>, <span class="fl">0.66</span>, <span class="dv">3</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"C"</span>, <span class="fl">0.33</span>, <span class="dv">2</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"D"</span>, <span class="fl">0.00</span>, <span class="dv">4</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"E"</span>, <span class="sc">-</span><span class="fl">0.50</span>, <span class="dv">1</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>unit_params <span class="sc">%&gt;%</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">beta</th>
+<th style="text-align: right;">weight</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">0.66</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">C</td>
+<td style="text-align: right;">0.33</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E</td>
+<td style="text-align: right;">-0.50</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Here, unit A is likely to have the best scores, while unit E is likely to have the worst. Unit D is likely to have the most returns, while unit E is likely to have the fewest. The randomization/discretization means that the simulated scores won’t match the expected scores exactly, but if we set cutpoints in the logit space, we can work backwards through the data-generating process to see the expected score for each unit.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set cutpoints in the logit space</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>cutpoints <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="sc">-</span><span class="fl">0.15</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co"># here's how we expect the units to score for an average aged patient</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>unit_params <span class="sc">%&gt;%</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">q1 =</span> cutpoints[<span class="dv">1</span>] <span class="sc">-</span> beta,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">q2 =</span> cutpoints[<span class="dv">2</span>] <span class="sc">-</span> beta,</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">detractor =</span> <span class="fu">expit</span>(q1),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">passive =</span> <span class="fu">expit</span>(q2) <span class="sc">-</span> <span class="fu">expit</span>(q1),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">promoter =</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">expit</span>(q2)) <span class="sc">%&gt;%</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(unit, weight, promoter, passive, detractor) <span class="sc">%&gt;%</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nps =</span> promoter <span class="sc">-</span> detractor,</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>         <span class="fu">across</span>(<span class="fu">c</span>(promoter<span class="sc">:</span>nps), <span class="sc">~</span>scales<span class="sc">::</span><span class="fu">label_percent</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)(.x))) <span class="sc">%&gt;%</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">weight</th>
+<th style="text-align: left;">promoter</th>
+<th style="text-align: left;">passive</th>
+<th style="text-align: left;">detractor</th>
+<th style="text-align: left;">nps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">76%</td>
+<td style="text-align: left;">6%</td>
+<td style="text-align: left;">18%</td>
+<td style="text-align: left;">58%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">69%</td>
+<td style="text-align: left;">7%</td>
+<td style="text-align: left;">24%</td>
+<td style="text-align: left;">45%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">C</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">62%</td>
+<td style="text-align: left;">8%</td>
+<td style="text-align: left;">30%</td>
+<td style="text-align: left;">31%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">54%</td>
+<td style="text-align: left;">9%</td>
+<td style="text-align: left;">38%</td>
+<td style="text-align: left;">16%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">41%</td>
+<td style="text-align: left;">9%</td>
+<td style="text-align: left;">50%</td>
+<td style="text-align: left;">-9%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Now let’s simulate patient visits. We’ll have 500 patients return surveys and the number of returns at each unit will be proportional to the <code>weight</code> set earlier.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>n_patients <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># simulate patient visits</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">30</span>)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>unit_samples <span class="ot">&lt;-</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    unit_params<span class="sc">$</span>unit,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> n_patients,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">prob =</span> unit_params<span class="sc">$</span>weight,</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">replace =</span> <span class="cn">TRUE</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(<span class="at">unit =</span> unit_samples) <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">percent</span>(unit, <span class="at">.keep_n =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pct =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)(pct)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: left;">pct</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: left;">14%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">111</td>
+<td style="text-align: left;">22%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">C</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">16%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">195</td>
+<td style="text-align: left;">39%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: left;">9%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Now let’s add in each patient’s age. In this case, we won’t include any relationship between age and unit; age will just vary randomly across all units. In reality, this often isn’t the case — you can imagine, for example, that patients visiting a Labor &amp; Delivery unit will tend to be younger than patients visiting a Geriatric unit! Ignoring this reality, in our simulated patient population the ages will vary generally between 25 and 65.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># simulate ages of patients &amp; combine with the unit visited</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">31</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>patients <span class="ot">&lt;-</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">unit =</span> unit_samples,</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">age =</span> <span class="fu">round</span>(<span class="fu">rnorm</span>(n_patients, <span class="dv">45</span>, <span class="dv">10</span>))</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>patients <span class="sc">%&gt;%</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">age</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">46</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">43</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">61</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">55</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">60</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">41</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">49</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">54</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E</td>
+<td style="text-align: right;">32</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">38</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Finally, we’ll set <span class="math inline">\(\beta_{\text{age}}\)</span> such that there is a modest positive relationship between age and the probability of a positive response — older patients at any unit will be likelier than younger patients to be a promoter!</p>
+<p>With all that wrapped up, we can finally simulate individual responses.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>beta_age <span class="ot">&lt;-</span> <span class="fl">0.35</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="co"># simulate individual patient responses </span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">32</span>)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>responses <span class="ot">&lt;-</span> </span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  patients <span class="sc">%&gt;%</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(unit_params) <span class="sc">%&gt;%</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">phi =</span> beta <span class="sc">+</span> beta_age <span class="sc">*</span> ((age <span class="sc">-</span> <span class="dv">45</span>)<span class="sc">/</span><span class="dv">10</span>),</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">q1 =</span> cutpoints[<span class="dv">1</span>] <span class="sc">-</span> phi,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">q2 =</span> cutpoints[<span class="dv">2</span>] <span class="sc">-</span> phi,</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">detractor =</span> <span class="fu">expit</span>(q1),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">passive =</span> <span class="fu">expit</span>(q2) <span class="sc">-</span> <span class="fu">expit</span>(q1),</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">promoter =</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">expit</span>(q2)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(unit, age, promoter, passive, detractor) <span class="sc">%&gt;%</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowwise</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">response =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"promoter"</span>, <span class="st">"passive"</span>, <span class="st">"detractor"</span>),</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>                           <span class="at">size =</span> <span class="dv">1</span>, </span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>                           <span class="at">prob =</span> <span class="fu">c</span>(promoter, passive, detractor))) <span class="sc">%&gt;%</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(unit, age, response)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<p>Here’s the distribution of responses for each unit — as expected, unit A has lots of promoters while units D and E have the highest proportion of detractors, and unit D has the most responses while unit E has the fewest.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>egypt_blu <span class="ot">&lt;-</span> MetBrewer<span class="sc">::</span>MetPalettes<span class="sc">$</span>Egypt[[<span class="dv">1</span>]][<span class="dv">2</span>]</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>egypt_red <span class="ot">&lt;-</span> MetBrewer<span class="sc">::</span>MetPalettes<span class="sc">$</span>Egypt[[<span class="dv">1</span>]][<span class="dv">1</span>]</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>egypt_grn <span class="ot">&lt;-</span> MetBrewer<span class="sc">::</span>MetPalettes<span class="sc">$</span>Egypt[[<span class="dv">1</span>]][<span class="dv">3</span>]</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>responses <span class="sc">%&gt;%</span></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">response =</span> <span class="fu">fct_relevel</span>(response, <span class="fu">c</span>(<span class="st">"detractor"</span>, <span class="st">"promoter"</span>, <span class="st">"passive"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age,</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill =</span> response)) <span class="sc">+</span> </span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">position =</span> <span class="st">"identity"</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span> </span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>unit, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>  MetBrewer<span class="sc">::</span><span class="fu">scale_fill_met_d</span>(<span class="st">"Egypt"</span>) <span class="sc">+</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Simulated **{color_text('promoters', egypt_blu)}**, </span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">                          **{color_text('passives', egypt_grn)}**, and </span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="st">                          **{color_text('detractors', egypt_red)}**"</span>),</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Distribution of patient responses by age at each unit"</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Patient age"</span>,</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/plot-response-distribution-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>Here’s how each simulated unit scored for NPS:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>responses <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(unit) <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(response) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> response,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_from =</span> n,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>              <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">n =</span> promoter <span class="sc">+</span> passive <span class="sc">+</span> detractor,</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">nps =</span> (promoter <span class="sc">-</span> detractor)<span class="sc">/</span>n,</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">nps =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)(nps)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: left;">unit</th>
+<th style="text-align: right;">detractor</th>
+<th style="text-align: right;">passive</th>
+<th style="text-align: right;">promoter</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: left;">nps</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">A</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">59</td>
+<td style="text-align: right;">69</td>
+<td style="text-align: left;">74%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">B</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: right;">111</td>
+<td style="text-align: left;">46%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">C</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: right;">46</td>
+<td style="text-align: right;">78</td>
+<td style="text-align: left;">27%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">D</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: right;">106</td>
+<td style="text-align: right;">195</td>
+<td style="text-align: left;">19%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: left;">2%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Importantly, this differs from the expected outcome at each unit! For smaller sample sizes, each individual patient response has an outsized impact on NPS. Despite this, we should be able to recover the underlying parameters used to simulate the data with a model.</p>
+</section>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<p>Remember the lengthy data-generating process nonsense from beforehand? As is, that’d be a bit of a mess to implement by hand. Luckily for us, however, McElreath’s <a href="https://github.com/rmcelreath/rethinking">{<code>rethinking</code>}</a> package contains a useful function, <code>dordlogit()</code>, that interfaces nicely with Stan’s <a href="https://mc-stan.org/docs/stan-users-guide/ordered-logistic.html">ordered logistic model</a>. This plunks some of the rote computational steps under the hood and leaves us with the most important bits: the linear model <span class="math inline">\(\phi\)</span> and the cutpoints <span class="math inline">\(\kappa\)</span>.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \text{some linear model} \\
+\text{~priors~}
+\end{gather}
+\]</span></p>
+<p>Let’s build a series of increasingly complex models using this framework. I’m in a mood for raccoons, so the models are named appropriately:</p>
+<ol type="1">
+<li><code>raccoon_01</code>: a term-less model that just estimates the cutpoints.</li>
+<li><code>raccoon_02</code>: a model with terms for age and unit.</li>
+<li><code>raccoon_03</code>: a model with a term for age and a hierarchical term for unit.</li>
+<li><code>raccoon_04</code>: a model with a term for age and a non-centered hierarchical term for unit.</li>
+</ol>
+<p>Before doing any of that, however, we’ll need to prep the data for Stan. Each unit and response category will get assigned a numeric ID and we’ll standardize patient ages across the population.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>responses <span class="ot">&lt;-</span> </span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  responses <span class="sc">%&gt;%</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(<span class="fu">tibble</span>(<span class="at">unit =</span> LETTERS[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>],</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                   <span class="at">unit_id =</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">response_id =</span> <span class="fu">case_when</span>(response <span class="sc">==</span> <span class="st">"promoter"</span> <span class="sc">~</span> <span class="dv">3</span>,</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                                 response <span class="sc">==</span> <span class="st">"passive"</span> <span class="sc">~</span> <span class="dv">2</span>,</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                                 response <span class="sc">==</span> <span class="st">"detractor"</span> <span class="sc">~</span> <span class="dv">1</span>),</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">response_id =</span> <span class="fu">as.integer</span>(response_id),</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">age_std =</span> (age <span class="sc">-</span> <span class="fu">mean</span>(age))<span class="sc">/</span><span class="fu">sd</span>(age))</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>responses_stan <span class="ot">&lt;-</span> </span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  responses <span class="sc">%&gt;%</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(response_id,</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>         unit_id,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>         age_std) <span class="sc">%&gt;%</span></span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as.list</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<section id="raccoon-01" class="level3">
+<h3 class="anchored" data-anchor-id="raccoon-01">Raccoon #01</h3>
+<p>The first model doesn’t contain any terms and just estimates the cutpoints from the data. In McElreath’s words, this sort of model is little more than a Bayesian histogram of the data. To get started, we just need to provide a prior for the cutpoints <span class="math inline">\(\kappa_k\)</span>.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\color{blue}{\phi_i = 0 \\
+\kappa_k \sim \text{Normal}(0, 1)}
+\end{gather}
+\]</span></p>
+<p>Modeling in Stan via <code>rethinking::ulam()</code> is essentially as basic as re-writing the mathematical model and supplying the data.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>raccoon_01 <span class="ot">&lt;-</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ulam</span>(</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">alist</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>      <span class="co"># model</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>      response_id <span class="sc">~</span> <span class="fu">dordlogit</span>(<span class="dv">0</span>, cutpoints),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>      <span class="co"># priors</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>      cutpoints <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> responses_stan,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">cores =</span> <span class="dv">4</span></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<p>This initial model doesn’t do a good job of recovering the manually set cutpoints:</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">precis</span>(raccoon_01, <span class="at">depth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;                    mean         sd       5.5%      94.5%    n_eff    Rhat4
+#&gt; cutpoints[1] -0.8350663 0.09496125 -0.9825748 -0.6847435 1078.130 1.002124
+#&gt; cutpoints[2] -0.5054729 0.08830633 -0.6494612 -0.3641978 1291.444 1.001888</code></pre>
+</div>
+</div>
+<p>This is expected! This model doesn’t account for the variation by unit/age and instead lumps all the data together. As mentioned before, this really can be thought of as a Bayesian histogram — while it doesn’t recover the cutpoint parameters, <code>raccoon_01</code> matches the overall proportion of promoters, passives, and detractors really well.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>raccoon_01<span class="sc">@</span>stanfit <span class="sc">%&gt;%</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract posterior draws &amp; convert to tibble</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  posterior<span class="sc">::</span><span class="fu">as_draws_df</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">starts_with</span>(<span class="st">"cut"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">str_remove_all</span>(.x, <span class="st">"[:punct:]"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># summarise each category w/50/80% quantiles</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">detractor =</span> <span class="fu">expit</span>(cutpoints1),</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">passive =</span> <span class="fu">expit</span>(cutpoints2) <span class="sc">-</span> <span class="fu">expit</span>(cutpoints1),</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">promoter =</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">expit</span>(cutpoints2)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"cut"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(),</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"nps"</span>,</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"estimate"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(nps) <span class="sc">%&gt;%</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">median_qi</span>(estimate, <span class="at">.width =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.8</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plot alongside original data</span></span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span> </span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>(<span class="at">data =</span> <span class="fu">percent</span>(responses, response),</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>           <span class="fu">aes</span>(<span class="at">x =</span> response,</span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>               <span class="at">y =</span> pct),</span>
+<span id="cb19-25"><a href="#cb19-25" aria-hidden="true" tabindex="-1"></a>           <span class="at">fill =</span> egypt_red,</span>
+<span id="cb19-26"><a href="#cb19-26" aria-hidden="true" tabindex="-1"></a>           <span class="at">alpha =</span> <span class="fl">0.5</span>,</span>
+<span id="cb19-27"><a href="#cb19-27" aria-hidden="true" tabindex="-1"></a>           <span class="at">width =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb19-28"><a href="#cb19-28" aria-hidden="true" tabindex="-1"></a>  ggdist<span class="sc">::</span><span class="fu">geom_pointinterval</span>(<span class="fu">aes</span>(<span class="at">x =</span> nps,</span>
+<span id="cb19-29"><a href="#cb19-29" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">y =</span> estimate,</span>
+<span id="cb19-30"><a href="#cb19-30" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">ymin =</span> .lower,</span>
+<span id="cb19-31"><a href="#cb19-31" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">ymax =</span> .upper),</span>
+<span id="cb19-32"><a href="#cb19-32" aria-hidden="true" tabindex="-1"></a>                             <span class="at">color =</span> egypt_blu) <span class="sc">+</span></span>
+<span id="cb19-33"><a href="#cb19-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()) <span class="sc">+</span> </span>
+<span id="cb19-34"><a href="#cb19-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"**Raccoon #01** Posterior Fit"</span>,</span>
+<span id="cb19-35"><a href="#cb19-35" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Comparison of each category's </span></span>
+<span id="cb19-36"><a href="#cb19-36" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('true proportion', egypt_red)}** </span></span>
+<span id="cb19-37"><a href="#cb19-37" aria-hidden="true" tabindex="-1"></a><span class="st">                             to the </span></span>
+<span id="cb19-38"><a href="#cb19-38" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('model</span><span class="sc">\\</span><span class="st">'s estimate', egypt_blu)}**"</span>),</span>
+<span id="cb19-39"><a href="#cb19-39" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb19-40"><a href="#cb19-40" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb19-41"><a href="#cb19-41" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Pointrange indicates 50/80% &lt;br&gt;posterior credible interval"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/raccoon-01-post-fit-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>This model isn’t terribly useful since we could have gotten the same inference from just plotting the data directly, but this serves as a base upon which we can build more complicated and useful models.</p>
+</section>
+<section id="raccoon-02" class="level3">
+<h3 class="anchored" data-anchor-id="raccoon-02">Raccoon #02</h3>
+<p>The second model is where things get a bit more interesting — now we’ll actually include predictors for <span class="math inline">\(\beta_{\text{unit}}\)</span> and <span class="math inline">\(\beta_{\text{age}}\)</span>.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \color{blue}{\beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i} \\
+\kappa_k \sim \text{Normal}(0, 1) \\
+\color{blue}{\beta_{\text{unit}} \sim \text{Normal}(0, 1) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5)}
+\end{gather}
+\]</span></p>
+<p>I’ve upped the number of samples for this particular model to avoid a warning from Stan.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>raccoon_02 <span class="ot">&lt;-</span> </span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ulam</span>(</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">alist</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>      <span class="co"># model</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>      response_id <span class="sc">~</span> <span class="fu">dordlogit</span>(phi, cutpoints),</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>      phi <span class="ot">&lt;-</span> b[unit_id] <span class="sc">+</span> b_age <span class="sc">*</span> age_std,</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>      <span class="co"># priors</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>      cutpoints <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>), </span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>      b[unit_id] <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>      b_age <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> responses_stan,</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">cores =</span> <span class="dv">4</span>,</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">iter =</span> <span class="dv">2000</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<p>This model does a pretty good job! Extracting the parameter estimates shows that all of the parameter values that we set manually fall within the 80% posterior credible range estimated by the model.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>raccoon_02<span class="sc">@</span>stanfit <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract parameter draws &amp; summarise with 50/80% quantiles</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  posterior<span class="sc">::</span><span class="fu">as_draws_df</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(lp__<span class="sc">:</span>.draw)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(),</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"term"</span>,</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"estimate"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">term =</span> <span class="fu">if_else</span>(<span class="fu">str_sub</span>(term, <span class="dv">1</span>, <span class="dv">2</span>) <span class="sc">==</span> <span class="st">"b["</span>, </span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>                        LETTERS[<span class="fu">as.integer</span>(<span class="fu">str_sub</span>(term, <span class="dv">3</span>, <span class="dv">3</span>))], </span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>                        term)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(term) <span class="sc">%&gt;%</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">median_qi</span>(estimate, <span class="at">.width =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.8</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># append with actual values used to simulate data</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(unit_params, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"term"</span> <span class="ot">=</span> <span class="st">"unit"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">true_value =</span> beta) <span class="sc">%&gt;%</span></span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">true_value =</span> <span class="fu">case_when</span>(term <span class="sc">==</span> <span class="st">"cutpoints[1]"</span> <span class="sc">~</span> cutpoints[<span class="dv">1</span>],</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>                                term <span class="sc">==</span> <span class="st">"cutpoints[2]"</span> <span class="sc">~</span> cutpoints[<span class="dv">2</span>],</span>
+<span id="cb21-21"><a href="#cb21-21" aria-hidden="true" tabindex="-1"></a>                                term <span class="sc">==</span> <span class="st">"b_age"</span> <span class="sc">~</span> beta_age,</span>
+<span id="cb21-22"><a href="#cb21-22" aria-hidden="true" tabindex="-1"></a>                                <span class="cn">TRUE</span> <span class="sc">~</span> true_value),</span>
+<span id="cb21-23"><a href="#cb21-23" aria-hidden="true" tabindex="-1"></a>         <span class="at">term =</span> <span class="fu">fct_relevel</span>(term, <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"cutpoints["</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="st">"]"</span>),</span>
+<span id="cb21-24"><a href="#cb21-24" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"b_age"</span>,</span>
+<span id="cb21-25"><a href="#cb21-25" aria-hidden="true" tabindex="-1"></a>                                    LETTERS[<span class="dv">5</span><span class="sc">:</span><span class="dv">1</span>]))) <span class="sc">%&gt;%</span></span>
+<span id="cb21-26"><a href="#cb21-26" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb21-27"><a href="#cb21-27" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plot!</span></span>
+<span id="cb21-28"><a href="#cb21-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> term,</span>
+<span id="cb21-29"><a href="#cb21-29" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> estimate,</span>
+<span id="cb21-30"><a href="#cb21-30" aria-hidden="true" tabindex="-1"></a>             <span class="at">ymin =</span> .lower,</span>
+<span id="cb21-31"><a href="#cb21-31" aria-hidden="true" tabindex="-1"></a>             <span class="at">ymax =</span> .upper)) <span class="sc">+</span> </span>
+<span id="cb21-32"><a href="#cb21-32" aria-hidden="true" tabindex="-1"></a>  ggdist<span class="sc">::</span><span class="fu">geom_pointinterval</span>(<span class="at">color =</span> egypt_blu) <span class="sc">+</span></span>
+<span id="cb21-33"><a href="#cb21-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> true_value),</span>
+<span id="cb21-34"><a href="#cb21-34" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> egypt_red,</span>
+<span id="cb21-35"><a href="#cb21-35" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span> </span>
+<span id="cb21-36"><a href="#cb21-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span> </span>
+<span id="cb21-37"><a href="#cb21-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"**Raccoon #02** Posterior Fit"</span>,</span>
+<span id="cb21-38"><a href="#cb21-38" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Comparison of each parameter's </span></span>
+<span id="cb21-39"><a href="#cb21-39" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('true value', egypt_red)}** </span></span>
+<span id="cb21-40"><a href="#cb21-40" aria-hidden="true" tabindex="-1"></a><span class="st">                             to the </span></span>
+<span id="cb21-41"><a href="#cb21-41" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('model</span><span class="sc">\\</span><span class="st">'s estimate', egypt_blu)}**"</span>),</span>
+<span id="cb21-42"><a href="#cb21-42" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb21-43"><a href="#cb21-43" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb21-44"><a href="#cb21-44" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Pointrange indicates 50/80% &lt;br&gt;posterior credible interval"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/raccoon-02-params-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>This model, however, could be improved. The model only uses categorical indicators for the unit, which causes two issues. Firstly, we can only make predictions for the few units that are in the dataset — this model would fail if we tried to make a prediction on a hypothetical new unit, unit F. Secondly, information about each unit is contained just to that unit. In this case, unit E has relatively few responses, and therefore can only draw inference from those responses. A <a href="https://www.thedatadiary.net/blog/2022-11-14-hierarchical-hospitals/">hierarchical model</a>, however, can help in both these areas.</p>
+</section>
+<section id="raccoon-03" class="level3">
+<h3 class="anchored" data-anchor-id="raccoon-03">Raccoon #03</h3>
+<p>To add a hierarchical term for the unit-level intercept, <span class="math inline">\(\beta_{\text{unit}}\)</span>, we don’t actually need to make any changes to the linear model, just how <span class="math inline">\(\beta_{\text{unit}}\)</span> is defined underneath. Rather than estimating each unit intercept directly, this new model will allow them to vary around a group mean, <span class="math inline">\(\overline{\beta}\)</span> with a standard deviation <span class="math inline">\(\sigma\)</span>.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \beta_{\text{unit}} + \beta_{\text{age}} \ \text{age}_i \\
+\kappa_k \sim \text{Normal}(0, 1) \\
+\beta_{\text{unit}} \sim \text{Normal}(\color{blue}{\overline{\beta}}, \color{blue}{\sigma}) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
+\color{blue}{\overline{\beta} \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Exponential}(1)}
+\end{gather}
+\]</span></p>
+<p>This new definition means that we no longer set priors for <span class="math inline">\(\beta_{\text{unit}}\)</span> directly. Instead, our new terms are considered <em>hyper-priors</em> or <em>adaptive priors</em>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>raccoon_03 <span class="ot">&lt;-</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ulam</span>(</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">alist</span>(</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>      <span class="co"># model</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>      response_id <span class="sc">~</span> <span class="fu">dordlogit</span>(phi, cutpoints),</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>      phi <span class="ot">&lt;-</span> b[unit_id] <span class="sc">+</span> b_age<span class="sc">*</span>age_std,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb22-8"><a href="#cb22-8" aria-hidden="true" tabindex="-1"></a>      <span class="co"># priors</span></span>
+<span id="cb22-9"><a href="#cb22-9" aria-hidden="true" tabindex="-1"></a>      cutpoints <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb22-10"><a href="#cb22-10" aria-hidden="true" tabindex="-1"></a>      b[unit_id] <span class="sc">~</span> <span class="fu">dnorm</span>(b_bar, sigma),</span>
+<span id="cb22-11"><a href="#cb22-11" aria-hidden="true" tabindex="-1"></a>      b_age <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="fl">0.5</span>),</span>
+<span id="cb22-12"><a href="#cb22-12" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb22-13"><a href="#cb22-13" aria-hidden="true" tabindex="-1"></a>      <span class="co"># hyper-priors</span></span>
+<span id="cb22-14"><a href="#cb22-14" aria-hidden="true" tabindex="-1"></a>      b_bar <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb22-15"><a href="#cb22-15" aria-hidden="true" tabindex="-1"></a>      sigma <span class="sc">~</span> <span class="fu">dexp</span>(<span class="dv">1</span>)</span>
+<span id="cb22-16"><a href="#cb22-16" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> responses_stan,</span>
+<span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">cores =</span> <span class="dv">4</span></span>
+<span id="cb22-21"><a href="#cb22-21" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<p>Similar to the previous model, all the true parameter values fall within the model’s 80% credible interval estimates. <em>And</em>, we’re now accounting for the group structure with a hierarchical model! If you look at Unit E, however, it looks like the model has gotten worse — the median parameter estimate here is further away from the true value than in the previous model. This, however, is actually what we want. Because there are so few responses for unit E, the estimates are shrunken towards the group mean. In the previous model, we were a bit too <em>over-indexed</em> on the responses we had — if this were real data, where we don’t inherently know the underlying parameter value, we’d want to be similarly cautious for a unit with few responses.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>raccoon_03<span class="sc">@</span>stanfit <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract posterior parameters and summarise with 50/80% quantiles</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  posterior<span class="sc">::</span><span class="fu">as_draws_df</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">str_remove</span>(.x, <span class="st">"]"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">str_replace</span>(.x, <span class="st">"</span><span class="sc">\\</span><span class="st">["</span>, <span class="st">"_"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">A =</span> b_1,</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">B =</span> b_2,</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">C =</span> b_3,</span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">D =</span> b_4,</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">E =</span> b_5) <span class="sc">%&gt;%</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(.draw, A, B, C, D, E, <span class="fu">starts_with</span>(<span class="st">"cut"</span>), b_age) <span class="sc">%&gt;%</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">-</span>.draw,</span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"term"</span>,</span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"estimate"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(term) <span class="sc">%&gt;%</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">median_qi</span>(estimate, <span class="at">.width =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.8</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># append with actual values used to simulate data</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">term =</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(term, <span class="st">"cutpoint"</span>), <span class="fu">paste0</span>(<span class="fu">str_replace</span>(term, <span class="st">"_"</span>, <span class="st">"</span><span class="sc">\\</span><span class="st">["</span>), <span class="st">"]"</span>), term)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(unit_params, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"term"</span> <span class="ot">=</span> <span class="st">"unit"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">true_value =</span> beta) <span class="sc">%&gt;%</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">true_value =</span> <span class="fu">case_when</span>(term <span class="sc">==</span> <span class="st">"cutpoints[1]"</span> <span class="sc">~</span> cutpoints[<span class="dv">1</span>],</span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>                                term <span class="sc">==</span> <span class="st">"cutpoints[2]"</span> <span class="sc">~</span> cutpoints[<span class="dv">2</span>],</span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>                                term <span class="sc">==</span> <span class="st">"b_age"</span> <span class="sc">~</span> beta_age,</span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>                                <span class="cn">TRUE</span> <span class="sc">~</span> true_value),</span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>         <span class="at">term =</span> <span class="fu">fct_relevel</span>(term, <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"cutpoints["</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="st">"]"</span>),</span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"b_age"</span>,</span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>                                    LETTERS[<span class="dv">5</span><span class="sc">:</span><span class="dv">1</span>]))) <span class="sc">%&gt;%</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plot!</span></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> term,</span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> estimate,</span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>             <span class="at">ymin =</span> .lower,</span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>             <span class="at">ymax =</span> .upper)) <span class="sc">+</span> </span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>  ggdist<span class="sc">::</span><span class="fu">geom_pointinterval</span>(<span class="at">color =</span> egypt_blu) <span class="sc">+</span></span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> true_value),</span>
+<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> egypt_red,</span>
+<span id="cb23-40"><a href="#cb23-40" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span> </span>
+<span id="cb23-41"><a href="#cb23-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span> </span>
+<span id="cb23-42"><a href="#cb23-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"**Raccoon #03** Posterior Fit"</span>,</span>
+<span id="cb23-43"><a href="#cb23-43" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Comparison of each parameter's </span></span>
+<span id="cb23-44"><a href="#cb23-44" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('true value', egypt_red)}** </span></span>
+<span id="cb23-45"><a href="#cb23-45" aria-hidden="true" tabindex="-1"></a><span class="st">                             to the </span></span>
+<span id="cb23-46"><a href="#cb23-46" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('model</span><span class="sc">\\</span><span class="st">'s estimate', egypt_blu)}**"</span>),</span>
+<span id="cb23-47"><a href="#cb23-47" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb23-49"><a href="#cb23-49" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Pointrange indicates 50/80% &lt;br&gt;posterior credible interval"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/raccoon-03-post-fit-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>Despite all this hierarchical goodness, this model’s diagnostics could stand to be improved. Although Stan didn’t throw any errors, each parameter’s <a href="https://mc-stan.org/docs/reference-manual/effective-sample-size.html#effective-sample-size.section">effective sample size</a>, <code>n_eff</code>, is low relative to the number of actual samples drawn (in this case, we used the default of 500 samples per chain for a total of 2000 samples) and the <a href="https://mc-stan.org/docs/reference-manual/notation-for-samples-chains-and-draws.html#potential-scale-reduction">convergence statistic</a>, <code>Rhat4</code>, is often a hair or two above the target value of <code>1.00</code>.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">precis</span>(raccoon_03, <span class="at">depth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;                     mean         sd       5.5%     94.5%     n_eff    Rhat4
+#&gt; cutpoints[1] -0.41376023 0.60190950 -1.4433861 0.5471729  373.8733 1.018584
+#&gt; cutpoints[2] -0.06246023 0.60423520 -1.0766518 0.8993494  389.2378 1.018645
+#&gt; b[1]          1.49374559 0.69139567  0.3692997 2.6091664  479.3414 1.014100
+#&gt; b[2]          0.74360352 0.62753994 -0.2911371 1.7151677  408.1696 1.017661
+#&gt; b[3]          0.33785619 0.63617237 -0.7061142 1.3145339  385.0501 1.016526
+#&gt; b[4]          0.20898156 0.61467500 -0.8026615 1.1898645  366.1409 1.019565
+#&gt; b[5]         -0.06365551 0.66665904 -1.1210397 0.9557759  431.5194 1.017986
+#&gt; b_age         0.24898479 0.08989783  0.1096759 0.3935037 1137.4021 1.001321
+#&gt; b_bar         0.48423691 0.65357409 -0.5809470 1.5103410  416.2923 1.011756
+#&gt; sigma         0.78583383 0.39324244  0.3537180 1.5136274 1023.1633 1.002546</code></pre>
+</div>
+</div>
+<p>This is not-so-much an issue with the model specification, but with the computation. Stan’s sampler has a bit of difficulty estimating the shape of the posterior for each <span class="math inline">\(\beta_{\text{unit}}\)</span> because they are dependent on <span class="math inline">\(\overline{\beta}\)</span> and <span class="math inline">\(\sigma\)</span>, which are estimated separately (<a href="https://benslack19.github.io/data%20science/statistics/devilsfunnel_cnc_param/">this post</a> provides a good visual of the “Devil’s Funnel” — a difficult shape to explore that can arise from this sort of model).</p>
+<p>Once again, I am fortunate to not be the first person to encounter this issue, and there is a relatively standard approach that we can take to address. We can respecify the model using a <a href="https://mc-stan.org/docs/stan-users-guide/reparameterization.html#non-centered-parameterization">non-centered parameterization</a> for the <span class="math inline">\(\beta_{\text{unit}}\)</span> terms.</p>
+</section>
+<section id="raccoon-04" class="level3">
+<h3 class="anchored" data-anchor-id="raccoon-04">Raccoon #04</h3>
+<p>A non-centered parameterization is mathematically equivalent to it’s <a href="https://mc-stan.org/docs/stan-users-guide/reparameterization.html#centered-parameterization">centered</a> counterpart (which is what was used in the previous model), but makes it easier for Stan’s sampler to explore the parameter space. To convert to a non-centered parameterization, we need to respecify the model such that each parameter is sampled directly, rather than being dependent on another parameter.</p>
+<p>In our case, we want each unit’s intercept to be offset from the global mean by some amount. We can think of this offset as being <span class="math inline">\(z\)</span> standard deviations away from the mean. Because the model is additive, we can simply replace the <span class="math inline">\(\beta_{\text{unit}}\)</span> term in the linear model with the mean <span class="math inline">\(\overline{\beta}\)</span> and unit offset <span class="math inline">\(z_{\text{unit}} \ \sigma\)</span>.</p>
+<p><span class="math display">\[
+\begin{gather}
+R_i \sim \text{Ordered-logit}(\phi_i, \kappa_k) \\
+\phi_i = \color{blue}{\underbrace{\overline{\beta} + z_{\text{unit}} \ \sigma}_{\beta_{\text{unit}} \ \text{replacement}}} + \beta_{\text{age}} \ \text{age}_i \\
+\kappa_k \sim \text{Normal}(0, 1) \\
+\beta_{\text{age}} \sim \text{Normal}(0, 0.5) \\
+\overline{\beta} \sim \text{Normal}(0, 1) \\
+\color{blue}{z_{\text{unit}} \sim \text{Normal}(0, 1) \\
+\sigma \sim \text{Exponential}(1)}
+\end{gather}
+\]</span></p>
+<p>Again, this is mathematically equivalent to the previous model, but the sampler will now complain less about exploring the parameter space since each term is sampled directly.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>raccoon_04 <span class="ot">&lt;-</span> </span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ulam</span>(</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">alist</span>(</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>      <span class="co"># model </span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>      response_id <span class="sc">~</span> <span class="fu">dordlogit</span>(phi, cutpoints),</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>      phi <span class="ot">&lt;-</span> b_bar <span class="sc">+</span> z[unit_id]<span class="sc">*</span>sigma <span class="sc">+</span> b_age<span class="sc">*</span>age_std,</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>      <span class="co"># priors</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>      cutpoints <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>      b_age <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="fl">0.5</span>),</span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>      </span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>      <span class="co"># non-centered parameters</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>      b_bar <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>      z[unit_id] <span class="sc">~</span> <span class="fu">dnorm</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>      sigma <span class="sc">~</span> <span class="fu">dexp</span>(<span class="dv">1</span>)</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> responses_stan,</span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">chains =</span> <span class="dv">4</span>,</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">cores =</span> <span class="dv">4</span></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell">
+
+</div>
+<p>We have to do a bit more work to pull out the unit estimates for this model but, as expected, the parameter estimates here are practically equivalent to the previous model’s estimates.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>raccoon_04<span class="sc">@</span>stanfit <span class="sc">%&gt;%</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract parameters and summarise with 50/80% quantiles</span></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  posterior<span class="sc">::</span><span class="fu">as_draws_df</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>(<span class="sc">~</span><span class="fu">str_replace</span>(<span class="fu">str_remove</span>(.x, <span class="st">"]"</span>), <span class="st">"</span><span class="sc">\\</span><span class="st">["</span>, <span class="st">"_"</span>),</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">.cols =</span> <span class="fu">starts_with</span>(<span class="st">"z"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">A =</span> b_bar <span class="sc">+</span> z_1 <span class="sc">*</span> sigma,</span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">B =</span> b_bar <span class="sc">+</span> z_2 <span class="sc">*</span> sigma,</span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">C =</span> b_bar <span class="sc">+</span> z_3 <span class="sc">*</span> sigma,</span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">D =</span> b_bar <span class="sc">+</span> z_4 <span class="sc">*</span> sigma,</span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">E =</span> b_bar <span class="sc">+</span> z_5 <span class="sc">*</span> sigma) <span class="sc">%&gt;%</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(A, B, C, D, E, b_age, <span class="fu">starts_with</span>(<span class="st">"cut"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb27-14"><a href="#cb27-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">everything</span>(),</span>
+<span id="cb27-15"><a href="#cb27-15" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"term"</span>,</span>
+<span id="cb27-16"><a href="#cb27-16" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"estimate"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb27-17"><a href="#cb27-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(term) <span class="sc">%&gt;%</span></span>
+<span id="cb27-18"><a href="#cb27-18" aria-hidden="true" tabindex="-1"></a>  tidybayes<span class="sc">::</span><span class="fu">median_qi</span>(estimate, <span class="at">.width =</span> <span class="fu">c</span>(<span class="fl">0.5</span>, <span class="fl">0.8</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb27-19"><a href="#cb27-19" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-20"><a href="#cb27-20" aria-hidden="true" tabindex="-1"></a>  <span class="co"># append with actual values used to simulate data</span></span>
+<span id="cb27-21"><a href="#cb27-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(unit_params, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"term"</span> <span class="ot">=</span> <span class="st">"unit"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb27-22"><a href="#cb27-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">true_value =</span> beta) <span class="sc">%&gt;%</span></span>
+<span id="cb27-23"><a href="#cb27-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">true_value =</span> <span class="fu">case_when</span>(term <span class="sc">==</span> <span class="st">"cutpoints[1]"</span> <span class="sc">~</span> cutpoints[<span class="dv">1</span>],</span>
+<span id="cb27-24"><a href="#cb27-24" aria-hidden="true" tabindex="-1"></a>                                term <span class="sc">==</span> <span class="st">"cutpoints[2]"</span> <span class="sc">~</span> cutpoints[<span class="dv">2</span>],</span>
+<span id="cb27-25"><a href="#cb27-25" aria-hidden="true" tabindex="-1"></a>                                term <span class="sc">==</span> <span class="st">"b_age"</span> <span class="sc">~</span> beta_age,</span>
+<span id="cb27-26"><a href="#cb27-26" aria-hidden="true" tabindex="-1"></a>                                <span class="cn">TRUE</span> <span class="sc">~</span> true_value),</span>
+<span id="cb27-27"><a href="#cb27-27" aria-hidden="true" tabindex="-1"></a>         <span class="at">term =</span> <span class="fu">fct_relevel</span>(term, <span class="fu">c</span>(<span class="fu">paste0</span>(<span class="st">"cutpoints["</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="st">"]"</span>),</span>
+<span id="cb27-28"><a href="#cb27-28" aria-hidden="true" tabindex="-1"></a>                                    <span class="st">"b_age"</span>,</span>
+<span id="cb27-29"><a href="#cb27-29" aria-hidden="true" tabindex="-1"></a>                                    LETTERS[<span class="dv">5</span><span class="sc">:</span><span class="dv">1</span>]))) <span class="sc">%&gt;%</span></span>
+<span id="cb27-30"><a href="#cb27-30" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb27-31"><a href="#cb27-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plot!</span></span>
+<span id="cb27-32"><a href="#cb27-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> term,</span>
+<span id="cb27-33"><a href="#cb27-33" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> estimate,</span>
+<span id="cb27-34"><a href="#cb27-34" aria-hidden="true" tabindex="-1"></a>             <span class="at">ymin =</span> .lower,</span>
+<span id="cb27-35"><a href="#cb27-35" aria-hidden="true" tabindex="-1"></a>             <span class="at">ymax =</span> .upper)) <span class="sc">+</span> </span>
+<span id="cb27-36"><a href="#cb27-36" aria-hidden="true" tabindex="-1"></a>  ggdist<span class="sc">::</span><span class="fu">geom_pointinterval</span>(<span class="at">color =</span> egypt_blu) <span class="sc">+</span></span>
+<span id="cb27-37"><a href="#cb27-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">y =</span> true_value),</span>
+<span id="cb27-38"><a href="#cb27-38" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> egypt_red,</span>
+<span id="cb27-39"><a href="#cb27-39" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span> </span>
+<span id="cb27-40"><a href="#cb27-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb27-41"><a href="#cb27-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"**Raccoon #04** Posterior Fit"</span>,</span>
+<span id="cb27-42"><a href="#cb27-42" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Comparison of each parameter's </span></span>
+<span id="cb27-43"><a href="#cb27-43" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('true value', egypt_red)}** </span></span>
+<span id="cb27-44"><a href="#cb27-44" aria-hidden="true" tabindex="-1"></a><span class="st">                             to the </span></span>
+<span id="cb27-45"><a href="#cb27-45" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('model</span><span class="sc">\\</span><span class="st">'s estimate', egypt_blu)}**"</span>),</span>
+<span id="cb27-46"><a href="#cb27-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb27-47"><a href="#cb27-47" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb27-48"><a href="#cb27-48" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Pointrange indicates 50/80% &lt;br&gt;posterior credible interval"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/raccoon-04-post-fit-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>With this new parameterization, however, this inference stands on a bit sturdier ground. While still not near the actual 2000 total samples, the effective sample size of each parameter has greatly improved and the convergence statistic is better across the board.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">precis</span>(raccoon_04, <span class="at">depth =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt;                    mean         sd       5.5%     94.5%     n_eff     Rhat4
+#&gt; cutpoints[1] -0.4528105 0.61734428 -1.4141411 0.5646185 1080.2276 0.9999476
+#&gt; cutpoints[2] -0.1034459 0.61438529 -1.0705393 0.8963293 1085.7692 0.9997501
+#&gt; b_age         0.2540631 0.09263271  0.1073939 0.4032082 1969.5320 0.9993506
+#&gt; b_bar         0.4308891 0.63042797 -0.5693130 1.4471711  925.0096 1.0018934
+#&gt; z[1]          1.4513916 0.65032581  0.4481160 2.5227073  862.1820 1.0065399
+#&gt; z[2]          0.3795392 0.54168883 -0.4556955 1.2506734  681.4293 1.0058323
+#&gt; z[3]         -0.2313011 0.56399174 -1.2076518 0.6440465  619.6718 1.0043170
+#&gt; z[4]         -0.4386073 0.53846049 -1.3433651 0.3940326  592.6804 1.0029844
+#&gt; z[5]         -0.7838474 0.62014640 -1.8038760 0.1606955  815.9599 1.0022972
+#&gt; sigma         0.7803627 0.37862771  0.3673002 1.4990210  683.2843 1.0042488</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="exploring-the-posterior" class="level2">
+<h2 class="anchored" data-anchor-id="exploring-the-posterior">Exploring the posterior</h2>
+<p>With this finalized model, we can answer interesting <a href="https://bookdown.org/ajkurz/Statistical_Rethinking_recoded/multivariate-linear-models.html#plotting-multivariate-posteriors.">counterfactual</a> questions even if there isn’t data directly in the dataset. For example, what do we expect each unit’s score to be across <em>all ages?</em></p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># sequence of standardized ages for each unit</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>counterfactual_data <span class="ot">&lt;-</span> </span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">crossing</span>(<span class="at">unit_id =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>,</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">age_std =</span> <span class="fu">seq</span>(<span class="sc">-</span><span class="dv">2</span>, <span class="dv">2</span>, <span class="at">length.out =</span> <span class="dv">50</span>))</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a><span class="co"># extract a sample of 100 cutpoints from the posterior </span></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>cutpoints <span class="ot">&lt;-</span> </span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">extract.samples</span>(</span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a>    raccoon_04,</span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="dv">100</span>,</span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">pars =</span> <span class="fu">paste0</span>(<span class="st">"cutpoints["</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="st">"]"</span>)</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="co"># convert to tibble &amp; add sim index</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a>cutpoints <span class="ot">&lt;-</span> </span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(</span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">sim =</span> <span class="fu">seq</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">100</span>),</span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">cutpoint1 =</span> cutpoints<span class="sc">$</span><span class="st">`</span><span class="at">cutpoints[1]</span><span class="st">`</span>,</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">cutpoint2 =</span> cutpoints<span class="sc">$</span><span class="st">`</span><span class="at">cutpoints[2]</span><span class="st">`</span></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a>counterfactual_output <span class="ot">&lt;-</span> </span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># extract phi &amp; convert to wide tibble format</span></span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a>  raccoon_04 <span class="sc">%&gt;%</span></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">link</span>(<span class="fu">as.list</span>(counterfactual_data),</span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a>       <span class="at">post =</span> <span class="fu">extract.samples</span>(., <span class="at">n =</span> <span class="dv">100</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">t</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add unit/age data; convert to long format</span></span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_cols</span>(counterfactual_data, .) <span class="sc">%&gt;%</span></span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rowid_to_column</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">starts_with</span>(<span class="st">"V"</span>),</span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"sim"</span>,</span>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"phi"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">sim =</span> <span class="fu">as.numeric</span>(<span class="fu">str_remove</span>(sim, <span class="st">"V"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># estimate probabilities for each category</span></span>
+<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(cutpoints) <span class="sc">%&gt;%</span></span>
+<span id="cb30-41"><a href="#cb30-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">q1 =</span> cutpoint1 <span class="sc">-</span> phi,</span>
+<span id="cb30-42"><a href="#cb30-42" aria-hidden="true" tabindex="-1"></a>         <span class="at">q2 =</span> cutpoint2 <span class="sc">-</span> phi,</span>
+<span id="cb30-43"><a href="#cb30-43" aria-hidden="true" tabindex="-1"></a>         <span class="at">detractor =</span> <span class="fu">expit</span>(q1),</span>
+<span id="cb30-44"><a href="#cb30-44" aria-hidden="true" tabindex="-1"></a>         <span class="at">passive =</span> <span class="fu">expit</span>(q2) <span class="sc">-</span> <span class="fu">expit</span>(q1),</span>
+<span id="cb30-45"><a href="#cb30-45" aria-hidden="true" tabindex="-1"></a>         <span class="at">promoter =</span> <span class="dv">1</span> <span class="sc">-</span> <span class="fu">expit</span>(q2)) <span class="sc">%&gt;%</span></span>
+<span id="cb30-46"><a href="#cb30-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(unit_id, age_std, sim, promoter, passive, detractor)</span>
+<span id="cb30-47"><a href="#cb30-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-48"><a href="#cb30-48" aria-hidden="true" tabindex="-1"></a>counterfactual_output <span class="sc">%&gt;%</span></span>
+<span id="cb30-49"><a href="#cb30-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb30-50"><a href="#cb30-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="fu">c</span>(promoter<span class="sc">:</span>detractor), <span class="sc">~</span>scales<span class="sc">::</span><span class="fu">label_percent</span>(<span class="at">accuracy =</span> <span class="dv">1</span>)(.x))) <span class="sc">%&gt;%</span></span>
+<span id="cb30-51"><a href="#cb30-51" aria-hidden="true" tabindex="-1"></a>  knitr<span class="sc">::</span><span class="fu">kable</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<thead>
+<tr class="header">
+<th style="text-align: right;">unit_id</th>
+<th style="text-align: right;">age_std</th>
+<th style="text-align: right;">sim</th>
+<th style="text-align: left;">promoter</th>
+<th style="text-align: left;">passive</th>
+<th style="text-align: left;">detractor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">76%</td>
+<td style="text-align: left;">6%</td>
+<td style="text-align: left;">19%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">78%</td>
+<td style="text-align: left;">5%</td>
+<td style="text-align: left;">17%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">81%</td>
+<td style="text-align: left;">5%</td>
+<td style="text-align: left;">14%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: left;">72%</td>
+<td style="text-align: left;">5%</td>
+<td style="text-align: left;">23%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">80%</td>
+<td style="text-align: left;">4%</td>
+<td style="text-align: left;">15%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">74%</td>
+<td style="text-align: left;">6%</td>
+<td style="text-align: left;">20%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">7</td>
+<td style="text-align: left;">79%</td>
+<td style="text-align: left;">5%</td>
+<td style="text-align: left;">16%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">64%</td>
+<td style="text-align: left;">8%</td>
+<td style="text-align: left;">28%</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">79%</td>
+<td style="text-align: left;">4%</td>
+<td style="text-align: left;">17%</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">-2</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: left;">68%</td>
+<td style="text-align: left;">8%</td>
+<td style="text-align: left;">24%</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>Here, we’ve taken 100 samples from <code>raccoon_04</code> for each combination of <code>unit_id</code> and <code>age_std</code> and extracted the probability of selecting promoter, passive, or detractor. If we put together in a plot, we can see what the model expects of each unit across each age and how confident hte model is in that expectation.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>counterfactual_output <span class="sc">%&gt;%</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="fu">c</span>(promoter, passive, detractor),</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">names_to =</span> <span class="st">"nps_group"</span>,</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>               <span class="at">values_to =</span> <span class="st">"prob"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nps_group =</span> <span class="fu">fct_relevel</span>(nps_group, <span class="fu">c</span>(<span class="st">"detractor"</span>, <span class="st">"promoter"</span>, <span class="st">"passive"</span>)),</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">unit =</span> <span class="fu">paste</span>(<span class="st">"Unit"</span>, LETTERS[unit_id]),</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">age =</span> age_std <span class="sc">*</span> <span class="dv">10</span> <span class="sc">+</span> <span class="dv">45</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age,</span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> prob,</span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">color =</span> nps_group,</span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">group =</span> <span class="fu">paste0</span>(sim, nps_group))) <span class="sc">+</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">alpha =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>unit) <span class="sc">+</span></span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()) <span class="sc">+</span> </span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>  MetBrewer<span class="sc">::</span><span class="fu">scale_color_met_d</span>(<span class="st">"Egypt"</span>) <span class="sc">+</span></span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span> </span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Counterfactual odds and oddities"</span>,</span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"Probability of selecting </span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('promoter', egypt_blu)}**, </span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('passive', egypt_grn)}**, or </span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a><span class="st">                             **{color_text('detractor', egypt_red)}** </span></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a><span class="st">                             as age increases"</span>),</span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Sample of 100 posterior draws"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/plot-counterfactual-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+<p>There are quite a few items to note from this plot. Firstly, across all age ranges, the early-alphabet units are more likely to have promoter responses than the late-alphabet units. Additionally, there is a relatively small chance of selecting passive at each unit across the ages. As age increases, each unit is expected to receive more favorable scores. Finally, Unit D, which had the most responses, has the tightest posterior intervals while Unit E, which had the fewest, has the widest intervals. All of this is expected, given how the data was simulated. In combination with the true/estimated parameter plot, this serves as a good confirmation that <code>raccoon_04</code> models the process appropriately.</p>
+<p>Since each sample gives the probability of selecting promoter, passive, or detractor, we can simply plug these probabilities into the formula for NPS to get the <em>expected</em> NPS for each unit across the ages.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>counterfactual_output <span class="sc">%&gt;%</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get nps for each posterior sample</span></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">nps =</span> promoter <span class="sc">-</span> detractor,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">unit =</span> <span class="fu">paste</span>(<span class="st">"Unit"</span>, LETTERS[unit_id]),</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">age =</span> age_std <span class="sc">*</span> <span class="dv">10</span> <span class="sc">+</span> <span class="dv">45</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># plot!</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> age,</span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">y =</span> nps,</span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>             <span class="at">group =</span> sim)) <span class="sc">+</span> </span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">alpha =</span> <span class="fl">0.25</span>,</span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">color =</span> RColorBrewer<span class="sc">::</span><span class="fu">brewer.pal</span>(<span class="dv">3</span>, <span class="st">"Dark2"</span>)[<span class="dv">3</span>]) <span class="sc">+</span></span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>unit) <span class="sc">+</span> </span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> scales<span class="sc">::</span><span class="fu">label_percent</span>()) <span class="sc">+</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Counterfactual odds and oddities 2: NPS drift"</span>,</span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> glue<span class="sc">::</span><span class="fu">glue</span>(<span class="st">"**{color_text('Expected NPS', RColorBrewer::brewer.pal(3, 'Dark2')[3])}** </span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a><span class="st">                             at each unit as age increases"</span>),</span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="cn">NULL</span>,</span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="cn">NULL</span>,</span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"Sample of 100 posterior draws"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="index_files/figure-html/counterfactual-nps-1.png" class="img-fluid" width="2700"></p>
+</div>
+</div>
+</section>
+<section id="in-summary" class="level2">
+<h2 class="anchored" data-anchor-id="in-summary">In summary…</h2>
+<p>In this post, we’ve done the following:</p>
+<ul>
+<li>Defined a data-generating process that links NPS to a linear model while preserving the order of the categories.</li>
+<li>Manually set the parameters of the linear model and simulated patient responses.</li>
+<li>Recovered the parameters with a series of models.</li>
+</ul>
+<p>The models that were built increased in both complexity and utility:</p>
+<ul>
+<li><code>raccoon_01</code> didn’t contain any terms and only estimated the cutpoints <span class="math inline">\(\kappa_k\)</span> — this effectively gave us a Bayesian histogram of the data.</li>
+<li><code>raccoon_02</code> added terms for the unit each patient visited and their age. This recovered the parameters we set manually, but didn’t pool any information across units and only allowed us to draw inferences from the units in the dataset.</li>
+<li><code>raccoon_03</code> converted <span class="math inline">\(\beta_{\text{unit}}\)</span> to a hierarchical term, which addressed some of the shortcomings of <code>raccoon_02</code>. However, the way the model was written resulted in a difficult parameter space for Stan’s sampler to explore, which gave less-than-desirable diagnostics.</li>
+<li><code>raccoon_04</code> was a non-centered reparameterization of <code>raccoon_03</code>. The two models were mathematically equivalent, but <code>raccoon_04</code> was easier to for Stan to sample from, which gave us a larger effective sample size and smaller convergence statistic for each parameter (which are both good things!).</li>
+</ul>
+<p>With the fit from <code>raccoon_04</code>, we also were able to look at how the model expected responses to vary with age at each unit. This served as another visual confirmation that the model was doing what we expected based on how the data was simulated. These expected responses also allowed us to plot the expected NPS score at each unit as age varies.</p>
+</section>
+<section id="some-additional-closing-thoughts" class="level2">
+<h2 class="anchored" data-anchor-id="some-additional-closing-thoughts">Some (additional) closing thoughts</h2>
+<p>As mentioned in the opening section, NPS is a difficult metric to model (or, at least, it was prior to picking up McElreath’s book). In the past, I’d used some hack-ish methods to model NPS, such as:</p>
+<ul>
+<li>Ignoring passives and detractors by modeling promoters with a binomial.</li>
+<li>Aggregating scores at the unit-level, rescaling NPS from <code>[-100, 100]</code> to <code>[0, 1]</code>, tossing out any zeroes or ones, then modeling with a beta distribution.</li>
+<li>Separately modeling promoters, passives, and detractors with three binomial models.</li>
+</ul>
+<p>Each of these is wrong in their own way, but, fundamentally, they all ignore the data-generating process of a patient’s experience influencing an ordered response on a 0-10 scale.</p>
+<p>Speaking of a 0-10 scale, this ordinal model extends to any number of categories — we could have have directly modeled the 11 response categories using <span class="math inline">\(k = 10\)</span> cutpoints. While NPS is more granular (and therefore, in my opinion, better) than LTR/topbox, modeling and evaluating the mean response on the 0-10 scale is <em>even more granular/better</em> than NPS! That being said, however, it’s unlikely that much of my work at the hospital will incorporate that more-granular view. NPS is our chosen metric, so while there are more potential categories, we really only care about the three big buckets of promoter, passive, or detractor. Additionally, from a benchmarking perspective, NPS is more widely available and allows for a quick comparison to <a href="https://www.qualtrics.com/news/leading-healthcare-organizations-choose-qualtrics-to-deliver-ease-and-empathy-to-patients-and-caregivers/">other hospital systems that are picking up the metric</a> or even <a href="https://success.qualtrics.com/rs/542-FMF-412/images/Qualtrics_CX_Industry_NPS_Benchmarks_eBook.pdf">other industries</a> where NPS is the standard satisfaction metric.</p>
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {My 2022 {Magnum} {Opus}},
+  date = {2022-12-30},
+  url = {https://www.thedatadiary.net/posts/2022-12-30-my-2022-magnum-opus},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
+Mark Rieke. 2022. <span>“My 2022 Magnum Opus.”</span> December 30, 2022.
+<a href="https://www.thedatadiary.net/posts/2022-12-30-my-2022-magnum-opus">https://www.thedatadiary.net/posts/2022-12-30-my-2022-magnum-opus</a>.
+</div></div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left"> Mark Rieke, 2023<br> All content licensed under <a href="https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE">MIT License</a><br> Made with and <a href="https://quarto.org">Quarto</a></div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/markjrieke">
+      <i class="bi bi-github" role="img" aria-label="github">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/markjrieke">
+      <i class="bi bi-twitter" role="img" aria-label="twitter">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/markjrieke/">
+      <i class="bi bi-linkedin" role="img" aria-label="linkedin">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>

@@ -2,7 +2,7 @@
 title: How Popular is Joe Biden?
 date: '2022-01-26'
 categories: [politics]
-description: 'Building a Presidential Approval Model'
+description: Building a Presidential Approval Model
 image: featured.png
 ---
 

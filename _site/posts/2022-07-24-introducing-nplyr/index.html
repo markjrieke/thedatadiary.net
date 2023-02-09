@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Mark Rieke">
+<meta name="dcterms.date" content="2022-07-24">
+
+<title>the data diary - Introducing {nplyr}</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../..//static/img/icon.png" rel="icon" type="image/png">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../static/img/icon.png" alt="" class="navbar-logo">
+    </a>
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">the data diary</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">2022 Midterms</span>
+    </a>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
+        <li class="dropdown-header">Senate</li>
+        <li class="dropdown-header">House</li>
+        <li class="dropdown-header">Governor</li>
+    </ul>
+  </li>
+  <li class="dropdown-header">
+ <span class="menu-text">Blog</span></li>
+  <li class="dropdown-header">
+ <span class="menu-text">About</span></li>
+</ul>
+              <div id="quarto-search" class="" title="Search"></div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default toc-left page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Introducing {nplyr}</h1>
+            <p class="subtitle lead">A grammar of (nested) data manipulation</p>
+                                <div class="quarto-categories">
+                <div class="quarto-category">rstats</div>
+                <div class="quarto-category">nplyr</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Mark Rieke </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">July 24, 2022</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse sidebar-navigation floating overflow-auto">
+    <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#installation" id="toc-installation" class="nav-link active" data-scroll-target="#installation">Installation</a></li>
+  <li><a href="#usage" id="toc-usage" class="nav-link" data-scroll-target="#usage">Usage</a></li>
+  <li><a href="#other-use-cases" id="toc-other-use-cases" class="nav-link" data-scroll-target="#other-use-cases">Other use cases</a></li>
+  </ul>
+<div class="toc-actions"><div><i class="bi bi-github"></i></div><div class="action-links"><p><a href="https://github.com/markjrieke/thedatadiary.net/blob/main/posts/2022-07-24-introducing-nplyr/index.qmd" class="toc-action">View source</a></p><p><a href="https://github.com/markjrieke/thedatadiary.net/issues/new" class="toc-action">Report an issue</a></p></div></div></nav>
+</nav>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>Data manipulation and transformation is a fundamental part of any analysis. There are excellent tools in the R ecosystem for manipulating data frames (<a href="https://dplyr.tidyverse.org/">dplyr</a>, <a href="https://rdatatable.gitlab.io/data.table/">data.table</a>, and <a href="https://arrow.apache.org/docs/r/">arrow</a>, to name a few). Sometimes, however, it is desirable to work with <em>nested</em> data frames, for which few tools are readily available.</p>
+<p>This is where <a href="https://markjrieke.github.io/nplyr/">nplyr</a> comes into play! nplyr is a grammar of nested data manipulation that allows users to perform dplyr-like manipulations on data frames nested within a list-col of another data frame. Most dplyr verbs have nested equivalents in nplyr. For example:</p>
+<ul>
+<li><code>nest_mutate()</code> is the nested equivalent of <code>mutate()</code></li>
+<li><code>nest_select()</code> is the nested equivalent of <code>select()</code></li>
+<li><code>nest_filter()</code> is the nested equivalent of <code>filter()</code></li>
+<li><code>nest_summarise()</code> is the nested equivalent of <code>summarise()</code></li>
+<li><code>nest_group_by()</code> is the nested equivalent of <code>group_by()</code></li>
+</ul>
+<section id="installation" class="level3">
+<h3 class="anchored" data-anchor-id="installation">Installation</h3>
+<p>nplyr 0.1.0 is available on <a href="https://cran.r-project.org/web/packages/nplyr/index.html">CRAN</a>. Alternatively, you can install the development version from github with the <a href="https://cran.r-project.org/package=devtools">devtools</a> or <a href="https://cran.r-project.org/package=remotes">remotes</a> package:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># install from CRAN</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"nplyr"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># install from github</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"markjrieke/nplyr"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="usage" class="level3">
+<h3 class="anchored" data-anchor-id="usage">Usage</h3>
+<p>To get started, we’ll create a nested column for the country data within each continent from the <a href="https://cran.r-project.org/package=gapminder">gapminder</a> dataset.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(nplyr)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>gm_nest <span class="ot">&lt;-</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  gapminder<span class="sc">::</span>gapminder_unfiltered <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">nest</span>(<span class="at">country_data =</span> <span class="sc">-</span>continent)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>gm_nest</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 6 × 2
+#&gt;   continent country_data        
+#&gt;   &lt;fct&gt;     &lt;list&gt;              
+#&gt; 1 Asia      &lt;tibble [578 × 5]&gt;  
+#&gt; 2 Europe    &lt;tibble [1,302 × 5]&gt;
+#&gt; 3 Africa    &lt;tibble [637 × 5]&gt;  
+#&gt; 4 Americas  &lt;tibble [470 × 5]&gt;  
+#&gt; 5 FSU       &lt;tibble [139 × 5]&gt;  
+#&gt; 6 Oceania   &lt;tibble [187 × 5]&gt;</code></pre>
+</div>
+</div>
+<p>dplyr can perform operations on the top-level data frame, but with nplyr, we can perform operations on the nested data frames:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>gm_nest_example <span class="ot">&lt;-</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  gm_nest <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_filter</span>(country_data, year <span class="sc">==</span> <span class="fu">max</span>(year)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_mutate</span>(country_data, <span class="at">pop_millions =</span> pop<span class="sc">/</span><span class="dv">1000000</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># each nested tibble is now filtered to the most recent year</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>gm_nest_example</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 6 × 2
+#&gt;   continent country_data     
+#&gt;   &lt;fct&gt;     &lt;list&gt;           
+#&gt; 1 Asia      &lt;tibble [43 × 6]&gt;
+#&gt; 2 Europe    &lt;tibble [34 × 6]&gt;
+#&gt; 3 Africa    &lt;tibble [53 × 6]&gt;
+#&gt; 4 Americas  &lt;tibble [33 × 6]&gt;
+#&gt; 5 FSU       &lt;tibble [9 × 6]&gt; 
+#&gt; 6 Oceania   &lt;tibble [11 × 6]&gt;</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># if we unnest, we can see that a new column for pop_millions has been created</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>gm_nest_example <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(country_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 43 × 7
+#&gt;    continent country           year lifeExp        pop gdpPercap pop_millions
+#&gt;    &lt;fct&gt;     &lt;fct&gt;            &lt;int&gt;   &lt;dbl&gt;      &lt;int&gt;     &lt;dbl&gt;        &lt;dbl&gt;
+#&gt;  1 Asia      Afghanistan       2007    43.8   31889923      975.       31.9  
+#&gt;  2 Asia      Azerbaijan        2007    67.5    8017309     7709.        8.02 
+#&gt;  3 Asia      Bahrain           2007    75.6     708573    29796.        0.709
+#&gt;  4 Asia      Bangladesh        2007    64.1  150448339     1391.      150.   
+#&gt;  5 Asia      Bhutan            2007    65.6    2327849     4745.        2.33 
+#&gt;  6 Asia      Brunei            2007    77.1     386511    48015.        0.387
+#&gt;  7 Asia      Cambodia          2007    59.7   14131858     1714.       14.1  
+#&gt;  8 Asia      China             2007    73.0 1318683096     4959.     1319.   
+#&gt;  9 Asia      Hong Kong, China  2007    82.2    6980412    39725.        6.98 
+#&gt; 10 Asia      India             2007    64.7 1110396331     2452.     1110.   
+#&gt; # … with 33 more rows</code></pre>
+</div>
+</div>
+<p>nplyr also supports grouped operations with <code>nest_group_by()</code>:</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>gm_nest_example <span class="ot">&lt;-</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  gm_nest <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_group_by</span>(country_data, year) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_summarise</span>(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    country_data,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> <span class="fu">n</span>(),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">lifeExp =</span> <span class="fu">median</span>(lifeExp),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">pop =</span> <span class="fu">median</span>(pop),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">gdpPercap =</span> <span class="fu">median</span>(gdpPercap)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>gm_nest_example</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 6 × 2
+#&gt;   continent country_data     
+#&gt;   &lt;fct&gt;     &lt;list&gt;           
+#&gt; 1 Asia      &lt;tibble [58 × 5]&gt;
+#&gt; 2 Europe    &lt;tibble [58 × 5]&gt;
+#&gt; 3 Africa    &lt;tibble [13 × 5]&gt;
+#&gt; 4 Americas  &lt;tibble [57 × 5]&gt;
+#&gt; 5 FSU       &lt;tibble [44 × 5]&gt;
+#&gt; 6 Oceania   &lt;tibble [56 × 5]&gt;</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># unnesting shows summarised tibbles for each continent</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>gm_nest_example <span class="sc">%&gt;%</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(country_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 58 × 6
+#&gt;    continent  year     n lifeExp      pop gdpPercap
+#&gt;    &lt;fct&gt;     &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+#&gt;  1 Europe     1950    22    65.8 7408264      6343.
+#&gt;  2 Europe     1951    18    65.7 7165515      6509.
+#&gt;  3 Europe     1952    31    65.9 7124673      5210.
+#&gt;  4 Europe     1953    17    67.3 7346100      6774.
+#&gt;  5 Europe     1954    17    68.0 7423300      7046.
+#&gt;  6 Europe     1955    17    68.5 7499400      7817.
+#&gt;  7 Europe     1956    17    68.5 7575800      8224.
+#&gt;  8 Europe     1957    31    67.5 7363802      6093.
+#&gt;  9 Europe     1958    18    69.6 8308052.     8833.
+#&gt; 10 Europe     1959    18    69.6 8379664.     9088.
+#&gt; # … with 48 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="other-use-cases" class="level3">
+<h3 class="anchored" data-anchor-id="other-use-cases">Other use cases</h3>
+<p>In the previous set of examples, the output from nplyr’s nested operations could be obtained by unnesting and performing grouped dplyr operations.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># we can use nplyr to perform operations on the nested data</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>gm_nest <span class="sc">%&gt;%</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_filter</span>(country_data, year <span class="sc">==</span> <span class="fu">max</span>(year)) <span class="sc">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_mutate</span>(country_data, <span class="at">pop_millions =</span> pop<span class="sc">/</span><span class="dv">1000000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(country_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 43 × 7
+#&gt;    continent country           year lifeExp        pop gdpPercap pop_millions
+#&gt;    &lt;fct&gt;     &lt;fct&gt;            &lt;int&gt;   &lt;dbl&gt;      &lt;int&gt;     &lt;dbl&gt;        &lt;dbl&gt;
+#&gt;  1 Asia      Afghanistan       2007    43.8   31889923      975.       31.9  
+#&gt;  2 Asia      Azerbaijan        2007    67.5    8017309     7709.        8.02 
+#&gt;  3 Asia      Bahrain           2007    75.6     708573    29796.        0.709
+#&gt;  4 Asia      Bangladesh        2007    64.1  150448339     1391.      150.   
+#&gt;  5 Asia      Bhutan            2007    65.6    2327849     4745.        2.33 
+#&gt;  6 Asia      Brunei            2007    77.1     386511    48015.        0.387
+#&gt;  7 Asia      Cambodia          2007    59.7   14131858     1714.       14.1  
+#&gt;  8 Asia      China             2007    73.0 1318683096     4959.     1319.   
+#&gt;  9 Asia      Hong Kong, China  2007    82.2    6980412    39725.        6.98 
+#&gt; 10 Asia      India             2007    64.7 1110396331     2452.     1110.   
+#&gt; # … with 33 more rows</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># in this case, we could have obtained the same result with tidyr and dplyr</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>gm_nest <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(country_data) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(continent) <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(year <span class="sc">==</span> <span class="fu">max</span>(year)) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pop_millions =</span> pop<span class="sc">/</span><span class="dv">1000000</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(continent <span class="sc">==</span> <span class="st">"Asia"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 43 × 7
+#&gt;    continent country           year lifeExp        pop gdpPercap pop_millions
+#&gt;    &lt;fct&gt;     &lt;fct&gt;            &lt;int&gt;   &lt;dbl&gt;      &lt;int&gt;     &lt;dbl&gt;        &lt;dbl&gt;
+#&gt;  1 Asia      Afghanistan       2007    43.8   31889923      975.       31.9  
+#&gt;  2 Asia      Azerbaijan        2007    67.5    8017309     7709.        8.02 
+#&gt;  3 Asia      Bahrain           2007    75.6     708573    29796.        0.709
+#&gt;  4 Asia      Bangladesh        2007    64.1  150448339     1391.      150.   
+#&gt;  5 Asia      Bhutan            2007    65.6    2327849     4745.        2.33 
+#&gt;  6 Asia      Brunei            2007    77.1     386511    48015.        0.387
+#&gt;  7 Asia      Cambodia          2007    59.7   14131858     1714.       14.1  
+#&gt;  8 Asia      China             2007    73.0 1318683096     4959.     1319.   
+#&gt;  9 Asia      Hong Kong, China  2007    82.2    6980412    39725.        6.98 
+#&gt; 10 Asia      India             2007    64.7 1110396331     2452.     1110.   
+#&gt; # … with 33 more rows</code></pre>
+</div>
+</div>
+<p>Why, then, might we need to use nplyr? Well, in other scenarios, it may be far more convenient to work with nested data frames or it may not even be possible to unnest!</p>
+<p>Consider a set of surveys that an organization might use to gather market data. It is common for organization to have separate surveys for separate purposes but to gather the same baseline set of data across all surveys (for example , a respondent’s age and gender may be recorded across all surveys, but each survey will have a different set of questions). Let’s use two fake surveys with the below questions for this example:</p>
+<section id="survey-1-job" class="level6">
+<h6 class="anchored" data-anchor-id="survey-1-job">Survey 1: Job</h6>
+<ol type="1">
+<li>How old are you? (multiple choice)</li>
+<li>What city do you live in? (multiple choice)</li>
+<li>What field do you work in? (multiple choice)</li>
+<li>Overall, how satisfied are you with your job? (multiple choice)</li>
+<li>What is your annual salary? (numeric entry)</li>
+</ol>
+</section>
+<section id="survey-2-personal-life" class="level6">
+<h6 class="anchored" data-anchor-id="survey-2-personal-life">Survey 2: Personal Life</h6>
+<ol type="1">
+<li>How old are you? (multiple choice)</li>
+<li>What city do you live in? (multiple choice)</li>
+<li>What field do you work in? (mulitple choice)</li>
+<li>Overall, how satisfied are you with your personal life (multiple choice)</li>
+<li>Please provide any additional detail (text entry)</li>
+</ol>
+<p>In this scenario, both surveys are collecting demographic information — age, location, and industry — but differ in the remaining questions. A convenient way to get the response files into the environment would be to use <code>purrr::map()</code> to read each file to a nested data frame.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="st">"https://raw.githubusercontent.com/markjrieke/nplyr/main/data-raw/"</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>surveys <span class="ot">&lt;-</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">tibble</span>(<span class="at">survey_file =</span> <span class="fu">c</span>(<span class="st">"job_survey"</span>, <span class="st">"personal_survey"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">survey_data =</span> purrr<span class="sc">::</span><span class="fu">map</span>(survey_file, <span class="sc">~</span>readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="fu">paste0</span>(path, .x, <span class="st">".csv"</span>))))</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>surveys</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 2 × 2
+#&gt;   survey_file     survey_data         
+#&gt;   &lt;chr&gt;           &lt;list&gt;              
+#&gt; 1 job_survey      &lt;spc_tbl_ [500 × 6]&gt;
+#&gt; 2 personal_survey &lt;spc_tbl_ [750 × 6]&gt;</code></pre>
+</div>
+</div>
+<p><code>tidyr::unnest()</code> can usually handle idiosyncracies in layout when unnesting, but in this case unnesting throws an error!</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>surveys <span class="sc">%&gt;%</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(survey_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-error">
+<pre><code>#&gt; Error in `list_unchop()`:
+#&gt; ! Can't combine `x[[1]]$Q5` &lt;double&gt; and `x[[2]]$Q5` &lt;character&gt;.</code></pre>
+</div>
+</div>
+<p>This is because the surveys share column names but not necessarily column types! In this case, both data frames contain a column named <code>Q5</code>, but in <code>job_survey</code> it’s a double and in <code>personal_survey</code> it’s a character.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>surveys <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(survey_data) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Rows: 500
+#&gt; Columns: 7
+#&gt; $ survey_file &lt;chr&gt; "job_survey", "job_survey", "job_survey", "job_survey", "j…
+#&gt; $ survey_name &lt;chr&gt; "job", "job", "job", "job", "job", "job", "job", "job", "j…
+#&gt; $ Q1          &lt;dbl&gt; 100, 81, 51, 81, 80, 32, 65, 57, 43, 94, 25, 83, 61, 66, 8…
+#&gt; $ Q2          &lt;chr&gt; "Austin", "San Antonio", "Austin", "Austin", "Dallas", "Fo…
+#&gt; $ Q3          &lt;chr&gt; "Consulting", "Consulting", "Consulting", "Technology", "C…
+#&gt; $ Q4          &lt;chr&gt; "Somewhat dissatisfied", "Neither satisfied nor dissatisfi…
+#&gt; $ Q5          &lt;dbl&gt; 163, 48, 190, 25, 143, 233, 43, 243, 158, 235, 245, 195, 2…</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>surveys <span class="sc">%&gt;%</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(survey_data) <span class="sc">%&gt;%</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; Rows: 750
+#&gt; Columns: 7
+#&gt; $ survey_file &lt;chr&gt; "personal_survey", "personal_survey", "personal_survey", "…
+#&gt; $ survey_name &lt;chr&gt; "personal", "personal", "personal", "personal", "personal"…
+#&gt; $ Q1          &lt;dbl&gt; 91, 32, 40, 23, 88, 69, 96, 40, 57, 40, 39, 70, 29, 38, 57…
+#&gt; $ Q2          &lt;chr&gt; "Austin", "San Antonio", "San Antonio", "Austin", "Dallas"…
+#&gt; $ Q3          &lt;chr&gt; "Energy", "Healthcare", "Consulting", "Consulting", "Techn…
+#&gt; $ Q4          &lt;chr&gt; "Neither satisfied nor dissatisfied", "Extremely satisfied…
+#&gt; $ Q5          &lt;chr&gt; "Blandit eros! A, ligula facilisis imperdiet! Interdum pla…</code></pre>
+</div>
+</div>
+<p>We could potentially get around this issue with unnesting by reading in all columns as characters via <code>readr::read_csv(x, col_types = cols(.default = "c"))</code>, but this presents its own challenges. <code>Q5</code> would still be better represented as a double in <code>job_survey</code> and, from the survey question text, <code>Q4</code> has similar, but distinctly different, meanings across the survey files.</p>
+<p>This is where nplyr can assist! Rather than malign the data types or create separate objects for each survey file, we can use nplyr to perform operations directly on the nested data frames.</p>
+<div class="cell">
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>surveys <span class="ot">&lt;-</span> </span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  surveys <span class="sc">%&gt;%</span></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_mutate</span>(survey_data,</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>              <span class="at">age_group =</span> <span class="fu">if_else</span>(Q1 <span class="sc">&lt;</span> <span class="dv">65</span>, <span class="st">"Adult"</span>, <span class="st">"Retirement Age"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_group_by</span>(survey_data, Q3) <span class="sc">%&gt;%</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_add_count</span>(survey_data, </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>                 <span class="at">name =</span> <span class="st">"n_respondents_in_industry"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_mutate</span>(survey_data, </span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">median_industry_age =</span> <span class="fu">median</span>(Q1)) <span class="sc">%&gt;%</span></span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nest_ungroup</span>(survey_data)</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>surveys <span class="sc">%&gt;%</span></span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(survey_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 500 × 10
+#&gt;    survey_file survey_name    Q1 Q2    Q3    Q4       Q5 age_g…¹ n_res…² media…³
+#&gt;    &lt;chr&gt;       &lt;chr&gt;       &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;chr&gt;     &lt;int&gt;   &lt;dbl&gt;
+#&gt;  1 job_survey  job           100 Aust… Cons… Some…   163 Retire…     107    57  
+#&gt;  2 job_survey  job            81 San … Cons… Neit…    48 Retire…     107    57  
+#&gt;  3 job_survey  job            51 Aust… Cons… Extr…   190 Adult       107    57  
+#&gt;  4 job_survey  job            81 Aust… Tech… Extr…    25 Retire…     108    61.5
+#&gt;  5 job_survey  job            80 Dall… Cons… Extr…   143 Retire…     107    57  
+#&gt;  6 job_survey  job            32 Fort… Ener… Some…   233 Adult        99    59  
+#&gt;  7 job_survey  job            65 Dall… Cons… Some…    43 Retire…     107    57  
+#&gt;  8 job_survey  job            57 Hous… Heal… Some…   243 Adult        75    65  
+#&gt;  9 job_survey  job            43 Dall… Gove… Neit…   158 Adult       111    57  
+#&gt; 10 job_survey  job            94 Fort… Heal… Extr…   235 Retire…      75    65  
+#&gt; # … with 490 more rows, and abbreviated variable names ¹​age_group,
+#&gt; #   ²​n_respondents_in_industry, ³​median_industry_age</code></pre>
+</div>
+<details open="">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>surveys <span class="sc">%&gt;%</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice</span>(<span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">unnest</span>(survey_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>#&gt; # A tibble: 750 × 10
+#&gt;    survey_file     surve…¹    Q1 Q2    Q3    Q4    Q5    age_g…² n_res…³ media…⁴
+#&gt;    &lt;chr&gt;           &lt;chr&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;   &lt;dbl&gt;
+#&gt;  1 personal_survey person…    91 Aust… Ener… Neit… Blan… Retire…     145      61
+#&gt;  2 personal_survey person…    32 San … Heal… Extr… Elem… Adult       131      62
+#&gt;  3 personal_survey person…    40 San … Cons… Some… Eget… Adult       149      61
+#&gt;  4 personal_survey person…    23 Aust… Cons… Extr… Scel… Adult       149      61
+#&gt;  5 personal_survey person…    88 Dall… Tech… Neit… Aene… Retire…     150      61
+#&gt;  6 personal_survey person…    69 Fort… Tech… Neit… Inte… Retire…     150      61
+#&gt;  7 personal_survey person…    96 Hous… Heal… Extr… Blan… Retire…     131      62
+#&gt;  8 personal_survey person…    40 Hous… Cons… Extr… Scel… Adult       149      61
+#&gt;  9 personal_survey person…    57 Fort… Ener… Extr… Pede… Adult       145      61
+#&gt; 10 personal_survey person…    40 Fort… Heal… Extr… Phar… Adult       131      62
+#&gt; # … with 740 more rows, and abbreviated variable names ¹​survey_name,
+#&gt; #   ²​age_group, ³​n_respondents_in_industry, ⁴​median_industry_age</code></pre>
+</div>
+</div>
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@online{rieke2022,
+  author = {Mark Rieke},
+  title = {Introducing \{Nplyr\}},
+  date = {2022-07-24},
+  url = {https://www.thedatadiary.net/posts/2022-07-24-introducing-nplyr},
+  langid = {en}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre><div class="quarto-appendix-secondary-label">For attribution, please cite this work as:</div><div id="ref-rieke2022" class="csl-entry quarto-appendix-citeas" role="doc-biblioentry">
+Mark Rieke. 2022. <span>“Introducing {Nplyr}.”</span> July 24, 2022. <a href="https://www.thedatadiary.net/posts/2022-07-24-introducing-nplyr">https://www.thedatadiary.net/posts/2022-07-24-introducing-nplyr</a>.
+</div></div></section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left"> Mark Rieke, 2023<br> All content licensed under <a href="https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE">MIT License</a><br> Made with and <a href="https://quarto.org">Quarto</a></div>   
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/markjrieke">
+      <i class="bi bi-github" role="img" aria-label="github">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/markjrieke">
+      <i class="bi bi-twitter" role="img" aria-label="twitter">
+</i> 
+    </a>
+  </li>  
+    <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/markjrieke/">
+      <i class="bi bi-linkedin" role="img" aria-label="linkedin">
+</i> 
+    </a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+</body></html>
