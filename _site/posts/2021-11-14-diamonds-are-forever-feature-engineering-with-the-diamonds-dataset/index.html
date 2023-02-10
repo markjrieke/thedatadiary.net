@@ -125,11 +125,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-submit-button-title": "Submit"
   }
 }</script>
-<style>
-    .quarto-title-block .quarto-title-banner {
-      background: true# default fields fo;
-    }
-    </style>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -154,20 +149,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">2022 Midterms</span>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
-        <li class="dropdown-header">Senate</li>
-        <li class="dropdown-header">House</li>
-        <li class="dropdown-header">Governor</li>
-    </ul>
-  </li>
-  <li class="dropdown-header">
- <span class="menu-text">Blog</span></li>
-  <li class="dropdown-header">
- <span class="menu-text">About</span></li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about/about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects/projects.html">
+ <span class="menu-text">Projects</span></a>
+  </li>  
 </ul>
               <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
@@ -245,19 +234,19 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10 × 10
-   carat cut       color clarity depth table price     x     y     z
-   &lt;dbl&gt; &lt;ord&gt;     &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
- 1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
- 2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
- 3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
- 4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
- 5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
- 6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
- 7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
- 8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
- 9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
-10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39</code></pre>
+<pre><code>#&gt; # A tibble: 10 × 10
+#&gt;    carat cut       color clarity depth table price     x     y     z
+#&gt;    &lt;dbl&gt; &lt;ord&gt;     &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+#&gt;  1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+#&gt;  2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+#&gt;  3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+#&gt;  4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+#&gt;  5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+#&gt;  6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+#&gt;  7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
+#&gt;  8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
+#&gt;  9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
+#&gt; 10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39</code></pre>
 </div>
 </div>
 <p>Since we’re predicting price, let’s look at its distribution first.</p>
@@ -269,7 +258,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-2-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>We’re definitely gonna want to apply a transformation to the price when modeling - let’s look at the distribution on a log-10 scale.</p>
@@ -282,7 +271,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>That’s a lot more evenly distributed, if not perfect. That’s a fine starting point, so now we’ll look through the rest of the data.</p>
@@ -294,7 +283,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -304,7 +293,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-2.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -315,7 +304,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-3.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-3.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -325,7 +314,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-4.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-4.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -336,7 +325,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-5.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-5.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -346,7 +335,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-6.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-6.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -357,7 +346,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-7.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-7.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -366,7 +355,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-8.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-8.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -375,7 +364,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-9.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-9.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -384,7 +373,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-10.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-10.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -393,7 +382,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-11.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-11.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -402,7 +391,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-4-12.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-4-12.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>It looks like there may be a good opportunity to try out a few normalization and resampling techniques, but before we get into any of that, let’s build a baseline linear model.</p>
@@ -452,11 +441,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb17-41"><a href="#cb17-41" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs01)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator     mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   1135.       10 8.10    Preprocessor1_Model1
-2 rsq     standard      0.919    10 0.00129 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator     mean     n  std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;         &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   1127.       10 8.71     Preprocessor1_Model1
+#&gt; 2 rsq     standard      0.920    10 0.000912 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>And right off the bat, we can see a fairly high value for <code>rsq</code>! However, <code>rsq</code> doesn’t tell the whole story, so we should check our predictions and residuals plots.</p>
@@ -472,7 +461,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>This is <em>definitely</em> not what we want to see! It looks like there’s an odd curve/structure to the graph and we’re actually predicting quite a few negative values. The residuals plot doesn’t look too great either.</p>
@@ -489,7 +478,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="fl">0.1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>What we’d like to see is a 0-correlation plot with errors normally distributed; what we’re seeing instead, however, is a ton of structure.</p>
@@ -551,11 +540,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb21-52"><a href="#cb21-52" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs01)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator   mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.0793    10 0.00557 Preprocessor1_Model1
-2 rsq     standard   0.966     10 0.00494 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator   mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.0793    10 0.00557 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.966     10 0.00494 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>And wow, that <em>one</em> transformation increased our <code>rsq</code> to 0.96! Again, that’s not the whole story, and we’re going to be evaluating models based on the <code>rmse</code>. Let’s look at how our prediction map has updated:</p>
@@ -572,7 +561,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span> <span class="fl">0.5</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Now <em>that</em> is a much better starting place to be at! Let’s look at our coefficients</p>
@@ -597,7 +586,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">"Variable importance plot of a basic linear regression predicting diamond price"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Another way of looking at it:</p>
@@ -623,7 +612,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb25-17"><a href="#cb25-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title.position =</span> <span class="st">"plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>This is a good, but definitely improvable, starting point. We can likely decrease our overall error with a bit of feature engineering and drop unimportant features by tuning a regularized model. There are some oddities in this initial model that will need to be improved upon; for one, we can definitively say that the <code>carat</code> feature ought to be <em>positively</em> associated with price</p>
@@ -638,7 +627,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">plot.title.position =</span> <span class="st">"plot"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Another few things that are interesting to note in this plot! It looks like there are clusterings of carat ratings around round-ish numbers. My hypothesis here is that carat ratings tend to get rounded up to the next size. There’s also a clear abscence of diamonds priced at $1,500 (~3.17 on the log10 scale). I suppose there is some industry-specific reason to avoid a diamond price of $,1500?</p>
@@ -657,7 +646,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>How to address all these things? With some feature engineering! Firstly, let’s add some recipe steps to balance classes &amp; normalize continuous variables.</p>
@@ -670,11 +659,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>metrics</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 7
-  .metric .estimator   mean     n std_err .config              model  
-  &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                &lt;chr&gt;  
-1 rmse    standard   0.0793    10 0.00557 Preprocessor1_Model1 model01
-2 rsq     standard   0.966     10 0.00494 Preprocessor1_Model1 model01</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 7
+#&gt;   .metric .estimator   mean     n std_err .config              model  
+#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;                &lt;chr&gt;  
+#&gt; 1 rmse    standard   0.0793    10 0.00557 Preprocessor1_Model1 model01
+#&gt; 2 rsq     standard   0.966     10 0.00494 Preprocessor1_Model1 model01</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -708,23 +697,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>baked_rec02</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 80,495 × 20
-     carat cut        depth  table       x       y      z price color_E color_F
-     &lt;dbl&gt; &lt;fct&gt;      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
- 1 -0.706  Premium    0.138 -0.760 -0.709  -0.738  -0.695  3.01       0       1
- 2  0.356  Very Good  0.570  0.835  0.342   0.251   0.344  3.63       0       0
- 3  0.214  Premium   -0.308  0.835  0.293   0.263   0.166  3.58       0       0
- 4 -1.08   other      1.04  -0.310 -1.30   -1.40   -0.995  2.70       0       0
- 5 -0.641  Ideal     -0.602 -0.760 -0.595  -0.560  -0.622  2.97       0       0
- 6 -0.0759 Premium   -0.602  0.494 -0.0349 -0.0460 -0.114  3.38       0       0
- 7 -0.149  Premium   -1.16   0.103 -0.0565 -0.0842 -0.246  3.44       1       0
- 8  0.170  Very Good -0.371  0.494  0.178   0.313   0.130  3.56       0       1
- 9 -0.736  Ideal     -0.110 -0.760 -0.709  -0.738  -0.723  3.09       0       0
-10  0.782  Ideal     -0.602 -0.310  0.819   0.846   0.732  4.02       0       0
-# … with 80,485 more rows, and 10 more variables: color_G &lt;dbl&gt;, color_H &lt;dbl&gt;,
-#   color_I &lt;dbl&gt;, color_J &lt;dbl&gt;, clarity_SI2 &lt;dbl&gt;, clarity_VS1 &lt;dbl&gt;,
-#   clarity_VS2 &lt;dbl&gt;, clarity_VVS1 &lt;dbl&gt;, clarity_VVS2 &lt;dbl&gt;,
-#   clarity_other &lt;dbl&gt;</code></pre>
+<pre><code>#&gt; # A tibble: 80,495 × 20
+#&gt;      carat cut        depth  table       x       y      z price color_E color_F
+#&gt;      &lt;dbl&gt; &lt;fct&gt;      &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+#&gt;  1 -0.706  Premium    0.138 -0.760 -0.709  -0.738  -0.695  3.01       0       1
+#&gt;  2  0.356  Very Good  0.570  0.835  0.342   0.251   0.344  3.63       0       0
+#&gt;  3  0.214  Premium   -0.308  0.835  0.293   0.263   0.166  3.58       0       0
+#&gt;  4 -1.08   other      1.04  -0.310 -1.30   -1.40   -0.995  2.70       0       0
+#&gt;  5 -0.641  Ideal     -0.602 -0.760 -0.595  -0.560  -0.622  2.97       0       0
+#&gt;  6 -0.0759 Premium   -0.602  0.494 -0.0349 -0.0460 -0.114  3.38       0       0
+#&gt;  7 -0.149  Premium   -1.16   0.103 -0.0565 -0.0842 -0.246  3.44       1       0
+#&gt;  8  0.170  Very Good -0.371  0.494  0.178   0.313   0.130  3.56       0       1
+#&gt;  9 -0.736  Ideal     -0.110 -0.760 -0.709  -0.738  -0.723  3.09       0       0
+#&gt; 10  0.782  Ideal     -0.602 -0.310  0.819   0.846   0.732  4.02       0       0
+#&gt; # … with 80,485 more rows, and 10 more variables: color_G &lt;dbl&gt;, color_H &lt;dbl&gt;,
+#&gt; #   color_I &lt;dbl&gt;, color_J &lt;dbl&gt;, clarity_SI2 &lt;dbl&gt;, clarity_VS1 &lt;dbl&gt;,
+#&gt; #   clarity_VS2 &lt;dbl&gt;, clarity_VVS1 &lt;dbl&gt;, clarity_VVS2 &lt;dbl&gt;,
+#&gt; #   clarity_other &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <div class="cell">
@@ -737,7 +726,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_col</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -746,7 +735,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-2.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-2.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -755,7 +744,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-3.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-3.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -764,7 +753,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-4.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-4.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -773,7 +762,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-5.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-5.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -782,7 +771,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>() </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-6.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-6.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -791,7 +780,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-17-7.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-17-7.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Everything looks alright with the exception of the <code>table</code> predictor. I wonder if there are a lot of repeated values in the <code>table</code> variable - that may be why we’re seeing a “chunky” histogram. Let’s check</p>
@@ -803,20 +792,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10,406 × 2
-    table     n
-    &lt;dbl&gt; &lt;int&gt;
- 1  0.103 12167
- 2 -0.310 11408
- 3 -0.760 11031
- 4  0.494  9406
- 5 -1.28   6726
- 6  0.835  6165
- 7  1.15   3810
- 8 -1.85   2789
- 9  1.42   2182
-10  1.64    972
-# … with 10,396 more rows</code></pre>
+<pre><code>#&gt; # A tibble: 10,406 × 2
+#&gt;     table     n
+#&gt;     &lt;dbl&gt; &lt;int&gt;
+#&gt;  1  0.103 12167
+#&gt;  2 -0.310 11408
+#&gt;  3 -0.760 11031
+#&gt;  4  0.494  9406
+#&gt;  5 -1.28   6726
+#&gt;  6  0.835  6165
+#&gt;  7  1.15   3810
+#&gt;  8 -1.85   2789
+#&gt;  9  1.42   2182
+#&gt; 10  1.64    972
+#&gt; # … with 10,396 more rows</code></pre>
 </div>
 </div>
 <p>Ooh - okay yeah that’s definitely the issue! I’m not <em>quite</em> sure how to deal with it, so we’re just going to ignore for now! Let’s add a new model &amp; see how it compares against the baseline transformed model.</p>
@@ -844,11 +833,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb42-19"><a href="#cb42-19" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs02)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator  mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.115    10 0.00143 Preprocessor1_Model1
-2 rsq     standard   0.932    10 0.00161 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator  mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.115    10 0.00143 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.932    10 0.00161 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>Oof - that’s actually slightly worse than our baseline model!</p>
@@ -865,7 +854,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">alpha =</span> <span class="fl">0.5</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>It looks like we’ve introduced structure into the residual plot!</p>
@@ -883,7 +872,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">alpha =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Yeah that’s fairly wonky! I’m wondering if it’s due to the SMOTE upsampling method we introduced? To counteract, I’ll build &amp; train new models after each set of recipe steps (e.g., resampling, normalizing, interactions) to buil up a better performing model one step at a time.</p>
@@ -928,11 +917,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb47-28"><a href="#cb47-28" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs03)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator   mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.0918    10 0.00502 Preprocessor1_Model1
-2 rsq     standard   0.956     10 0.00502 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator   mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.0918    10 0.00502 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.956     10 0.00502 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>Interesting! Improved relative to <code>rs02</code>, but still not as good as our first model! Let’s try using <code>step_downsample()</code> to balance classes &amp; see how we fare.</p>
@@ -973,11 +962,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb49-32"><a href="#cb49-32" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs04)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator  mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.113    10  0.0120 Preprocessor1_Model1
-2 rsq     standard   0.930    10  0.0153 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator  mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.113    10  0.0120 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.930    10  0.0153 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>Wow - still a bit worse! I’ll try upsampling &amp; if there is no improvement, we’ll move on without resampling!</p>
@@ -1012,11 +1001,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb51-26"><a href="#cb51-26" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs05)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator  mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.101    10 0.00486 Preprocessor1_Model1
-2 rsq     standard   0.946    10 0.00527 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator  mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.101    10 0.00486 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.946    10 0.00527 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>Okay - resampling gets stricken off our list of recipe steps! Let’s look at how the models compare so far</p>
@@ -1035,7 +1024,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb53-10"><a href="#cb53-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>.metric, <span class="at">scales =</span> <span class="st">"free_y"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>The first simple linear model was the best as measured by both metrics! Let’s see if we can improve with some normalization of the continuous vars.</p>
@@ -1069,11 +1058,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb54-25"><a href="#cb54-25" aria-hidden="true" tabindex="-1"></a><span class="fu">collect_metrics</span>(rs06)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator  mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.127    10 0.00115 Preprocessor1_Model1
-2 rsq     standard   0.916    10 0.00136 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator  mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.127    10 0.00115 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.916    10 0.00136 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>Well - that was quite a bit for no improvement! I guess that normalizing the continuous vars in this case isn’t helping. Moving on to adding some interactions - first let’s explore potential interactions a bit.</p>
@@ -1092,7 +1081,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb56-10"><a href="#cb56-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <div class="cell">
@@ -1110,7 +1099,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>cut, <span class="at">scales =</span> <span class="st">"free"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>5 spline terms might not be sufficient here - capturing the lower bound well but <em>really</em> not doing well with the higher carat diamonds.</p>
@@ -1128,7 +1117,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>cut, <span class="at">scales =</span> <span class="st">"free"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Hmmmm, 10 might be too many. It looks lie we’ll just lose a bit of confidence for the Premium &amp; Very Good diamonds at higher carats. Relative to the total number, I’m not too concerned.</p>
@@ -1146,7 +1135,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb59-9"><a href="#cb59-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>cut, <span class="at">scales =</span> <span class="st">"free"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>7 terms feels like the best we’re going to do here - I think this is tuneable, but we’ll leave as is (now &amp; in the final model).</p>
@@ -1165,7 +1154,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb60-9"><a href="#cb60-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>color)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-32-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Adding interactive spline terms with <code>df</code> of 15 seems to add some useful information!</p>
@@ -1180,7 +1169,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.05</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-33-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Ooh, looks like we’re getting some good info here, but we may want to use <code>log10</code> to scale this back.</p>
@@ -1194,7 +1183,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb62-5"><a href="#cb62-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.05</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Let’s see if this ought to interact with any other paramaters:</p>
@@ -1210,7 +1199,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-35-1.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -1223,7 +1212,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb64-7"><a href="#cb64-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-35-2.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-35-2.png" class="img-fluid" width="2700"></p>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -1236,7 +1225,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb65-7"><a href="#cb65-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-35-3.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-35-3.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Hmm, it doesn’t really look like we’re capturing too great of interactions, so I’ll leave out for now. It looks like the <em>size</em> of the rock is more important than anything else! I could continue to dig further, but I’ll stop there. I’m likely getting diminishing returns, &amp; I’d like to get back into modeling!</p>
@@ -1260,24 +1249,24 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb66-15"><a href="#cb66-15" aria-hidden="true" tabindex="-1"></a>rec07</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>Recipe
-
-Inputs:
-
-      role #variables
-   outcome          1
- predictor          9
-
-Operations:
-
-Collapsing factor levels for cut, color, clarity
-Dummy variables from all_nominal_predictors()
-Interactions with carat:starts_with("cut_")
-Interactions with carat:starts_with("color_")
-Variable mutation for c(x, y, z)
-Variable mutation for log10(x * y * z)
-Natural splines on starts_with("carat_x_cut")
-Natural splines on starts_with("carat_x_color")</code></pre>
+<pre><code>#&gt; Recipe
+#&gt; 
+#&gt; Inputs:
+#&gt; 
+#&gt;       role #variables
+#&gt;    outcome          1
+#&gt;  predictor          9
+#&gt; 
+#&gt; Operations:
+#&gt; 
+#&gt; Collapsing factor levels for cut, color, clarity
+#&gt; Dummy variables from all_nominal_predictors()
+#&gt; Interactions with carat:starts_with("cut_")
+#&gt; Interactions with carat:starts_with("color_")
+#&gt; Variable mutation for c(x, y, z)
+#&gt; Variable mutation for log10(x * y * z)
+#&gt; Natural splines on starts_with("carat_x_cut")
+#&gt; Natural splines on starts_with("carat_x_color")</code></pre>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -1304,11 +1293,11 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">collect_metrics</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 6
-  .metric .estimator   mean     n std_err .config             
-  &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-1 rmse    standard   0.0750    10 0.00377 Preprocessor1_Model1
-2 rsq     standard   0.970     10 0.00342 Preprocessor1_Model1</code></pre>
+<pre><code>#&gt; # A tibble: 2 × 6
+#&gt;   .metric .estimator   mean     n std_err .config             
+#&gt;   &lt;chr&gt;   &lt;chr&gt;       &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+#&gt; 1 rmse    standard   0.0750    10 0.00377 Preprocessor1_Model1
+#&gt; 2 rsq     standard   0.970     10 0.00342 Preprocessor1_Model1</code></pre>
 </div>
 </div>
 <p>Well we (finally) made a modes improvement! Let’s see how the predictions/residuals plot:</p>
@@ -1325,7 +1314,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb71-8"><a href="#cb71-8" aria-hidden="true" tabindex="-1"></a>              <span class="at">size =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-38-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>That’s pretty good! We do have one value that’s <strong><em>way</em></strong> off, so let’s see if regulization can help. This will require setting a new baseline model, and we’ll tune our way to the best regularizaion parameters.</p>
@@ -1388,7 +1377,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb73-9"><a href="#cb73-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_log10</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-40-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>Looks like we were performing pretty well with the unregularized model, oddly enough! Let’s select the best and finalize our workflow.</p>
@@ -1421,7 +1410,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb74-24"><a href="#cb74-24" aria-hidden="true" tabindex="-1"></a>              <span class="at">size =</span> <span class="fl">0.5</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-41-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>What are the most important variables in this regularized model?</p>
@@ -1439,7 +1428,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb75-9"><a href="#cb75-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-42-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>As expected, most of our terms get regularized away, which is what we want! Our chart is a little unreadable; let’s plot just the most important variables in a few ways:</p>
@@ -1459,7 +1448,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb76-11"><a href="#cb76-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-43-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-43-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <div class="cell">
@@ -1479,7 +1468,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb77-12"><a href="#cb77-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-44-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-44-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 <p>And look at that! Our most important variable was one that came from feature engineering! The size of the rock had the biggest impact on price.</p>
@@ -1521,7 +1510,7 @@ Natural splines on starts_with("carat_x_color")</code></pre>
 <span id="cb78-23"><a href="#cb78-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
-<p><img src="index_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid" width="2100"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-45-1.png" class="img-fluid" width="2700"></p>
 </div>
 </div>
 

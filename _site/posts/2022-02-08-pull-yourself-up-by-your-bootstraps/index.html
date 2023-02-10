@@ -124,11 +124,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     "search-submit-button-title": "Submit"
   }
 }</script>
-<style>
-    .quarto-title-block .quarto-title-banner {
-      background: true# default fields fo;
-    }
-    </style>
 
 
 <link rel="stylesheet" href="../../styles.css">
@@ -153,20 +148,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">2022 Midterms</span>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
-        <li class="dropdown-header">Senate</li>
-        <li class="dropdown-header">House</li>
-        <li class="dropdown-header">Governor</li>
-    </ul>
-  </li>
-  <li class="dropdown-header">
- <span class="menu-text">Blog</span></li>
-  <li class="dropdown-header">
- <span class="menu-text">About</span></li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about/about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects/projects.html">
+ <span class="menu-text">Projects</span></a>
+  </li>  
 </ul>
               <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
@@ -257,9 +246,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>penguins_src <span class="ot">&lt;-</span> tidytuesdayR<span class="sc">::</span><span class="fu">tt_load</span>(<span class="dv">2020</span>, <span class="at">week =</span> <span class="dv">31</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>
-    Downloading file 1 of 2: `penguins.csv`
-    Downloading file 2 of 2: `penguins_raw.csv`</code></pre>
+<pre><code>#&gt; 
+#&gt;  Downloading file 1 of 2: `penguins.csv`
+#&gt;  Downloading file 2 of 2: `penguins_raw.csv`</code></pre>
 </div>
 <details open="">
 <summary>Code</summary>
@@ -270,21 +259,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>penguins</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 344 × 8
-   species island    bill_length_mm bill_depth_mm flipper_…¹ body_…² sex    year
-   &lt;chr&gt;   &lt;chr&gt;              &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
- 1 Adelie  Torgersen           39.1          18.7        181    3750 male   2007
- 2 Adelie  Torgersen           39.5          17.4        186    3800 fema…  2007
- 3 Adelie  Torgersen           40.3          18          195    3250 fema…  2007
- 4 Adelie  Torgersen           NA            NA           NA      NA &lt;NA&gt;   2007
- 5 Adelie  Torgersen           36.7          19.3        193    3450 fema…  2007
- 6 Adelie  Torgersen           39.3          20.6        190    3650 male   2007
- 7 Adelie  Torgersen           38.9          17.8        181    3625 fema…  2007
- 8 Adelie  Torgersen           39.2          19.6        195    4675 male   2007
- 9 Adelie  Torgersen           34.1          18.1        193    3475 &lt;NA&gt;   2007
-10 Adelie  Torgersen           42            20.2        190    4250 &lt;NA&gt;   2007
-# … with 334 more rows, and abbreviated variable names ¹​flipper_length_mm,
-#   ²​body_mass_g</code></pre>
+<pre><code>#&gt; # A tibble: 344 × 8
+#&gt;    species island    bill_length_mm bill_depth_mm flipper_…¹ body_…² sex    year
+#&gt;    &lt;chr&gt;   &lt;chr&gt;              &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
+#&gt;  1 Adelie  Torgersen           39.1          18.7        181    3750 male   2007
+#&gt;  2 Adelie  Torgersen           39.5          17.4        186    3800 fema…  2007
+#&gt;  3 Adelie  Torgersen           40.3          18          195    3250 fema…  2007
+#&gt;  4 Adelie  Torgersen           NA            NA           NA      NA &lt;NA&gt;   2007
+#&gt;  5 Adelie  Torgersen           36.7          19.3        193    3450 fema…  2007
+#&gt;  6 Adelie  Torgersen           39.3          20.6        190    3650 male   2007
+#&gt;  7 Adelie  Torgersen           38.9          17.8        181    3625 fema…  2007
+#&gt;  8 Adelie  Torgersen           39.2          19.6        195    4675 male   2007
+#&gt;  9 Adelie  Torgersen           34.1          18.1        193    3475 &lt;NA&gt;   2007
+#&gt; 10 Adelie  Torgersen           42            20.2        190    4250 &lt;NA&gt;   2007
+#&gt; # … with 334 more rows, and abbreviated variable names ¹​flipper_length_mm,
+#&gt; #   ²​body_mass_g</code></pre>
 </div>
 </div>
 <p>We’ll need to do some lite preprocessing before we start modeling — it looks like there are some <code>NAs</code> in <code>body_mass_g</code> and in <code>sex</code>. If I were creating a more serious model, I might keep the rows with <code>NAs</code> for <code>sex</code>, but since there are so few and this is an explainer, I’ll just filter them out.</p>
@@ -300,21 +289,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>penguins</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 333 × 8
-   species island    bill_length_mm bill_depth_mm flipper_…¹ body_…² sex    year
-   &lt;chr&gt;   &lt;chr&gt;              &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
- 1 Adelie  Torgersen           39.1          18.7        181    3750 male   2007
- 2 Adelie  Torgersen           39.5          17.4        186    3800 fema…  2007
- 3 Adelie  Torgersen           40.3          18          195    3250 fema…  2007
- 4 Adelie  Torgersen           36.7          19.3        193    3450 fema…  2007
- 5 Adelie  Torgersen           39.3          20.6        190    3650 male   2007
- 6 Adelie  Torgersen           38.9          17.8        181    3625 fema…  2007
- 7 Adelie  Torgersen           39.2          19.6        195    4675 male   2007
- 8 Adelie  Torgersen           41.1          17.6        182    3200 fema…  2007
- 9 Adelie  Torgersen           38.6          21.2        191    3800 male   2007
-10 Adelie  Torgersen           34.6          21.1        198    4400 male   2007
-# … with 323 more rows, and abbreviated variable names ¹​flipper_length_mm,
-#   ²​body_mass_g</code></pre>
+<pre><code>#&gt; # A tibble: 333 × 8
+#&gt;    species island    bill_length_mm bill_depth_mm flipper_…¹ body_…² sex    year
+#&gt;    &lt;chr&gt;   &lt;chr&gt;              &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt;
+#&gt;  1 Adelie  Torgersen           39.1          18.7        181    3750 male   2007
+#&gt;  2 Adelie  Torgersen           39.5          17.4        186    3800 fema…  2007
+#&gt;  3 Adelie  Torgersen           40.3          18          195    3250 fema…  2007
+#&gt;  4 Adelie  Torgersen           36.7          19.3        193    3450 fema…  2007
+#&gt;  5 Adelie  Torgersen           39.3          20.6        190    3650 male   2007
+#&gt;  6 Adelie  Torgersen           38.9          17.8        181    3625 fema…  2007
+#&gt;  7 Adelie  Torgersen           39.2          19.6        195    4675 male   2007
+#&gt;  8 Adelie  Torgersen           41.1          17.6        182    3200 fema…  2007
+#&gt;  9 Adelie  Torgersen           38.6          21.2        191    3800 male   2007
+#&gt; 10 Adelie  Torgersen           34.6          21.1        198    4400 male   2007
+#&gt; # … with 323 more rows, and abbreviated variable names ¹​flipper_length_mm,
+#&gt; #   ²​body_mass_g</code></pre>
 </div>
 </div>
 <p>It’s always good practice to explore the dataset prior to fitting a model, so let’s jump into some good ol’ fashioned EDA.</p>
@@ -592,21 +581,21 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>penguins_boot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># Bootstrap sampling 
-# A tibble: 25 × 2
-   splits           id         
-   &lt;list&gt;           &lt;chr&gt;      
- 1 &lt;split [249/92]&gt; Bootstrap01
- 2 &lt;split [249/90]&gt; Bootstrap02
- 3 &lt;split [249/91]&gt; Bootstrap03
- 4 &lt;split [249/87]&gt; Bootstrap04
- 5 &lt;split [249/98]&gt; Bootstrap05
- 6 &lt;split [249/84]&gt; Bootstrap06
- 7 &lt;split [249/91]&gt; Bootstrap07
- 8 &lt;split [249/95]&gt; Bootstrap08
- 9 &lt;split [249/94]&gt; Bootstrap09
-10 &lt;split [249/86]&gt; Bootstrap10
-# … with 15 more rows</code></pre>
+<pre><code>#&gt; # Bootstrap sampling 
+#&gt; # A tibble: 25 × 2
+#&gt;    splits           id         
+#&gt;    &lt;list&gt;           &lt;chr&gt;      
+#&gt;  1 &lt;split [249/92]&gt; Bootstrap01
+#&gt;  2 &lt;split [249/90]&gt; Bootstrap02
+#&gt;  3 &lt;split [249/91]&gt; Bootstrap03
+#&gt;  4 &lt;split [249/87]&gt; Bootstrap04
+#&gt;  5 &lt;split [249/98]&gt; Bootstrap05
+#&gt;  6 &lt;split [249/84]&gt; Bootstrap06
+#&gt;  7 &lt;split [249/91]&gt; Bootstrap07
+#&gt;  8 &lt;split [249/95]&gt; Bootstrap08
+#&gt;  9 &lt;split [249/94]&gt; Bootstrap09
+#&gt; 10 &lt;split [249/86]&gt; Bootstrap10
+#&gt; # … with 15 more rows</code></pre>
 </div>
 </div>
 <p>By default, the <code>bootstraps()</code> function will create 25 bootstrap datasets, but we could theoretically create as many as we want. Now that we have our bootstraps, let’s create a function that will fit a model to each of the bootstraps and save to disk. We’ll use the default parameters for our <code>{xgboost}</code> model.</p>
@@ -667,23 +656,23 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>training_preds</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 249 × 25
-   pred_1 pred_2 pred_3 pred_4 pred_5 pred_6 pred_7 pred_8 pred_9 pred_10
-    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
- 1  5552.  5638.  5555.  5703.  5726.  5783.  5404.  5566.  5493.   5547.
- 2  3470.  3340.  3334.  3350.  3311.  3303.  3315.  3421.  3692.   3436.
- 3  5309.  5274.  5241.  5286.  5206.  5084.  5506.  5531.  5274.   5309.
- 4  4160.  4013.  3988.  4111.  4075.  4073.  4284.  4050.  4033.   4033.
- 5  4003.  3931.  4096.  3968.  4008.  3918.  3941.  4093.  3941.   3880.
- 6  3967.  4039.  4095.  4047.  4021.  4055.  3980.  4115.  4067.   4084.
- 7  4647.  4551.  4750.  4555.  4690.  4396.  4235.  4686.  4764.   4659.
- 8  5240.  5288.  5291.  5276.  5308.  5508.  5570.  5375.  5340.   5268.
- 9  4138.  4111.  4106.  4236.  4135.  4219.  4218.  4211.  4160.   4071.
-10  4728.  4723.  4715.  4823.  4765.  4727.  4836.  4777.  4765.   4633.
-# … with 239 more rows, and 15 more variables: pred_11 &lt;dbl&gt;, pred_12 &lt;dbl&gt;,
-#   pred_13 &lt;dbl&gt;, pred_14 &lt;dbl&gt;, pred_15 &lt;dbl&gt;, pred_16 &lt;dbl&gt;, pred_17 &lt;dbl&gt;,
-#   pred_18 &lt;dbl&gt;, pred_19 &lt;dbl&gt;, pred_20 &lt;dbl&gt;, pred_21 &lt;dbl&gt;, pred_22 &lt;dbl&gt;,
-#   pred_23 &lt;dbl&gt;, pred_24 &lt;dbl&gt;, pred_25 &lt;dbl&gt;</code></pre>
+<pre><code>#&gt; # A tibble: 249 × 25
+#&gt;    pred_1 pred_2 pred_3 pred_4 pred_5 pred_6 pred_7 pred_8 pred_9 pred_10
+#&gt;     &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+#&gt;  1  5552.  5638.  5555.  5703.  5726.  5783.  5404.  5566.  5493.   5547.
+#&gt;  2  3470.  3340.  3334.  3350.  3311.  3303.  3315.  3421.  3692.   3436.
+#&gt;  3  5309.  5274.  5241.  5286.  5206.  5084.  5506.  5531.  5274.   5309.
+#&gt;  4  4160.  4013.  3988.  4111.  4075.  4073.  4284.  4050.  4033.   4033.
+#&gt;  5  4003.  3931.  4096.  3968.  4008.  3918.  3941.  4093.  3941.   3880.
+#&gt;  6  3967.  4039.  4095.  4047.  4021.  4055.  3980.  4115.  4067.   4084.
+#&gt;  7  4647.  4551.  4750.  4555.  4690.  4396.  4235.  4686.  4764.   4659.
+#&gt;  8  5240.  5288.  5291.  5276.  5308.  5508.  5570.  5375.  5340.   5268.
+#&gt;  9  4138.  4111.  4106.  4236.  4135.  4219.  4218.  4211.  4160.   4071.
+#&gt; 10  4728.  4723.  4715.  4823.  4765.  4727.  4836.  4777.  4765.   4633.
+#&gt; # … with 239 more rows, and 15 more variables: pred_11 &lt;dbl&gt;, pred_12 &lt;dbl&gt;,
+#&gt; #   pred_13 &lt;dbl&gt;, pred_14 &lt;dbl&gt;, pred_15 &lt;dbl&gt;, pred_16 &lt;dbl&gt;, pred_17 &lt;dbl&gt;,
+#&gt; #   pred_18 &lt;dbl&gt;, pred_19 &lt;dbl&gt;, pred_20 &lt;dbl&gt;, pred_21 &lt;dbl&gt;, pred_22 &lt;dbl&gt;,
+#&gt; #   pred_23 &lt;dbl&gt;, pred_24 &lt;dbl&gt;, pred_25 &lt;dbl&gt;</code></pre>
 </div>
 </div>
 <p>Now we have a column of predictions for each model — we can summarise our point prediction for each row with the average across all models and set the confidence interval based on the standard deviation of the predictions.</p>

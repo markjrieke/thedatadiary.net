@@ -4,6 +4,7 @@ project:
 website: 
   title: "the data diary"
   site-url: "https://www.thedatadiary.net"
+  margin-header: subscribe.html
   favicon: /static/img/icon.png
   repo-url: https://github.com/markjrieke/thedatadiary.net
   repo-actions: [source, issue]

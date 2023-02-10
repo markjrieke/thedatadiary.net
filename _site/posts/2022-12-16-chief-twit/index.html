@@ -149,20 +149,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">2022 Midterms</span>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
-        <li class="dropdown-header">Senate</li>
-        <li class="dropdown-header">House</li>
-        <li class="dropdown-header">Governor</li>
-    </ul>
-  </li>
-  <li class="dropdown-header">
- <span class="menu-text">Blog</span></li>
-  <li class="dropdown-header">
- <span class="menu-text">About</span></li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about/about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects/projects.html">
+ <span class="menu-text">Projects</span></a>
+  </li>  
 </ul>
               <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
@@ -235,7 +229,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </details>
 </div>
 <p>Umm… twitter is a weird place right now. Since <a href="https://www.nytimes.com/2022/10/27/technology/elon-musk-twitter-deal-complete.html">Elon Musk’s $44 billion deal to take over twitter closed in late October</a>, there have been <a href="https://www.nytimes.com/2022/11/03/technology/twitter-layoffs-elon-musk.html">mass layoffs</a>, a <a href="https://www.washingtonpost.com/technology/2022/11/22/twitter-advertiser-exodus-musk/">floodgate of advertisers leaving the platform</a>, and a <a href="https://www.platformer.news/p/inside-the-twitter-meltdown">near-daily deluge of disasters</a> (for in depth coverage, I recommend visiting <a href="https://www.platformer.news/">Platformer</a>). It feels like the ship is going down, but it’s been pretty funny to watch everything unfold.</p>
-<p></p><div id="tweet-47909"></div><script>tweet={"url":"https:\/\/twitter.com\/callmekitto\/status\/1589407148462964736","author_name":"Lauren Dombrowski | eccc23\uD83C\uDFF4‍☠️","author_url":"https:\/\/twitter.com\/callmekitto","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003Ebeing on Twitter right now is like playing the violin on the titanic except we are also making fun of the iceberg and the iceberg is getting genuinely mad\u003C\/p\u003E&mdash; Lauren Dombrowski | eccc23\uD83C\uDFF4‍☠️ (@callmekitto) \u003Ca href=\"https:\/\/twitter.com\/callmekitto\/status\/1589407148462964736?ref_src=twsrc%5Etfw\"\u003ENovember 6, 2022\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-47909").innerHTML = tweet["html"];</script><p></p>
+<p></p><div id="tweet-35559"></div><script>tweet={"url":"https:\/\/twitter.com\/callmekitto\/status\/1589407148462964736","author_name":"Lauren Dombrowski | eccc23\uD83C\uDFF4‍☠️","author_url":"https:\/\/twitter.com\/callmekitto","html":"\u003Cblockquote class=\"twitter-tweet\" align=\"center\"\u003E\u003Cp lang=\"en\" dir=\"ltr\"\u003Ebeing on Twitter right now is like playing the violin on the titanic except we are also making fun of the iceberg and the iceberg is getting genuinely mad\u003C\/p\u003E&mdash; Lauren Dombrowski | eccc23\uD83C\uDFF4‍☠️ (@callmekitto) \u003Ca href=\"https:\/\/twitter.com\/callmekitto\/status\/1589407148462964736?ref_src=twsrc%5Etfw\"\u003ENovember 6, 2022\u003C\/a\u003E\u003C\/blockquote\u003E\n\u003Cscript async src=\"https:\/\/platform.twitter.com\/widgets.js\" charset=\"utf-8\"\u003E\u003C\/script\u003E\n","width":550,"height":null,"type":"rich","cache_age":"3153600000","provider_name":"Twitter","provider_url":"https:\/\/twitter.com","version":"1.0"};document.getElementById("tweet-35559").innerHTML = tweet["html"];</script><p></p>
 <p>Folks who are invested in Tesla may find the situation somewhat less humorous — Tesla’s stock price has dropped 18% over the past month. That’s a lot to lose, but can it really be causally linked to Musk’s antics on twitter?</p>
 <p>As it turns out, yes, it can. Following the approach taken by <a href="https://www.alexpghayes.com/post/2020-05-01_elon-musk-send-tweet/">Alex Hayes</a> and <a href="https://fabiandablander.com/r/Causal-Doge.html">Fabian Dablander</a>, we can use the <a href="https://google.github.io/CausalImpact/CausalImpact.html"><code>{CausalImpact}</code></a> package to compare Tesla’s stock price pre/post Musk’s takeover of twitter, using the S&amp;P500 as a synthetic control.</p>
 <div class="cell">
