@@ -1,0 +1,85 @@
+---
+title: Projects
+toc: true
+toc-location: left
+repo-url: https://github.com/markjrieke/thedatadiary.net
+repo-actions: [source, issue]
+---
+
+# Open Source Software
+
+## [workboots](https://markjrieke.github.io/workboots/) 
+
+<img src="img/workboots_logo.png" align="right" width="120" />
+
+**Author:** [Mark Rieke](https://www.thedatadiary.net/about/about.html) <br/>
+**License:** [MIT](https://github.com/markjrieke/workboots/blob/main/LICENSE)
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/markjrieke/workboots/workflows/R-CMD-check/badge.svg)](https://github.com/markjrieke/workboots/actions)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/workboots)](https://CRAN.R-project.org/package=workboots)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/workboots)](https://cran.r-project.org/package=workboots)
+<!-- badges: end -->
+
+Generate bootstrap 🥾 prediction intervals from a tidymodel workflow.
+
+## [nplyr](https://markjrieke.github.io/nplyr/) 
+
+<img src="img/nplyr_logo.png" align="right" width="120" />
+
+**Author:** [Mark Rieke](https://www.thedatadiary.net/about/about.html)<br/>
+**License:** [MIT](https://github.com/markjrieke/nplyr/blob/main/LICENSE)
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/markjrieke/nplyr/workflows/R-CMD-check/badge.svg)](https://github.com/markjrieke/nplyr/actions)
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/nplyr)](https://CRAN.R-project.org/package=nplyr)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/nplyr)](https://cran.r-project.org/package=nplyr)
+<!-- badges: end -->
+
+nplyr: a grammar of (nested) data manipulation 🐦.
+
+## [riekelib](https://markjrieke.github.io/riekelib/) 
+
+<img src="img/riekelib_logo.png" align="right" width="120" />
+
+**Author:** [Mark Rieke](https://www.thedatadiary.net/about/about.html) <br/>
+**License:**
+[MIT](https://github.com/markjrieke/riekelib/blob/master/LICENSE.md)
+
+A collection of functions I use regularly.
+
+# Other
+
+## [2022 Midterm Forecast](https://github.com/markjrieke/2022-midterm-forecasts)
+
+A daily forecast for each seat in each congressional chamber. 
+
+### [Senate](2022-midterms/senate.qmd)
+
+:::{layout="[[1, 1]]" layout-valign="center"}
+![](2022-midterms/img/senate_dist.png) 
+
+![](2022-midterms/img/senate_prob.png)
+:::
+
+### [House](2022-midterms/house.qmd)
+
+:::{layout="[[1, 1]]" layout-valign="center"}
+![](2022-midterms/img/house_dist.png)
+
+![](2022-midterms/img/house_prob.png)
+:::
+
+### [Governor](2022-midterms/governor.qmd)
+
+:::{layout="[[-20, 60, -20]]"}
+![](2022-midterms/img/governor_map.png)
+:::
+
+## rstudio::conf(2022)
+
+:::{layout="[[-10, 80, -10]]"}
+{{< video https://www.youtube.com/embed/F4osY469UoY >}}
+:::

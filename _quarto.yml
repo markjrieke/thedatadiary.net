@@ -13,13 +13,10 @@ website:
     background: light
     foreground: dark
     right: 
-      - text: "2022 Midterms"
-        menu:
-          - text: "Senate"
-          - text: "House"
-          - text: "Governor"
-      - text: "Blog"
       - text: "About"
+        file: about/about.qmd
+      - text: "Projects"
+        file: projects/projects.qmd
   
   page-footer:
     left: |
