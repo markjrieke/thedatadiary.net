@@ -149,20 +149,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
-  <li class="nav-item dropdown ">
-    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-midterms" role="button" data-bs-toggle="dropdown" aria-expanded="false">
- <span class="menu-text">2022 Midterms</span>
-    </a>
-    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="nav-menu-midterms">    
-        <li class="dropdown-header">Senate</li>
-        <li class="dropdown-header">House</li>
-        <li class="dropdown-header">Governor</li>
-    </ul>
-  </li>
-  <li class="dropdown-header">
- <span class="menu-text">Blog</span></li>
-  <li class="dropdown-header">
- <span class="menu-text">About</span></li>
+  <li class="nav-item">
+    <a class="nav-link" href="../../about/about.html">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../projects/projects.html">
+ <span class="menu-text">Projects</span></a>
+  </li>  
 </ul>
               <div id="quarto-search" class="" title="Search"></div>
           </div> <!-- /navcollapse -->
@@ -268,11 +262,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>sacramento_boots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code># Bootstrap sampling 
-# A tibble: 1 × 2
-  splits            id        
-  &lt;list&gt;            &lt;chr&gt;     
-1 &lt;split [699/261]&gt; Bootstrap1</code></pre>
+<pre><code>#&gt; # Bootstrap sampling 
+#&gt; # A tibble: 1 × 2
+#&gt;   splits            id        
+#&gt;   &lt;list&gt;            &lt;chr&gt;     
+#&gt; 1 &lt;split [699/261]&gt; Bootstrap1</code></pre>
 </div>
 </div>
 <p>Using a <a href="https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm#k-NN_regression">k-nearest-neighbor regression model</a> and <a href="https://en.wikipedia.org/wiki/Root-mean-square_deviation#:~:text=The%20root%2Dmean%2Dsquare%20deviation,estimator%20and%20the%20values%20observed.">rmse</a> as our error metric, we find that the training and oob error differ, with the training error lesser than the oob error.</p>
@@ -315,14 +309,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>sacramento_train_err</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.08979873</code></pre>
+<pre><code>#&gt; [1] 0.08979873</code></pre>
 </div>
 <details open="">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>sacramento_oob_err</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1661675</code></pre>
+<pre><code>#&gt; [1] 0.1661675</code></pre>
 </div>
 </div>
 <p>The training error is overly optimistic in the model’s performance and likely to under-estimate the prediction error. We are interested in the model’s performance on new data. The oob error, on the other hand, is likely to over-estimate the prediction error! This is due to non-distinct observations in the bootstrap sample that results from sampling with replacement. Given that <a href="https://stats.stackexchange.com/questions/88980/why-on-average-does-each-bootstrap-sample-contain-roughly-two-thirds-of-observat?lq=1">the average number of distinct observations in a bootstrap training set is about <code>0.632 * total_observations</code></a>, Efron and Tibshirani proposed a blend of the training and oob error with the 0.632 estimate:</p>
@@ -338,7 +332,7 @@ Err_{.632} &amp; = 0.368 Err_{train} + 0.632 Err_{oob}
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>sacramento_632</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1380638</code></pre>
+<pre><code>#&gt; [1] 0.1380638</code></pre>
 </div>
 </div>
 <p>If, however, the model is highly overfit to the bootstrap training set, the training error will approach 0 and the 0.632 estimate will <em>under estimate</em> the prediction error.</p>
@@ -384,7 +378,7 @@ R &amp; = \frac{Err_{oob} - Err_{train}}{\gamma - Err_{train}}
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>sacramento_632_plus</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1450502</code></pre>
+<pre><code>#&gt; [1] 0.1450502</code></pre>
 </div>
 </div>
 <p>When there is no overfitting (i.e., <span class="math inline">\(R = 0\)</span>) the 0.632+ estimate will equal the 0.632 estimate. In this case, however, the model is overfitting the training set and the 0.632+ error estimate is pushed a bit closer to the oob error.</p>
