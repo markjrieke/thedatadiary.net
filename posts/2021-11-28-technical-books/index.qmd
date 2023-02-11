@@ -3,6 +3,8 @@ title: Technical Books!
 date: '2021-11-28'
 categories: [rstats]
 image: icon.png
+aliases: 
+  - ../../../blog/2021-11-28-technical-books/index.html
 ---
 
 Happy (belated) Thanksgiving! This year, my family drove down to Houston for the holiday & I hosted Thanksgiving for the first time. We played lots of games and ate well - my fridge is *still* stocked full of leftovers. Knowing we'd be busy with hosting, I planned ahead and scheduled a lighter post - this week, I thought I'd highlight some technical books that I've either referenced for modeling work, have been recommended to me, or I've heard about and would like to read:

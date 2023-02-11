@@ -2,8 +2,10 @@
 title: 'Practical Data Visualization Tips for Excel Users'
 date: '2022-05-31'
 categories: [rstats]
-subtitle: 'Improving a plot, one step at a time'
+description: 'Improving a plot, one step at a time'
 image: featured.png
+aliases: 
+  - ../../../blog/2022-05-31-practical-data-vizualization-tips-for-excel-users/index.html
 ---
 
 I am an avid R user and will always advocate that others use R (or another programming language) for generating reproducible visualizations. In just about every organization, however, Excel plays an important role in an analyst's toolkit. In this post, I'll share some visualization design practices that I picked up while learning R but are ubiquitous and transferable to Excel (most of these suggestions are ripped directly from [Will Chase's](https://www.williamrchase.com/about/) ["Glamour of Graphics"](https://www.youtube.com/watch?v=h5cTacaWE6I) talk from rstudio::conf(2020), which has *heavily informed* how I think about visualization design).

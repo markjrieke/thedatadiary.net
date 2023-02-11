@@ -4,6 +4,8 @@ date: '2022-08-20'
 categories: [rstats, tidymodels]
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-08-20-finding-new-wedding-bops-with-tidyclust-and-spotifyr/index.html
 ---
 
 ```{r}

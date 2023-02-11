@@ -4,6 +4,8 @@ date: '2021-02-21'
 categories: [archive, politics]
 image: featured.png
 code-tools: false
+aliases: 
+  - ../../../blog/2021-02-21-kind-of-projecting-the-2020-election/index.html
 ---
 
 I’m about 4 months too late, but to practice forecasting, I made a modest projection for the 2020 national popular vote using [polling data](https://projects.fivethirtyeight.com/2020-general-data/presidential_polls_2020.csv) from the two weeks leading up to election day. In the weeks leading up to the election, aggregated polling was fairly stable, and the model projection was within 1.5% of the [actual outcome](https://en.wikipedia.org/wiki/2020_United_States_presidential_election) (both the model and actual outcome are adjusted to exclude third parties and instead show the two-party vote share). 

@@ -2,9 +2,11 @@
 title: Introducing {nplyr}
 date: '2022-07-24'
 categories: [rstats, nplyr]
-subtitle: A grammar of (nested) data manipulation
+description: A grammar of (nested) data manipulation
 image: logo.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-07-24-introducing-nplyr/index.html
 ---
 
 Data manipulation and transformation is a fundamental part of any analysis. There are excellent tools in the R ecosystem for manipulating data frames ([dplyr](https://dplyr.tidyverse.org/), [data.table](https://rdatatable.gitlab.io/data.table/), and [arrow](https://arrow.apache.org/docs/r/), to name a few). Sometimes, however, it is desirable to work with *nested* data frames, for which few tools are readily available.

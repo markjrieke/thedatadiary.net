@@ -3,6 +3,8 @@ title: Seasonality is a Weak Predictor of Border Crossings
 date: '2021-04-05'
 categories: [archive, politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-04-05-seasonality-is-a-weak-predictor-of-border-crossings/index.html
 ---
 
 Last week, the Washington Post published an [article](https://www.washingtonpost.com/politics/2021/03/23/theres-no-migrant-surge-us-southern-border-heres-data/) postulating that the recent increase in crossings at the border cannot be attributed to Biden administration policies, but rather is a function of seasonal patterns and pent up demand due to restricted travel in 2020. While the article is well intentioned, a simple linear model that predicts crossings based on month shows seasonality is a poor predictor (or, at least is a poor predictor on its own).

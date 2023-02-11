@@ -3,6 +3,8 @@ title: The Gas Price Fallacy
 date: '2021-7-18'
 categories: [archive, politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-07-18-the-gas-price-fallacy/index.html
 ---
 
 As America has vaccinated its population, life has seemingly begun to return to the pre-pandemic normal. Businesses have been opening to higher levels of capacity, schools are planning for higher levels of in-person learning in the fall, and, notably, Americans have returned to [pre-pandemic levels of transit](https://covid19.apple.com/mobility). 

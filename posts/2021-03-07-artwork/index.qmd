@@ -3,6 +3,8 @@ title: aRtwork!
 date: '2021-03-07'
 categories: [archive]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-03-07-artwork/index.html
 ---
 
 ![](p_art.png)

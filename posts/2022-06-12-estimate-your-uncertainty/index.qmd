@@ -2,9 +2,11 @@
 title: 'Estimate your uncertainty'
 date: '2022-06-12'
 categories: [rstats, bayes]
-subtitle: 'Modeling patient satisfaction data with empirical Bayesian methods'
+description: 'Modeling patient satisfaction data with empirical Bayesian methods'
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-06-12-estimate-your-uncertainty/index.html
 ---
 
 ```{r}

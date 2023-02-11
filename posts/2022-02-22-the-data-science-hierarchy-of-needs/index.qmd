@@ -4,6 +4,8 @@ date: '2022-02-22'
 categories: [rstats]
 description: 'Why you should put a roof on your house before hiring an interior decorator'
 image: featured.png
+aliases: 
+  - ../../../blog/2022-02-22-the-data-science-hierarchy-of-needs/index.html
 ---
 
 I've never built a house (shocking, I know), but from far too much time spent watching HGTV, I understand the basic gist of it. You lay a foundation, setup framing and walls, route mechanical and electrical, then work on final touches like painting and decorating (to be sure, I'm hand-waiving a lot of detail away here). There's a bit of wiggle room in the order you go about things --- you can paint the living room walls before the ones in the bathroom or vice versa --- but some steps definitely need to happen before others --- you can't paint either rooms until the walls themselves are actually up!

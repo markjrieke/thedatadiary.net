@@ -2,8 +2,10 @@
 title: Impeachment Republicans and Democracy
 date: '2022-04-06'
 categories: [politics]
-subtitle: How republicans who voted to impeach or acquit Donald Trump differ in their votes on democracy
+description: How republicans who voted to impeach or acquit Donald Trump differ in their votes on democracy
 image: featured.png
+aliases: 
+  - ../../../blog/2022-04-06-impeachment-republicans-and-democracy/index.html
 ---
 
 ```{r}

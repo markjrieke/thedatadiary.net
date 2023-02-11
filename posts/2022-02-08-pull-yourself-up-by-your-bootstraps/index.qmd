@@ -2,10 +2,11 @@
 title: "Pull Yourself Up by Your Bootstraps"
 date: '2022-02-08'
 categories: [rstats, tidymodels]
-caption: Using bootstrap resamples to generate confidence intervals from non-linear
-  models
+description: Using bootstrap resamples to generate confidence intervals from non-linear models
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-02-08-pull-yourself-up-by-your-bootstraps/index.html
 ---
 
 ```{r setup}

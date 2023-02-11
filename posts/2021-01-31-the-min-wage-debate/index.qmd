@@ -4,6 +4,8 @@ date: '2021-01-31'
 categories: [archive, politics]
 image: featured.png
 code-tools: false
+aliases: 
+  - ../../../blog/2021-01-31-the-min-wage-debate/index.html
 ---
 
 On January 26, House Democrats introduced a [bill to raise the federal minimum wage](https://twitter.com/nbcnews/status/1354102510101868547?s=21) from $7.25 per hour to $15 per hour by 2025. In the weeks leading up to the introduction, there’s been an influx on twitter of [bad faith attacks](https://twitter.com/laurenboebert/status/1353102326744166409?s=21), outright [factually incorrect statements](https://twitter.com/JoshuaConkel/status/1350228946361622528?s=20), and the type of fact-free arguments that [pundits love](https://www.washingtonpost.com/news/wonk/wp/2012/10/10/in-excitable-pundits-vs-political-scientists-ill-take-political-scientists-every-time/) (to be fair, my twitter timeline is biased towards my left-leaning friends, so the majority of what I see are poorly formulated left-leaning takes, but it’s pretty easy to find similarly [bad right-leaning takes](https://www.prageru.com/)). The slew of emotion-driven arguments muddies the water around the minimum wage discussion by avoiding references to data. In an effort to find the signal in all this noise, I dug into publicly available databases to hopefully provide at least one opinion grounded in empiricism, rather than emotion.

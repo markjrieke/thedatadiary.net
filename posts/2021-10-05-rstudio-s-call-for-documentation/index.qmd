@@ -3,6 +3,8 @@ title: RStudio's Call for Documentation
 date: '2021-10-05'
 categories: [archive, rstats]
 image: icon.png
+aliases: 
+  - ../../../blog/2021-10-05-rstudio-s-call-for-documentation/index.html
 ---
 
 In my job, I spend a good amount of time working in the platform setup by our survey vendor, [Qualtrics](https://www.qualtrics.com/). There are some pre-formatted reports that we can send on a recurring basis through Qualtrics, but for one-off or custom reports, I can work with the raw data in R. A few weeks ago, however, I was asked to setup a recurring email to send a customized report to a group of hospital directors each week. While R makes generating the report simple, sending out each week was tedious, as each one needed to be sent separately. Since the reports contain patient information, I couldn't automate via a third party server like [GitHub Actions](https://github.com/features/actions). I needed a way to localize the automation to my computer.

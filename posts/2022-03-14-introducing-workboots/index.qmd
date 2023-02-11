@@ -5,6 +5,8 @@ categories: [rstats, tidymodels, workboots]
 description: "Generate bootstrap prediction intervals from a tidymodel workflow!"
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-03-14-introducing-workboots/index.html
 ---
 
 ```{r setup}

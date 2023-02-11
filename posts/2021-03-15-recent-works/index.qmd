@@ -3,6 +3,8 @@ title: Recent Works
 date: '2021-03-15'
 categories: [archive]
 image: icon.png
+aliases: 
+  - ../../../blog/2021-03-15-recent-works/index.html
 ---
 
 One of the history teachers at my highschool was known for his prolific catchphrase, “give me the stuff, not the fluff,” often uttered to students attempting to submit history papers padded with superfluous words and sentences in order to meet a minimum word threshold. While I never took a class with this teacher, the phrase has stuck with me. With that in mind, I’ve reprioritized some of the things I’ve been working on. Here’s what I’ve been up to over the past week:

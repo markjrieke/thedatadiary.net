@@ -5,6 +5,8 @@ categories: [rstats, stan, bayes, healthcare]
 description: 'Multilevel Models for Patient Satisfaction'
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-11-14-hierarchical-hospitals/index.html
 ---
 
 ```{r}

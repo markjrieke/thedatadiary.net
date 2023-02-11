@@ -3,6 +3,8 @@ title: Blexas?
 date: '2021-07-11'
 categories: [archive, politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-07-11-blexas/index.html
 ---
 
 Last year, Donald Trump won Texas’ 38 electoral votes handily, [earning 52% of the vote compared to Biden’s 46% (R+6)](https://en.wikipedia.org/wiki/2020_United_States_presidential_election_in_Texas). Taken on its own, this is hardly surprising - [Texas has gone to the Republican presidential candidate in every election since 1980](https://www.270towin.com/states/Texas). Looking at the relative gains made in Texas over recent election cycles, however, paints a much more hopeful picture for Democrats hoping to flip the state & garner the nickname, “blexas.”

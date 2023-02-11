@@ -4,6 +4,8 @@ date: '2022-07-05'
 categories: [rstats, workboots, tidymodels]
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-07-05-the-math-behind-workboots/index.html
 ---
 
 ```{r}

@@ -5,6 +5,8 @@ date: '2021-11-14'
 categories: [tidymodels]
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2021-11-14-diamonds-are-forever-feature-engineering-with-the-diamonds-dataset/index.html
 ---
 
 Are y'all ready for some charts?? This week, I did a bit of machine learning practice with the [`diamonds dataset`](https://ggplot2.tidyverse.org/reference/diamonds.html). This dataset is interesting and good for practice for a few reasons:
