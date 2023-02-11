@@ -1,0 +1,62 @@
+// to revert back to base minty theme:
+// - delete this whole file
+// - remove any themin from styles.css
+// - set theme: minty in _quarto.yml
+
+/*-- scss:defaults --*/
+
+// use minty as the base
+$theme: "minty" !default;
+
+// import google fonts
+@import 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300&display=swap';
+@import 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&display=swap';
+@import 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&display=swap';
+
+// set fonts
+// $font-family-sans-serif: "IBM Plex Sans" !default;
+$font-family-headings: "Playfair Display";
+$font-family-mono: "IBM Plex Mono";
+
+// color settings
+$headings-color-custom: #5A9282;
+$link-color: #78c2ad;
+$link-hover: #609b8a;
+$link-visit: #f3969a;
+$gray-700: #5a5a5a;
+
+
+/*-- scss:rules --*/
+
+// use default sans-serif font
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-headings;
+  color: $headings-color-custom;
+}
+
+legend {
+  font-family: $headings-font-family !important;
+  color: $gray-700 !important;
+}
+
+.font-monospace {
+  font-family: $font-family-mono !important;
+}
+
+pre, code, kdb, samp {
+  font-family: $font-family-mono;
+}
+
+.nav-footer-left {
+  text-align: left;
+}
+
+.nav-footer-right{
+  text-align: right;
+}
+
+.alert-info, .alert-warning, .alert-primary, .alert-light {
+  padding: 1em 1em 1em 2em;
+  margin-bottom: 10px;
+  border-radius: 1em;
+}

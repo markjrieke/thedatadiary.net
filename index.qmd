@@ -1,0 +1,29 @@
+---
+title: the data diary
+subtitle: A scratchpad for statistics, politics, and other odd lots
+listing:
+  feed: true
+  contents: posts
+  sort: "date desc"
+  type: grid
+  grid-columns: 3
+  image-height: 250px
+  page-size: 100
+  categories: true
+page-layout: full
+title-block-banner: true
+code-tools: false
+---
+
+### Stay in touch
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+htmltools::includeHTML("posts/subscribe.html")
+```
+
+
+
+

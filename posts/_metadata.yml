@@ -1,0 +1,35 @@
+# options specified here will apply to all posts in this folder
+
+# freeze computed outputs
+freeze: true
+
+# enable banner style title blocks
+title-block-banner: true
+
+# table of contents
+toc: true
+toc-location: left
+
+# default knitr options
+execute: 
+  echo: true
+  message: false
+  warning: false
+  fig-dpi: 300
+  
+knitr: 
+  opts_chunk: 
+    dev: "ragg_png"
+    comment: "#>"
+
+# default author fields
+author: 
+  - name: Mark Rieke
+
+# default fields for citation
+citation: true
+
+# add footer
+format: 
+  html: 
+    include-after-body: ../posts/footer.html

@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 .httr-oauth
+
+/.quarto/
+/_site/

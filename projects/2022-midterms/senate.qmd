@@ -1,0 +1,126 @@
+---
+title: "2022 Senate Forecast"
+format: 
+  html: 
+    code-fold: false
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+```{css custom-width, echo=FALSE}
+.interactive_width {
+  max-width: 760px;
+  padding: 0 20px 0 20px;
+  margin: 0 auto 0 auto;
+}
+```
+
+```{r setup}
+#| include: false
+# setup
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/setup.R")
+
+# helper functions
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/formatting.R")
+
+# interactive charts
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/interactive_charts.R")
+
+# interactive table
+source("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/site-helpers/interactive_table.R")
+```
+
+```{r date}
+# setup run date
+run_date <- read_rds("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/run_date.rds")
+last_run <- format_date(run_date)
+```
+
+```{r load-data}
+# get current toplines 
+senate_topline <- 
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/senate_topline.csv")
+
+senate_distribution <- 
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/current_senate_distribution.csv")
+
+candidates <-
+  read_csv("https://github.com/markjrieke/2022-midterm-forecasts/raw/main/models/outputs/candidate_predictions.csv")
+```
+
+```{r headers}
+senate_title_topline <- 
+  senate_topline %>%
+  filter(model_date == max(model_date)) %>%
+  pull(p_dem_win)
+
+senate_title <- format_title(senate_title_topline, "the Senate")
+senate_subtitle <- format_subtitle(senate_title_topline, "the Senate elections")
+```
+
+```{r histogram}
+senate_axis <- 
+  tibble(breaks = seq(35, 65, 5)) %>%
+  mutate(color = case_when(breaks > 50 ~ rep_red,
+                           breaks < 50 ~ dem_blu,
+                           TRUE ~ purple),
+         labels = case_when(breaks >= 50 ~ breaks, 
+                            breaks < 50 ~ 100 - breaks),
+         labels = color_text(labels, color))
+
+senate_breaks <- senate_axis$breaks
+senate_labels <- senate_axis$labels
+
+senate_histogram <-
+  senate_distribution %>%
+  prep_histogram(100, senate_title, senate_subtitle) +
+  scale_x_continuous(breaks = senate_breaks,
+                     labels = senate_labels)
+
+girafe(
+  ggobj = senate_histogram,
+  options = list(
+    ggiraph::opts_tooltip(use_fill = TRUE),
+    ggiraph::opts_sizing(width = 1)
+  )
+)
+```
+
+<br>
+
+```{r trends}
+senate_probability <-
+  senate_topline %>%
+  prep_probability("the Senate")
+
+senate_seats <-
+  senate_topline %>%
+  prep_seats("the Senate")
+
+senate_patch <- 
+  (senate_probability / senate_seats) +
+  plot_annotation(title = "**How the Senate forecast has changed**",
+                  subtitle = paste0("See how each party's forecasted seat total and chance of controlling <br>the Senate have changed over time. The forecast is updated daily."))
+
+ggiraph::girafe(
+  ggobj = senate_patch,
+  height_svg = 8,
+  options = list(
+    ggiraph::opts_tooltip(use_fill = TRUE),
+    ggiraph::opts_sizing(width = 1)
+  )
+)
+```
+
+<br>
+
+```{r candidates, echo=FALSE}
+candidates %>%
+  prep_table("Senate")
+```
+
+
+
+
