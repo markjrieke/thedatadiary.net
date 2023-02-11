@@ -3,6 +3,8 @@ title: President of the Polls
 date: '2021-05-05'
 categories: [archive, politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-05-05-president-of-the-polls/index.html
 ---
 
 Elliot Morris wrote in his [newsletter last week](https://gelliottmorris.substack.com/p/are-preferences-for-more-government) about the increase in the public’s opinion that the government ought to be doing more. A summary of the last twenty years of polling by NBC shows that, while there seems to be a reactive effect based on the party of the president,  support for increased government activity has generally been on the rise. 

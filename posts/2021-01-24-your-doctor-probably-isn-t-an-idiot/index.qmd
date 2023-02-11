@@ -4,6 +4,8 @@ date: '2021-01-24'
 categories: [archive, bayes]
 image: featured.png
 code-tools: false
+aliases: 
+  - ../../../blog/2021-01-24-your-doctor-probably-isn-t-an-idiot/index.html
 ---
 
 There’s a great standup routine about doctors (which I spent about an hour trying to find online with no luck!) with a punchline to the effect of, “getting a positive cancer test then requesting a second opinion is basically the medical equivalent of telling your doctor you think they’re an idiot to their face.” The joke makes sense in context (and is a lot funnier to hear, rather than read),  and is logical at a general level (why would a patient, who probably isn’t a medical expert, be able to say that a doctor’s assessment is wrong?), but there’s a hidden nugget of nuance about cancer screenings missed by the joke that make them such an interesting introduction to one of the foundational equations in statistics, [Bayes’ Theorem](https://en.wikipedia.org/wiki/Bayes%27_theorem).

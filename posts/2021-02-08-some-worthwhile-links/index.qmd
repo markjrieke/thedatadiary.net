@@ -4,6 +4,8 @@ date: '2021-02-08'
 categories: [archive]
 image: icon.png
 code-tools: false
+aliases: 
+  - ../../../blog/2021-02-08-some-worthwhile-links/index.html
 ---
 
 Rather than diving deep into a topic this week, I took a bit of a break to focus on playing catchup with the stats course I’m taking. Instead, I’ve listed out below a number of creators that I follow on various platforms. If you’re interested in data or critical thinking, each is well worth your time and attention. 

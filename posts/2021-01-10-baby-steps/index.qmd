@@ -3,6 +3,8 @@ title: Baby Steps
 date: '2021-01-10'
 categories: [archive]
 image: plot.png
+aliases: 
+  - ../../../blog/2021-01-10-baby-steps/index.html
 ---
 
 # An Uphill Battle

@@ -3,6 +3,8 @@ title: Catching Up (again)
 date: '2021-09-23'
 categories: [archive]
 image: icon.png
+aliases: 
+  - ../../../blog/2021-09-23-catching-up-again/index.html
 ---
 
 Wow, it’s been quite a while! Once again, I’m catching up from a long hiatus (this time, there was about a month’s gap between posts). Although I haven’t been writing here, I have been keeping myself incredibly busy - for that reason, I think I’m going to switch up the format of this site. Here’s a few changes I’m planning on making, & also why I plan on making them.

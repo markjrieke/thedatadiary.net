@@ -4,6 +4,8 @@ date: '2022-01-12'
 categories: [personal]
 image: icon.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-01-12-the-data-diary-year-in-review/index.html
 ---
 
 In the year since I started this blog, there's been a lot that's happened: I learned to use R, picked up the basics of machine learning, and moved into a new job/industry. I spend a lot of time thinking about what's coming down the pipeline and how much further I have to go on projects that I have planned, but it's worthwhile every now and then to take a look back and see just how far I've come.

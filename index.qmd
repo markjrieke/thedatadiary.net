@@ -3,7 +3,7 @@ title: the data diary
 subtitle: A scratchpad for statistics, politics, and other odd lots
 listing:
   feed: true
-  contents: posts/2023-02-10-test-post
+  contents: posts
   sort: "date desc"
   type: grid
   grid-columns: 3

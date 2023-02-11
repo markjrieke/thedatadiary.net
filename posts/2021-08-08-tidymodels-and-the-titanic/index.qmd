@@ -3,6 +3,8 @@ title: Tidymodels and the Titanic
 date: '2021-08-08'
 categories: [archive, rstats, tidymodels]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-08-08-tidymodels-and-the-titanic/index.html
 ---
 
 This week, I thought I’d do something a bit different. I’ve been working with & getting used to [tidymodels](https://www.tidymodels.org/), a suite of R packages for building machine learning models with tidyverse principles (you can thank [Julia Silge’s blog](https://juliasilge.com/blog/) for providing a whole host of examples and walkthroughs). Using tidymodels and [Kaggle’s Titanic dataset](https://www.kaggle.com/c/titanic), I created a few simple models to predict whether or not each passenger survived. 

@@ -4,6 +4,8 @@ date: '2022-12-30'
 categories: [rstats, stan, bayes, healthcare]
 description: 'Ordered categorical models for estimating Net Promoter Score: a hierarchical Bayesian implementation'
 image: featured.png
+aliases: 
+  - ../../../blog/2022-12-30-my-2022-magnum-opus/index.html
 ---
 
 ```{r}

@@ -3,6 +3,8 @@ title: Polling Average of the VA Governor's Race using purrr::map functions
 date: '2021-10-19'
 categories: [politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/index.html
 ---
 
 Rolling poll averages can be misleading in the absence of errorbars or an expected distribution of outcomes. FiveThirtyEight is currently [tracking polls of Virginia's Governor race](https://projects.fivethirtyeight.com/polls/governor/virginia/) slated for early November, and has kindly made their polls [available to the public](https://projects.fivethirtyeight.com/polls-page/data/governor_polls.csv). Their current polling average, however, looks to be a simple rolling average and doesn't include a confidence interval. I've attempted to improve upon their tracker here by providing a weighted polling average and a 95% confidence interval.

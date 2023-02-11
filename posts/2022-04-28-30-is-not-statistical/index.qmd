@@ -2,8 +2,10 @@
 title: '"30 is not Statistical"'
 date: '2022-04-28'
 categories: [rstats]
-subtitle: 'Organizational resistance to uncertainty'
+description: 'Organizational resistance to uncertainty'
 image: pics/table.png
+aliases: 
+  - ../../../blog/2022-04-28-30-is-not-statistical/index.html
 ---
 
 ```{r}

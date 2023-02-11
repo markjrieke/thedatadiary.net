@@ -4,6 +4,8 @@ date: '2023-01-21'
 categories: [politics, bayes, stan]
 description: 'Mixed scales lead to mixed results'
 image: img/fig_04.png
+aliases: 
+  - ../../../blog/2023-01-21-trump-vs-desantis-in-2024-republican-primary-polling/index.html
 ---
 
 Late last year, [Donald Trump officially announced his candidacy for the 2024 presidential election](https://www.cnbc.com/2022/11/15/trump-news-trump-launches-2024-presidential-campaign-in-a-bid-to-seize-early-momentum.html). To secure the Republican party's nomination, he'll have to best Florida's governor, Ron DeSantis, who, despite not having yet announced his intention to run, is currently viewed as [the only serious challenger to Trump](https://morningconsult.com/2024-gop-primary-election-tracker/) for the nomination.  It's really far too early to be digging into the 2024 presidential election, but pollsters are gonna do what pollsters are gonna do, so we already have a cadre of primary polls comparing Trump to DeSantis. 

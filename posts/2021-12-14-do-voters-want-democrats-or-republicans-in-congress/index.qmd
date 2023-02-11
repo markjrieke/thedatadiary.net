@@ -4,6 +4,8 @@ date: '2021-12-14'
 categories: [politics]
 description: 'Building a Generic Ballot Poll Aggregator'
 image: featured.png
+aliases: 
+  - ../../../blog/2021-12-14-do-voters-want-democrats-or-republicans-in-congress/index.html
 ---
 
 The 2022 midterms are still quite a ways away, however, in order to have a forecast ready in time, I need to start working on the model well in advance! One of the features I plan on using in the House Forecast is the [generic congressional ballot](https://www.pewresearch.org/politics/2002/10/01/why-the-generic-ballot-test/) average. Generic ballot polls ask respondents whether they intend to vote for either the Republican or Democratic candidate for the U.S. House of Representatives in their district. FiveThirtyEight provides a [daily updating polling average](https://projects.fivethirtyeight.com/congress-generic-ballot-polls/), but in order to project beyond their current day's average, I needed to build my own poll aggregator! Thankfully, they also are kind enough to provide the [underlying polling data](https://github.com/fivethirtyeight/data/tree/master/polls) as well. 

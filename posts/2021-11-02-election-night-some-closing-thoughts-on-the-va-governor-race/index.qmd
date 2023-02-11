@@ -3,6 +3,8 @@ title: 'Election Night: Some Closing Thoughts on the VA Governor Race'
 date: '2021-11-02'
 categories: [politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-11-02-election-night-some-closing-thoughts-on-the-va-governor-race/index.html
 ---
 
 A few weeks ago I had [written about the VA Governor's race](https://www.thedatadiary.net/blog/2021-10-19-polling-average-of-the-va-governor-s-race-using-purrr-map-functions/) before going on vacation - in that time it seems as though Terry McAuliffe's campaign had lost a lot of steam and Youngkin made up a lot of ground in the final weeks of the campaign. At the time of this writing, it seems overwhelmingly likely that Glenn Youngkin will become the next governor of Virginia. To avoid some of the [galaxy-brain takes that will inevitabely wind up twitter](https://twitter.com/rp_griffin/status/1455696452915802122), I thought I'd distract myself by following up on my previous post. 

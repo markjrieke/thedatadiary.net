@@ -4,6 +4,8 @@ date: '2022-09-19'
 categories: [politics] 
 description: 'A look under the hood of the 2022 Midterm Model'
 image: featured.png
+aliases: 
+  - ../../../blog/2022-09-16-forecast-launch/index.html
 ---
 
 For those who aren't glued to electoral politics, Labor Day typically marks the beginning of election season. Primaries are settled, pollsters stop sampling all adults to prioritize [likely voters](https://www.aapor.org/Education-Resources/Election-Polling-Resources/Likely-Voters.aspx), and campaigns kick into high-gear. Labor Day *also* marks the release of my 2022 midterm forecast:

@@ -5,6 +5,8 @@ categories: [rstats]
 description: "A causal look at how Musk's twitter ownership has affected Tesla stock"
 image: featured.png
 code-fold: show
+aliases: 
+  - ../../../blog/2022-12-16-chief-twit/index.html
 ---
 
 ```{r}

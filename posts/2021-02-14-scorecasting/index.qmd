@@ -3,6 +3,8 @@ title: Scorecasting
 date: '2021-02-14'
 categories: [archive, politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-02-14-scorecasting/index.html
 ---
 
 A baseball forecast that correctly predicts the winner of the [15 opening day games](https://www.mlb.com/schedule/2021-04-01) could be a truly accurate model, or could just be getting lucky. Over the course of 6 months and [2,430 regular season games](https://en.wikipedia.org/wiki/Major_League_Baseball_schedule), however, a great forecast will continue to shine whereas an initially lucky one will falter. In data rich environments like sports, there are lots of events (games) over the course of a season to judge how well a model is performing. 

@@ -3,6 +3,8 @@ title: A Lukewarm Case for DC Statehood
 date: '2021-04-27'
 categories: [archive, politics]
 image: featured.png
+aliases: 
+  - ../../../blog/2021-04-27-a-lukewarm-case-for-dc-statehood/index.html
 ---
 
 Once again, I’ll be keeping this very short, as I’ve continued to primarily focus on [building out the demographic/economic database](https://github.com/markjrieke/electionsimulator/tree/main/notepad). I, did, however, sneak in some time to explore the [2020 Census Apportionment Results](https://www.census.gov/data/tables/2020/dec/2020-apportionment-data.html) that were released yesterday. Some surprises came out of the release: Texas and Florida underperformed expectations, only gaining two and one seat, respectively; Arizona didn’t gain a seat; and New York lost a seat but was apparently [89 people short of retaining its seats](https://www.nytimes.com/2021/04/26/nyregion/new-york-census-congress.html). Given that Texas and Florida each gained one less seat than was generally expected, there’s been some speculation online that [Donald Trump’s attempt to undercount Hispanics](https://www.washingtonpost.com/business/are-you-a-citizen-the-trump-census-controversy-explained/2021/04/26/1cfe6ed8-a6e1-11eb-a8a7-5f45ddcdf364_story.html) was successful, but backfired. I’ll hold my judgments on this theory until I can read some more in-depth opinions (if they get written).
