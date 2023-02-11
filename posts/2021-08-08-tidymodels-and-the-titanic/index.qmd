@@ -1,0 +1,73 @@
+---
+title: Tidymodels and the Titanic
+date: '2021-08-08'
+categories: [archive, rstats, tidymodels]
+image: featured.png
+aliases: 
+  - ../../../blog/2021-08-08-tidymodels-and-the-titanic/index.html
+---
+
+This week, I thought I’d do something a bit different. I’ve been working with & getting used to [tidymodels](https://www.tidymodels.org/), a suite of R packages for building machine learning models with tidyverse principles (you can thank [Julia Silge’s blog](https://juliasilge.com/blog/) for providing a whole host of examples and walkthroughs). Using tidymodels and [Kaggle’s Titanic dataset](https://www.kaggle.com/c/titanic), I created a few simple models to predict whether or not each passenger survived. 
+
+# Exploratory Data Analysis
+
+First off, it’s important to get to know the dataset in a bit of detail before diving into model building. The Titanic dataset is relatively small, containing 12 columns of data on 891 passengers.
+
+* **PassengerId** : ordered number assigned to each passenger (1, 2, 3… etc.).
+* **Survived** : indicates whether the passenger survived or not (imported as numeric, where a 1 means that the passenger survived and a 0 means that the passenger died.
+* **PClass** : passenger class (1st, 2nd, or 3rd).
+* **Name** : passenger’s name.
+* **Sex** : passenger’s sex.
+* **Age** : passenger’s age.
+* **SibSp** : number of the passenger’s siblings and/or spouses aboard the ship.
+* **Parch** : number of the passenger’s parents and/or children aboard the ship.
+* **Ticket** : passenger’s ticket number.
+* **Fare** : price of the passenger’s ticket.
+* **Cabin** : passenger’s cabin number.
+* **Embarked** : port from which the passenger embarked.
+
+The passenger’s name and ticket number are unique, and don’t offer any much predictive power (at least, not for the type we’ll be deploying), so I’ve removed those columns from the selection. The majority of passengers are missing Cabin information, so I’ve similarly removed that column. Let’s take a look at the age distribution by gender. Density plots are good for this sort of objective, but a quick note - density plots don’t show the counts (like a histogram), just the relative distribution of each group.
+
+![](pics/plot_01.png)
+
+Both men and women have similar age distributions, with the majority being adults roughly in their twenties. It’d be interesting to look at which age groups survived.  
+
+![](pics/plot_02.png)
+
+There’s a spike survivorship at a young age (as expected, due to the prioritization of children). Young adults make up the majority of both survivors and those who died, simply because young adults made up the majority of passengers. It may be more interesting to see which male/female age groups survived.
+
+![](pics/plot_03.png)
+
+Interestingly, there’s a large portion of the women who died were children. To gain some more insight, however, it may be beneficial to bin the results. As mentioned above, density plots don’t show a count of each age, but the relative amounts instead. We can use a histogram to get a better idea of the actual amount in each group.
+
+![](pics/plot_04.png)
+
+From the histogram, we can see that there were far more male passengers than female passengers. Let’s setup age brackets and see how many of each age group survived.
+
+![](pics/plot_05.png)
+
+Despite there being more male passengers, there were more female survivors in just about every age bracket. I had expected that women would have a greater percentage of survivorship, but was mildly surprised that the absolute number of female survivors was greater than the number of male survivors. 
+
+Lets look at how survivorship is related to the number of family members each passenger was traveling with.
+
+![](pics/plot_06.png)
+
+While there’s not huge variation between survivorship percentages across each class, we can see that the majority of passengers were traveling alone. 
+
+Finally, I looked at the distribution of the fare price by survivorship. As expected, passengers who didn’t survive skewed towards low cost fares while survivors were more evenly distributed across fare prices. 
+
+![](pics/plot_07.png)
+
+# Model Fitting and Evaluation
+
+Now that we’ve explored the data a bit, we can get started on some actual model fitting and evaluation. I split the dataset into a training set and test set, and built two simple models - a [logistic regression](https://en.wikipedia.org/wiki/Logistic_regression) and a [random forest model](https://en.wikipedia.org/wiki/Random_forest). In very light detail, a logistic regression is the most basic classification model based on the generalized linear model and a random forest model is a decision tree-based algorithm.  With no [tuning](https://www.datarobot.com/wiki/tuning/) applied, neither model performed particularly well - the logistic regression and random forest models had accuracies of 85.5% and 83.8% on the test set, respectively. While the logistic regression had a slightly higher accuracy on the test set, the random forest performed better on the metric of [area under the ROC (receiver-operator characteristic)](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) curve - 0.899 compared to 0.888 (generally, binary classification systems with ROC AUC values close to 1 perform better). A comparison between the two ROC curves is shown below. 
+
+It’s not perfect, but the purpose was to explore the tidymodels framework, and I’m pretty happy with the outcome/practice along the way.
+
+![](pics/roc_auc.png)
+
+# Some Things to Read/Watch/Listen to
+
+* There’s been a concerted effort by prominent conservatives to [promote vaccination](https://twitter.com/gelliottmorris/status/1424524749875601408?s=21) and [shift the blame for vaccine hesitancy to the Biden administration](https://www.reviewjournal.com/opinion/letters/letter-dont-blame-the-gop-for-vaccine-hesitancy-2413731/amp/), pointing in particular to one of Kamala Harris’ comments during the Vice Presidential debate. This criticism falls fairly short, given that commentators like [Tucker Carlson](https://www.youtube.com/watch?v=ocEFTIwnO6I) and legislators like [Marjorie Taylor Green](https://www.cnn.com/2021/08/10/tech/twitter-marjorie-taylor-greene/index.html) continue to spread vaccine conspiracy theories. Further, a [statistical model by the Economist](https://www.economist.com/graphic-detail/2021/07/30/which-americans-are-against-the-jab) found that the strongest predictor of whether or not someone has been vaccinated is who they voted for in the 2020 presidential election.
+* Julia Silge was recently featured as a guest on an excellent episode of the [Not So Standard Podcast](https://www.youtube.com/watch?v=p7z8yZucwlM). Well worth a listen for R dorks like myself.
+* Perry Bacon Jr wrote an [informative piece](https://www.washingtonpost.com/opinions/2021/08/09/why-moderation-doesnt-guarantee-electoral-success-biden-democrats/) on the misplaced importance on swing voters in election cycles.

@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 323f8c7d-2b63-4c11-bc46-e8935318ed8f
+      url: 'https://www.thedatadiary.net'
