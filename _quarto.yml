@@ -46,3 +46,6 @@ format:
     fig-width: 9
     fig-height: 6
     fig-align: center
+    
+execute:
+  freeze: auto
