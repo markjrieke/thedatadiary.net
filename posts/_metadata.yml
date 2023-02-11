@@ -28,3 +28,8 @@ author:
 
 # default fields for citation
 citation: true
+
+# add footer
+format: 
+  html: 
+    include-after-body: ../posts/footer.html

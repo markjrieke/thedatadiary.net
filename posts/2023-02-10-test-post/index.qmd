@@ -1,0 +1,11 @@
+---
+title: "test run"
+date: "2023-02-10"
+description: testing out some shit
+categories: [archive]
+image: icon.png
+---
+
+there should be a footer all up in this bitch
+
+check out me edits
