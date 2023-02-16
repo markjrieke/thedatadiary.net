@@ -12,7 +12,7 @@ library(tidyverse)
 library(riekelib)
 ```
 
-Between my job as a consumer experience analyst and my side-interest in electoral forecasting, I spend a *lot* of time digging into survey data. Surveys are great! But the survey sample may not always be representative of the population. When this is the case, we can't take the aggregated survey responses at face value and need to adjust for any bias the non-representativeness. 
+Between my job as a consumer experience analyst and my side-interest in electoral forecasting, I spend a *lot* of time digging into survey data. Surveys are great! But the survey sample may not always be representative of the population. When this is the case, we can't take the aggregated survey responses at face value and need to adjust for any bias the non-representativeness may have introduced. 
 
 *Multilevel regression and post-stratification* (which gets re-dubbed as MRP or "Mr P") is a super intimidating and stats-y sounding procedure to correct for this bias, but it turns out it's actually not too difficult. MRP is a two step process that involves fitting a multilvel model based (at least in part) on the demographic variables tied to each response, then reweighting so that the sample demographics match the population demographics. Let's run through an example!
 
