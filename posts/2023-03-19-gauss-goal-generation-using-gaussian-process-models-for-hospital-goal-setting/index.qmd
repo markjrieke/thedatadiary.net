@@ -48,7 +48,7 @@ p_{ij} & = \langle p_{\text{promoter}},\ p_{\text{passive}},\ p_{\text{detractor
 \end{align*}
 $$
 
-The categories are ordered (promoter > passive > detractor), so we can link the categorical probabilities to a single linear model, $\phi$, via the cumulative probabilities, $q$, and $k$ cutpoints, $\kappa$. I've described this in a bit more detail [in a previous post](https://www.thedatadiary.net/posts/2022-12-30-my-2022-magnum-opus/), so I'll just leave you with the math, here. Just note that as $phi$ increases, so too does the expected NPS. 
+The categories are ordered (promoter > passive > detractor), so we can link the categorical probabilities to a single linear model, $\phi$, via the cumulative probabilities, $q$, and $k$ cutpoints, $\kappa$. I've described this in a bit more detail [in a previous post](https://www.thedatadiary.net/posts/2022-12-30-my-2022-magnum-opus/), so I'll just leave you with the math, here. Just note that as $\phi$ increases, so too does the expected NPS. 
 
 $$
 \begin{align*}
