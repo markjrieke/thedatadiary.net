@@ -26,8 +26,10 @@ knitr:
 author: 
   - name: Mark Rieke
 
-# default fields for citation
+# fields for citation
 citation: true
+citation-location: margin
+reference-location: margin
 
 # add footer
 format: 
