@@ -1,0 +1,107 @@
+---
+title: "3-PVI"
+date: '2023-05-23'
+categories: [politics]
+description: 'A new metric for measuring regional partisanship'
+image: featured.png
+---
+
+```{r}
+library(tidyverse)
+library(gt)
+```
+
+
+National polling of the American electorate can highlight broad-stroke public opinion, but elections and ballot measures are won or lost at the regional level. In a presidential election, for example, statewide deviations from the national polling can result in close national race but skewed electoral college result (see for example, the results of the 2016 election). Since 1997, [Cook Political](https://www.cookpolitical.com/) has published a simple metric to measure regional deviations from national sentiment: the [Partisan Voter Index (PVI)](https://www.cookpolitical.com/pvi-0). 
+
+To be explicit, the [2022 PVI](https://www.cookpolitical.com/cook-pvi/2022-partisan-voting-index/state-map-and-list) in any given state, $i$, is calculated as follows:
+
+$$
+\text{PVI}_i = 0.75 \times (\text{2PV}_{\text{2020, }i} - \text{2PV}_{\text{2020, national}}) + 0.25 \times (\text{2PV}_{\text{2016, }i} - \text{2PV}_{\text{2016, national}})
+$$
+
+where $\text{2PV}$ is the democrat's share of the two-party vote in the previous two presidential elections. This metric is incredibly useful for understanding regional differences at a glance, since it summarizes partisanship with a single, sortable number. PVI is commonly referenced in electoral analyses and models (even [my own](https://github.com/markjrieke/2022-midterm-forecasts/blob/main/models/punk_november_predict.R#L247-L252)), but this ease of use comes at the sacrifice of some utility.
+
+Notably, PVI only considers the two-party voteshare, but not everyone votes for one of the two major parties! There's always a subset of the electorate that votes for third parties --- sometimes third party candidates can siphon a meaningful percentage of the vote. Even when there isn't an individual third party candidate shaking up the race, regional differences in the *general appetite* for third parties can make an impact. 
+
+For example, in the 2016 election, only **63%** of Utah's electorate voted for Donald Trump or Hillary Clinton, despite the fact that, nationally, the two frontrunners received a total of **94%** of votes cast.^[21% of Utah voters cast their ballot for an independent, Evan McMullin, and the remaining split their votes among other minor candidates.] Utah was a far more republican-leaning than the nation in 2016, but the *strength* of this partisanship was far weaker. Mississippi, on the other hand, was a much *stronger* partisan state than the nation, sending **98%** of votes to either Trump or Clinton. 
+
+These differences in partisanship across states are important, but so too are the differences in the strength in partisanship. To account for all three, I propose a new metric, **3PVI**, defined as follows for a given state, $i$, and political party (democrat, republican, or other), $j$:
+
+$$
+\text{3PVI}_{i,j} = 0.75 \times (V_{\text{2020, }i,\ j} - V_{\text{2020, national, }j}) + 0.25 \times (V_{\text{2016, }i,\ j} - V_{\text{2016, national, }j})
+$$
+
+where $V$ is the absolute voteshare of a given party in a given state. This introduces a fair bit of additional complexity --- each state is now summarized with a triplet of numbers rather than a single number --- but lets us assess both partisanship and partisan strength in one collective view. By this metric, Utah, Alaska, and Vermont have the weakest partisanship and tend to provide more third party votes than the nation as a whole. On the other hand, Florida, Mississippi, and New Jersey have the strongest partisanship and tend to provide fewer third party votes than the nation as a whole. 3PVI also tends to agree with Cook's PVI, finding that the District of Columbia and Wyoming are the most pro-democratic and pro-republican states, respectively. 
+
+```{r}
+pvi3 <- read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/data/cpvi.csv")
+
+# national results (d/r/o):
+# 20: 0.513 / 0.468 / 0.019
+# 16: 0.482 / 0.461 / 0.057
+
+pvi3 %>%
+  
+  # calculate 3pvi
+  select(-CPVI) %>%
+  mutate(oth_20 = 1 - (dem_20 + rep_20),
+         oth_16 = 1 - (dem_16 + rep_16),
+         pvi_3d20 = dem_20 - 0.513,
+         pvi_3r20 = rep_20 - 0.468,
+         pvi_3o20 = oth_20 - 0.019,
+         pvi_3d16 = dem_16 - 0.482,
+         pvi_3r16 = rep_16 - 0.461,
+         pvi_3o16 = oth_16 - 0.057,
+         pvi_3d = pvi_3d20*0.75 + pvi_3d16*0.25,
+         pvi_3r = pvi_3r20*0.75 + pvi_3r16*0.25,
+         pvi_3o = pvi_3o20*0.75 + pvi_3o16*0.25) %>%
+  select(state = State,
+         pvi_3d, pvi_3r, pvi_3o,
+         dem_20, rep_20, oth_20,
+         dem_16, rep_16, oth_16) %>%
+  
+  # summarize
+  gt() %>%
+  tab_header(title = md("**3-PVI**"),
+             subtitle = "A new metric for measuring regional partisanship") %>%
+  cols_label(state = "",
+             pvi_3d = "PVI-D",
+             pvi_3r = "PVI-R",
+             pvi_3o = "PVI-O",
+             dem_20 = "2020\nBiden",
+             rep_20 = "2020\nTrump",
+             oth_20 = "2020\nOther",
+             dem_16 = "2016\nClinton",
+             rep_16 = "2016\nTrump",
+             oth_16 = "2016\nOther") %>%
+  fmt_percent(-state, decimals = 1) %>%
+  tab_style(style = cell_fill("#214eba", alpha = 0.25),
+            locations = cells_body(columns = c(pvi_3d, starts_with("dem")))) %>%
+  tab_style(style = cell_fill("#ba214e", alpha = 0.25),
+            locations = cells_body(columns = c(pvi_3r, starts_with("rep")))) %>%
+  tab_style(style = cell_fill("gray60", alpha = 0.25),
+            locations = cells_body(columns = c(pvi_3o, starts_with("oth")))) %>%
+  tab_style(style = cell_text(font = google_font("Libre Franklin"),
+                              weight = 800),
+            locations = cells_title(groups = "title")) %>%
+  cols_align(align = "center",
+             columns = -state) %>%
+  tab_options(heading.align = "left",
+              column_labels.border.top.style = "none",
+              table.border.top.style = "none",
+              column_labels.border.bottom.style = "none",
+              column_labels.border.bottom.width = 1,
+              column_labels.border.bottom.color = "#334422",
+              table_body.border.top.style = "none",
+              table_body.border.bottom.color = "white",
+              heading.border.bottom.style = "none",
+              data_row.padding = px(7),
+              column_labels.font.size = px(12)) %>%
+  opt_interactive()
+```
+
+Like any metric, 3PVI is imperfect and doesn't capture the full complexity of any given region. The additional utility provided by 3PVI also comes at the cost of additional complexity, which requires more thorough analysis to fully interpret. In situations where this additional complexity is warranted, however, 3PVI is a useful metric that places pastisan strength alongside partisan preferences. 
+
+
+
