@@ -3,7 +3,7 @@ title: "3-PVI"
 date: '2023-05-23'
 categories: [politics]
 description: 'A new metric for measuring regional partisanship'
-image: featured.png
+image: header.png
 ---
 
 ```{r}
