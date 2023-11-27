@@ -464,6 +464,6 @@ Censored models are a useful set of tools for working with customer churn data. 
 
 In the particular examples above, the models assumed a constant churn rate. This was an appropriate assumption in this case, but may not always be. Alternatives to the exponential distribution, such as the [Weibull](https://en.wikipedia.org/wiki/Weibull_distribution) or [gamma](https://en.wikipedia.org/wiki/Gamma_distribution) can be used to model time-varying churn, or time itself could be included as a model component in estimating a distribution's parameter. Further, in the above example, all players join the game on the exact same day. In reality, players (or, in general, customers), will have different real-world times that correspond to $t=0$, and datasets contain more than one censored datapoint.
 
-
+Regardless of model complexity, average customer lifetime can be derived from a distribution of churn data and a discrete censored model offers a way to estimate the underlying churn distribution while respecting the format that the data was aggregated.  
 
 
