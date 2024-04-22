@@ -12,7 +12,7 @@ Roughly 500 days from now (485, if you really want to be picky), Americans will 
 
 In 1992, challenger Bill Clinton foiled George H.W. Bush's chance at a second presidential term. His successful campaign was based, in part, on the simple, resounding message of [*"It's the economy, stupid."*](https://en.wikipedia.org/wiki/It%27s_the_economy,_stupid). Although Bush didn't preside over negative GDP growth like Jimmy Carter, his term saw middling economic growth relative to his republican predecessors, and the Clinton campaign was able use the [early 1990s recession](https://en.wikipedia.org/wiki/Early_1990s_recession) as an attack against a second Bush term. 
 
-![](https://raw.githubusercontent.com/markjrieke/2024-potus/main/dev/05-state-priors/real_gdp_growth.png)
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/archive/dev/05-state-priors/real_gdp_growth.png)
 
 Bush's downfall wasn't, however, solely the result of America's economic performance. He was also a deeply unpopular president --- per [538's presidential approval tracker](https://projects.fivethirtyeight.com/biden-approval-rating/), he entered election day with a **-22.4%** net approval. Although the two variables are likely intertwined, accounting for only one or the other doesn't provide a clear picture of what the results of an election will be.  
 
@@ -62,9 +62,9 @@ $$
 
 Here, $A$, $G$, and $I$ are equivalent to their Time for Change counterparts. $T$ indicates the presence of a third party in the national race, defined as any individual third-party candidate polling above 5%. 
 
-To generate a distribution of results, I implemented the model in [Stan](https://mc-stan.org/) and set informative priors over the $\alpha$ and $\beta$ parameters --- you can view the full model code [here](https://github.com/markjrieke/2024-potus/blob/main/dev/07-abramovitz-3pv/national_prior.stan). 
+To generate a distribution of results, I implemented the model in [Stan](https://mc-stan.org/) and set informative priors over the $\alpha$ and $\beta$ parameters --- you can view the full model code [here](https://github.com/markjrieke/2024-potus/blob/archive/dev/07-abramovitz-3pv/national_prior.stan). 
 
-![](https://raw.githubusercontent.com/markjrieke/2024-potus/main/dev/07-abramovitz-3pv/abramovitz_3pv_01.png)
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/archive/dev/07-abramovitz-3pv/abramovitz_3pv_01.png)
 
 Based on [his current net approval](https://projects.fivethirtyeight.com/biden-approval-rating/), **-13.6%**, and the most recent [quarterly GDP data](https://fred.stlouisfed.org/series/GDP), which puts real annualized growth at **0.8%**, Biden is expected to win the national popular vote, though there is a lot of uncertainty around this estimate. As mentioned above, however, the national result doesn't determine the winner, and we must turn to the statewide results.
 
@@ -72,21 +72,21 @@ Based on [his current net approval](https://projects.fivethirtyeight.com/biden-a
 
 A useful way to think about states is in terms of partisan lean relative to the nation as a whole. For example, in a "blue wave" year, there will still be states that vote solidly for republican candidates, though we'd expect their margin of victory to shift with the nation. To estimate state-level results, I simply added the partisan lean of each state (measured by 3PVI) to the national results. Because the Stan model produced a distribution of national results, adding partisan lean also produces a distribution of state results. There were no simulations in which a third party candidate won any state, so Biden's probability of winning any given state (expressed as a percentage in the chart below) is simply the proportion of simulations in which he beats his republican challenger. 
 
-![](https://raw.githubusercontent.com/markjrieke/2024-potus/main/dev/07-abramovitz-3pv/abramovitz_3pv_02.png)
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/archive/dev/07-abramovitz-3pv/abramovitz_3pv_02.png)
 
 Taking Biden's probability of winning each state and multiplying it by the number of electors that state provides the expected number of democratic electors. This puts Biden's expected number of electors won at **279**, just above the 270 vote threshold to secure the presidency. This method yields the *average* outcome but in reality, electoral college votes aren't "averaged out" --- each state allocates all of its votes to the winner. A better method is to take the total number of simulations in which Biden wins enough states to earn at least 270 votes in the electoral college. Doing so shows that, based on this prior model, he has about a **46%** chance of winning re-election.
 
-![](https://raw.githubusercontent.com/markjrieke/2024-potus/main/dev/07-abramovitz-3pv/abramovitz_3pv_03.png)
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/archive/dev/07-abramovitz-3pv/abramovitz_3pv_03.png)
 
 ## When to update your priors
 
 The output from this model is, explicitly, to be used as a [*prior*](https://en.wikipedia.org/wiki/Prior_probability). Barring drastic economic change or presidential scandal, I don't expect this model's output to shift significantly ahead of June 2024, when we expect polling to start becoming more informative. When that time comes, outlets will release forecasts, and we can start to incorporate more information to update the prior generated from this model. Until then, we can summarize our beliefs with two statements: there is a lot of uncertainty in the outcome of the 2024 election and this uncertainty points to a toss-up between Biden and his eventual challenger. 
 
-![](https://raw.githubusercontent.com/markjrieke/2024-potus/main/dev/07-abramovitz-3pv/abramovitz_3pv_04.png)
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/archive/dev/07-abramovitz-3pv/abramovitz_3pv_04.png)
 
 ## Programming notes
 
-Although my recommendation is to not spend too much time thinking about the 2024 election until next summer, I've recently been spending too much time thinking about the 2024 election. I'm planning on releasing a presidential forecast, which is going to require quite a bit of work (on both the statistics and software engineering spectrum). The model outputs will be released on this site, but you can follow along the development on [GitHub](https://github.com/markjrieke/2024-potus). The code for [the model](https://github.com/markjrieke/2024-potus/blob/main/dev/07-abramovitz-3pv/national_prior.stan) in this article along with the code to [generate all the plots](https://github.com/markjrieke/2024-potus/blob/main/dev/07-abramovitz-3pv/abramovitz_3pv.R) are also stored in the repository.
+Although my recommendation is to not spend too much time thinking about the 2024 election until next summer, I've recently been spending too much time thinking about the 2024 election. I'm planning on releasing a presidential forecast, which is going to require quite a bit of work (on both the statistics and software engineering spectrum). The model outputs will be released on this site, but you can follow along the development on [GitHub](https://github.com/markjrieke/2024-potus). The code for [the model](https://github.com/markjrieke/2024-potus/blob/archive/dev/07-abramovitz-3pv/national_prior.stan) in this article along with the code to [generate all the plots](https://github.com/markjrieke/2024-potus/blob/archive/dev/07-abramovitz-3pv/abramovitz_3pv.R) are also stored in the repository.
 
 
 
