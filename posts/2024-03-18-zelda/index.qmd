@@ -1,0 +1,292 @@
+---
+title: "Monsters, Mixtures, and a little bit of Legend of Zelda"
+date: '2024-3-21'
+categories: [stan, survival]
+description: "The story of an incredibly weird model I recently fit"
+image: header.png
+filters:
+  - add-code-files
+---
+
+# Introduction
+
+## A few thoughts about the Legend of Zelda
+
+I am of the opinion that most people under the age of forty who grew up playing video games have a game in *The Legend of Zelda* series which is, for them, *their* Zelda game. It may not be the game they consider to be the best in the series, nor is it necessarily the game in which they've logged the most hours, but when The Legend of Zelda is mentioned, this is the game that they think of (even if for no other reason than it being the first game in the series that they played). 
+
+In my case, *my* Zelda is the [Windwaker](https://en.wikipedia.org/wiki/The_Legend_of_Zelda:_The_Wind_Waker). This was one of the first games my siblings and I had for the GameCube yet it still remains fresh and vibrant in my mind over twenty years later.^[Shoutout to my Uncle Ryan for inadvertently (or purposefully) accelerating me on the path of dorkdom with his 2005 Christmas gift.] The art and renderings are cleverly styled such that the graphics still hold up today.^[I mean, just absolutely: ![](fig/graphics.jpeg)] The [soundtrack](https://www.youtube.com/watch?v=AQm5wxT7BGM)) (which I still listen to on a regular basis) is a perfect match to the gameplay, mirroring the sometimes whimsical, sometimes forlorn, and oftentimes heroic mood established in the story. The narrative, while simple, is able to deliver emotionally impactful highs and lows as Link journeys across the Great Sea in search of the power to rescue his sister and the descendants of Hyrule from evil.
+
+Despite his status as the main antagonist of the game, [Ganondorf](https://zelda-archive.fandom.com/wiki/Ganondorf_(The_Wind_Waker)) is arguably *not* the most satisfying boss to defeat, as much of his influence on the world is enacted indirectly through his minions. The greatest of his servants, a giant bird known as the [Helmaroc King](https://zelda.fandom.com/wiki/Helmaroc_King), is more often the one setting Link back during his journey. Link first encounters the Helmaroc King on Outset Island during its attempt to kidnap the pirate Tetra. It then kidnaps Link's sister, Aryll, and imprisons her in the rocky Forsaken Fortress. When Link attempts to break in to rescue her, he is captured by the Helmaroc King and subsequently hurled across the Great Sea. 
+
+After having suffered repeated setbacks and defeats directly at the hands^[Or wings?] of the Helmaroc King, finally garnering enough power to ascend to the top of the fortress, stand toe-to-toe with the bird-god, and defeat the monstrosity to rescue your sister feels like a triumph *earned through adversity*. By having been bested by the Helmaroc King early in the adventure, you, as a player, and Link are better able to appreciate how far you've come than would be the case had the Helmaroc King been an easy early boss. 
+
+## My own personal Helmaroc
+
+Over the past several months, my colleagues and I have been thinking about how to model player retention in the context of an experiment. Our goal was to generate a better estimate of the expected player lifetime/activity-time in days. My initial plan was to use a censored regression to model the event-time distribution of each player's most recent login. In addition to the expected player lifetime, this would give us the ability to generate a few other useful items, such as the active-player survival curve and an estimate of the $n$-step-ahead churn probability. The task seemed straightforward, but a stream of poor fits, bug discoveries, and weird Stan errors turned this from a straightforward modeling problem to an incredibly personal battle between me and the model. This model repeatedly kicked my ass and became my own personal Helmaroc. 
+
+After a *lot* of headache, however, I was able to break through. Finally seeing Stan converge on an acceptable fit was incredibly gratifying --- in no small part because of the difficulty I experienced in the modeling process along the way. This post chronicles the journey through a series of models on the way towards **fuck it something idk**
+
+**Needs work**
+
+# To Helmaroc and Back
+
+Before diving into math or a model, take a look at the plot below, which shows the [Kaplan-Meier estimate](https://en.wikipedia.org/wiki/Kaplan%E2%80%93Meier_estimator) of the survival curve given experimental data. 
+
+```{r}
+library(tidyverse)
+library(survival)
+library(cmdstanr)
+library(riekelib)
+
+# see R/simulate_experiment.R to see how the data was generated
+experiment <-
+  read_csv("data/experiment.csv") %>%
+  rename(arm = arm_id,
+         T = observed,
+         C = censored,
+         K = n)
+
+# fit a non-parametric kaplan-meir survival model to individual-level data
+km_fit <- 
+  experiment %>% 
+  uncount(K) %>%
+  mutate(C = 1 - C) %>%
+  survfit(Surv(T, C) ~ strata(arm),
+          data = .) %>%
+  broom::tidy() %>%
+  mutate(strata = if_else(str_detect(strata, "1"), "control", "treatment"),
+         time = time + 1)
+  
+# plot the results!
+km_fit %>%
+  ggplot(aes(x = time,
+             y = estimate,
+             ymin = conf.low,
+             ymax = conf.high)) + 
+  geom_ribbon(aes(fill = strata),
+              alpha = 0.5) +
+  geom_line(aes(color = strata)) +
+  scale_y_percent() + 
+  scale_fill_manual(values = c("orange", "royalblue")) +
+  scale_color_manual(values = c("orange", "royalblue")) +
+  theme_rieke() +
+  theme(legend.position = "none") +
+  labs(title = "**Survival of the Fittest**",
+       subtitle = glue::glue("Proportion of active players *x* days after assignment to **",
+                             color_text("treatment", "royalblue"),
+                             "** or **",
+                             color_text("control", "orange"),
+                             "**"),
+       x = NULL,
+       y = NULL,
+       caption = "Each curve represents a non-parametric Kaplan-Meier estimate")
+```
+
+How might you go about modeling this parametrically?^[In this case, **I've simulated the data (add link)**, but let's pretend we don't have access to the underlying data generating process.] The survival function appears vaguely exponential, but there's also a long tail, so maybe a Weibull distribution is more appropriate? Given the large number of observations (over 750,000 players) and that the survival time/activity time is truncated by day, you know that using a continuous distribution for the likelihood will generate a poor approximation of truncation --- you'll need to deal with discrete time directly.^[See [my previous post](https://www.thedatadiary.net/posts/2023-11-24-churn-modeling/) for an overview of discrete censored regression.]
+
+**Needs work**
+
+## FIX TITLE: survival models and estimands blegh
+
+Given an arm assignment, $a$, the probability of observing a player's final login day, $t$, is given as:
+
+$$
+\begin{align*}
+\Pr(t_i)_a &= 
+  \begin{cases}
+    f(t_i)_a & \text{if }\ c_i = 0 \\
+    S(t_i)_a & \text{if }\ c_i = 1
+  \end{cases}
+\end{align*}
+$$
+
+where $f(t_i)_a$ and $S(t_i)_a$ are the probability density and survival functions^[The survival function is also the compliment of the cumulative distribution function; i.e., $S(t)=\text{CCDF}(t)=1-\text{CDF}(t)$. I'm referring to the CCDF as the survival function here to maintain consistency with the survival analysis literature.] of arm $a$, respectively, and $c_i$ is an indicator for whether the observation is censored or not ($c_i = 1$ indicates censoring). 
+
+The average customer lifetime, $\text{CLT}$, for each arm is the expected value given the probability density function, $f$. We can further define an average treatment effect as the difference the expected customer lifetimes between treatment and control.
+
+$$
+\begin{align*}
+\text{CLT}_a &= \mathbb{E}[f_a] \\
+\text{ATE}_{\text{CLT},a} &= \mathbb{E}[f_a] - \mathbb{E}[f_0] 
+\end{align*}
+$$
+
+**something about DATE**
+
+$$
+\begin{align*}
+\text{DATE}(t_i)_a &= \mathbb{E}[S(t_i)_a] - \mathbb{E}[S(t_i)_0]
+\end{align*}
+$$
+
+Day over day retention function
+
+$$
+\begin{align*}
+r(t_i)_a &= 
+  \begin{cases}
+    1 & \text{if }\ t_i=0 \\
+    \frac{S(t_i)_a}{S(t_i - 1)_a} & \text{if }\ t_i > 0
+  \end{cases}
+\end{align*}
+$$
+
+$n$-step ahead probablity of churn estimate
+
+$$
+\begin{align*}
+C(t,j)_a &= \frac{\int_t^{t+j}f_a}{\int_t^\infty f_a} \\
+&= \frac{S(t)_a - S(t+j)_a}{S(t)_a}
+\end{align*}
+$$
+
+## Exponential
+
+As I mentioned above, a continuous distribution will generate a poor approximation of truncated data given a large sample size. That being said, an exponential survival curve gives a good starting point and will let us validate that the ancillary quantities of interest are being generated correctly.
+
+For the exponential distribution, the probability density and survival functions are:
+
+$$
+\begin{align*}
+f(t_i)_a &= \lambda_a \exp(-\lambda_a\ t_i) \\
+S(t_i)_a &= -\exp(-\lambda_a\ t_i)
+\end{align*}
+$$
+
+"we know this won't work"
+"but it gives a starting point, and lets us sort out some of the things we'll want":
+
+* survival curves
+* average player lifetime (i.e., $\mathbb{E}(\text{Exponential}(\lambda))$)
+* daily average treatment effect
+* daily retention function
+* n-step ahead predictive churn
+
+```{r}
+stan_data <-
+  list(
+    N = nrow(experiment),
+    A = max(experiment$arm),
+    K = experiment$K,
+    T = experiment$T,
+    C = experiment$C,
+    arm = experiment$arm,
+    T_max = 600,
+    J = 14
+  )
+
+exponential_model <-
+  cmdstan_model("stan/exponential.stan")
+
+exponential_fit <-
+  exponential_model$sample(
+    data = stan_data,
+    refresh = 100,
+    iter_warmup = 1000,
+    iter_sampling = 1000,
+    chains = 4,
+    parallel_chains = 4
+  )
+```
+
+## Discrete Generalized Gamma
+
+* builds off previous work
+* oh no! doesn't work!
+* In theory, should work --- the generalized gamma is a flexible distribution
+* The problem is that the integration trick works when there's a measurable difference in probabilities
+* out at the tails of the distribution P(t+1) - P(t) ~= 0
+* stan works on the log scale, and does not like taking the log(0)
+* can't just use the non-discrete version, as we run into issues of losing information without truncation
+* Need a distribution that is naturally discrete
+
+$$
+\begin{align*}
+f(t_i)_a &= S(t_i + 1)_a - S(t_i)_a \\
+S(t_i)_a &= 1 - \gamma\left(\kappa_a \exp \left(\frac{w(t_i)_a}{\sqrt{\kappa_a}}\right),\ \kappa_a\right) \\
+w(t_i)_a &= \frac{\log(t_i) - \mu_a}{\sigma_a} \\
+\end{align*}
+$$
+
+## Geometric
+
+* naturally discrete
+* doesn't work
+* need something more flexible than pure exponential decay
+
+$$
+\begin{align*}
+f(t_i)_a &= \theta_a (1 - \theta_a)^{t_i} \\
+S(t_i)_a &= (1 - \theta_a)^{t_i}
+\end{align*}
+$$
+
+## Beta Geometric
+
+* faber & hardie (2007)
+* demetri pananos
+* the other person who implemented it in stan
+* mixture of geometric distributions where p has a beta prior
+* better, still doesn't work
+* difference between early and late-stage shit
+
+$$
+\begin{align*}
+f(t_i)_a &= \frac{\text{B}(\alpha_a + t_i - 1,\ \beta_a + 1)}{\text{B}(\alpha_a,\ \beta_a)} \\
+S(t_i)_a &= \frac{\text{B}(\alpha_a + t_i,\ \beta_a)}{\text{B}(\alpha_a,\ \beta_a)} 
+\end{align*}
+$$
+
+## Beta Discrete Weibull
+
+* faber & hardie (2020[?])
+* superset of beta geometric
+* similar problems
+* early/late stage shit still crops up
+* plot that shows early/late stage daily retention
+
+$$
+\begin{align*}
+f(t_i)_a &= \text{something idk} \\
+S(t_i)_a &= \text{ccdf}
+\end{align*}
+$$
+
+## Beta Discrete Weibull-Beta Geometric Mixture
+
+* me
+* fuck it we ball
+
+$$
+\begin{align*}
+y_{t_i,a} &= S(t_i)_a \times y_{0,a} \\
+S(t_i)_a &= \prod_{j=0}^{t_i} r(t_i)_a \\
+r(t_i)_a &= \theta_{t_i,a} r_{\text{BdW}}(t_i)_a + (1-\theta_{t_i,a}) r_{\text{BG}}(t_i)_a \\
+r_{\text{BdW}}(t_i)_a &= 
+  \begin{cases} 
+    1 & \text{if}\ \ t_i = 0 \\
+    \frac{S_{\text{BdW}}(t_i)_a}{S_{\text{BdW}}(t_i-1)_a} & \text{if}\ \ t_i > 0
+  \end{cases} \\
+r_{\text{BG}}(t_i)_a &= 
+  \begin{cases} 
+    1 & \text{if}\ \ t_i =0 \\ 
+    \frac{S_{\text{BG}}(t_i)_a}{S_{\text{BG}}(t_i-1)_a} & \text{if}\ \ t_i >0
+  \end{cases} \\
+S_{\text{BdW}}(t_i)_a &= \frac{B(\alpha_{\text{BdW},a} + (t_i+1)^{\kappa_a},\ \beta_{\text{BdW},a})}{B(\alpha_{\text{BdW},a},\ \beta_{\text{BdW},a})} \\
+S_{\text{BG}}(t_i)_a &= \frac{B(\alpha_{\text{BG},a} + t_i,\ \beta_{\text{BG},a})}{B(\alpha_{\text{BG},a},\ \beta_{\text{BG},a})} \\
+h(t) &= 1 - r(t+1) \\
+f(t) &= S(t) \times h(t) \\
+\alpha_{\text{BdW}} &= A(\mu_{\text{BdW}}, \sigma_{\text{BdW}}) \\
+\beta_{\text{BdW}} &= G(\mu_{\text{BdW}}, \sigma_{\text{BdW}}) \\
+\alpha_{\text{BG}} &= A(\mu_{\text{BG}}, \sigma_{\text{BG}}) \\
+\beta_{\text{BG}} &= G(\mu_{\text{BG}}, \sigma_{\text{BG}}) \\
+A(\mu, \sigma) &= \frac{\mu (1-\sigma^2)}{\sigma^2} \\
+G(\mu, \sigma) &= \frac{A(\mu, \sigma)(1-\mu)}{\mu}
+\end{align*}
+$$
+
+# In closing
+
+I don't think you should use this. we're not actually using this because it answers a different question than the one asked. 
+
+This seems like a linear story but ignores the constant headbanging, tweaking sampler settings, refitting the same model repeatedly, weird stan errors that lead to NaN ebmfi, etc. I've presented here like one idea flowed naturally to the next, but that's definitely not the case. 
