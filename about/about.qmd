@@ -22,7 +22,7 @@ My name is Mark Rieke and I am a data scientist at [Game Data Pros, Inc.](https:
 
 I earned my bachelor's degree in Mechanical Engineering from the [University of Tulsa](https://utulsa.edu/) in 2018. I worked with [Siemens Energy](https://www.siemens-energy.com/us/en.html) for three years desiging mobile gas-turbine power plants before more moving into a more data-centric role at [Memorial Hermann Health System](https://www.memorialhermann.org/), where I worked with survey data to measure and improve patient satisfaction. I currently use [R](https://www.r-project.org/), [Stan](https://mc-stan.org/), and [Python](https://www.python.org/) to build systems for running and analyzing experiments on player behavior. In my spare time, I love analyzing public political datasets. You can find my work on [GitHub](https://github.com/markjrieke) and my unedited stream of consciousness on [Twitter](https://twitter.com/markjrieke). 
 
-I live in Houston, TX, with my wife and two obnoxious yet lovable pets.
+I live in Tulsa, OK, with my wife and two obnoxious yet lovable pets.
 
 This blog is built with [Quarto](https://quarto.org/) using minor modifications to the [minty theme](https://bootswatch.com/minty/) and is deployed using [Netlify](https://www.netlify.com/). The content on this site is released under the [MIT License](https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE).
 
