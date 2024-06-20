@@ -1,0 +1,164 @@
+
+```{r setup}
+# import site functions
+files <-
+  gh::gh(
+    "/repos/:owner/:repo/contents/:path",
+    owner = "markjrieke",
+    repo = "2024-potus",
+    path = "R/site",
+    ref = "dev"
+  )
+
+# source files from link
+for (i in 1:length(files)) {
+  source(files[i][[1]]$download_url)
+}
+```
+
+::: {.column-margin}
+```{r margin-text}
+#| results: asis
+margin_text()
+```
+:::
+
+:::: {.columns}
+::: {.column width="80%"}
+```{r headline-text}
+#| results: asis
+headline_text(state = "National")
+```
+:::
+::::
+
+<hr>
+
+:::: {.columns}
+::: {.column width="12%"}
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/dev/img/biden.png){width=120}
+:::
+
+::: {.column width="38%"}
+```{r candidate-summary-biden}
+#| results: asis
+candidate_summary("Joe Biden", col_b)
+```
+
+:::
+
+::: {.column width="12%"}
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/dev/img/trump.png){width=120}
+:::
+
+::: {.column width="38%"}
+```{r candidate-summary-trump}
+#| results: asis
+candidate_summary("Donald Trump", col_t)
+```
+
+:::
+
+::::
+
+<hr>
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-evs}
+#| results: asis
+blurb_evs(header_font)
+```
+
+:::
+::::
+```{r plot-evs}
+plot_evs(col_b, col_t)
+```
+
+<hr>
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-prob}
+#| results: asis
+blurb_prob(header_font)
+```
+
+:::
+::::
+
+```{r plot-prob}
+plot_prob("National", col_b, col_t)
+```
+
+
+```{r footnote-tie}
+#| results: asis
+tie_text()
+```
+
+<hr>
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-map}
+#| results: asis
+blurb_map(header_font)
+```
+
+:::
+::::
+
+```{r plot-map-generate}
+#| output: false
+ec_map <- plot_map()
+```
+
+```{r plot-map-display}
+#| fig-height: 8
+render_interactive_map(ec_map)
+```
+
+
+<hr>
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-vote}
+#| results: asis
+blurb_vote(header_font)
+```
+:::
+::::
+
+```{r plot-vote}
+plot_vote("National", col_b, col_t)
+```
+
+```{r table-polls-text}
+#| results: asis
+polls_table <- table_polls("National", col_b, col_t)
+if (class(polls_table)[1] == "glue") {
+  print(polls_table)
+}
+```
+
+```{r table-polls-table}
+if (class(polls_table)[1] != "glue") {
+  polls_table
+}
+```
+
+
+<hr>
+
+:::: {.columns}
+::: {.column width="30%"}
+```{r footer}
+#| results: asis
+footer()
+```
+
+:::
+::::

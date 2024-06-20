@@ -13,6 +13,8 @@ website:
     background: light
     foreground: dark
     right: 
+      - text: "2024 Presidential Forecast"
+        file: 2024-potus/National.qmd
       - text: "About"
         file: about/about.qmd
       - text: "Projects"
