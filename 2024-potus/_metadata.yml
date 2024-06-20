@@ -11,4 +11,3 @@ execute:
   message: false
   warning: false
   echo: false
-  freeze: false
