@@ -1,0 +1,137 @@
+---
+format: 
+  html:
+    code-fold: true
+    page-layout: custom
+    fig-align: center
+    fig-width: 12
+    fig-height: 4
+execute: 
+  message: false
+  warning: false
+  echo: false
+params:
+  state: "Oklahoma"
+  branch: "dev"
+---
+
+```{r setup}
+# import site functions
+files <-
+  gh::gh(
+    "/repos/:owner/:repo/contents/:path",
+    owner = "markjrieke",
+    repo = "2024-potus",
+    path = "R/site",
+    ref = params$branch
+  )
+
+# source files from link
+for (i in 1:length(files)) {
+  source(files[i][[1]]$download_url)
+}
+```
+
+::::: {.column-body-custom}
+
+:::: {.columns}
+::: {.column width="80%"}
+```{r headline-text}
+#| results: asis
+headline_text(state = params$state, branch = params$branch)
+```
+:::
+::: {.column width="20%"}
+:::
+::::
+
+---
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-prob}
+#| results: asis
+blurb_prob(header_font)
+```
+:::
+::: {.column width="40%"}
+:::
+::::
+
+```{r plot-prob}
+plot_prob(params$state, col_b, col_t, branch = params$branch)
+```
+
+---
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-vote}
+#| results: asis
+blurb_vote(header_font)
+```
+:::
+::: {.column width="40%"}
+:::
+::::
+
+```{r plot-vote}
+plot_vote(params$state, col_b, col_t, branch = params$branch)
+```
+
+```{r table-polls-text}
+#| results: asis
+polls_table <- table_polls(params$state, col_b, col_t, branch = params$branch)
+if (class(polls_table)[1] == "glue") {
+  print(polls_table)
+}
+```
+
+```{r table-polls-table}
+if (class(polls_table)[1] != "glue") {
+  polls_table
+}
+```
+
+---
+
+:::: {.columns}
+::: {.column width="60%"}
+```{r blurb-similarity}
+#| results: asis
+blurb_similarity(header_font)
+```
+:::
+::: {.column width="40%"}
+:::
+::::
+
+```{r plot-similarity}
+#| fig-height: 8
+plot_similarity(params$state, branch = params$branch)
+```
+
+---
+
+:::: {.columns}
+::: {.column width="30%"}
+```{r footer}
+#| results: asis
+footer(branch = params$branch)
+```
+:::
+::::
+
+---
+
+:::::
+
+::::: {.column-margin-custom}
+
+```{r margin-text}
+#| results: asis
+margin_text(branch = params$branch)
+```
+
+:::::
+

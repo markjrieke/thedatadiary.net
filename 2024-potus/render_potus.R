@@ -12,25 +12,14 @@ states <-
   arrange(state) %>%
   pull(state)
 
-# render function --------------------------------------------------------------
+# setup for rendering ----------------------------------------------------------
 
-render_state <- function(branch, state) {
+for (state in states) {
   
-  # state-level files
-  state_file <- glue::glue("2024-potus/{state}.qmd")
-  
-  # create the doc if it doesn't exist already
-  if (!file.exists(state_file)) {
-    file.copy(
-      from = "2024-potus/_state_template.qmd",
-      to = state_file
-    )
-  }
-  
-  # render!
-  quarto::quarto_render(
-    state_file,
-    execute_params = list(branch = branch, state = state)
+  file.copy(
+    from = "2024-potus/_state_template.qmd",
+    to = glue::glue("2024-potus/{state}.qmd"),
+    overwrite = TRUE
   )
   
 }
@@ -44,7 +33,12 @@ quarto::quarto_render(
 )
 
 # render all state pages
-states %>%
-  as.list() %>%
-  walk(~render_state(branch = branch, state = .x))
+for (state in states) {
+  
+  quarto::quarto_render(
+    glue::glue("2024-potus/{state}.qmd"),
+    execute_params = list(branch = branch, state = state)
+  )
+  
+}
 
