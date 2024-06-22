@@ -2,16 +2,16 @@
 format: 
   html:
     code-fold: true
-    grid: 
-      body-width: 1200px
+    page-layout: custom
     fig-align: center
     fig-width: 12
     fig-height: 4
-    mainfont: IBM Plex Sans
 execute: 
   message: false
   warning: false
   echo: false
+params:
+  branch: "dev"
 ---
 
 ```{r setup}
@@ -22,7 +22,7 @@ files <-
     owner = "markjrieke",
     repo = "2024-potus",
     path = "R/site",
-    ref = "dev"
+    ref = params$branch
   )
 
 # source files from link
@@ -31,52 +31,43 @@ for (i in 1:length(files)) {
 }
 ```
 
-::: {.column-margin}
-```{r margin-text}
-#| results: asis
-margin_text()
-```
-:::
+::::: {.column-body-custom}
 
 :::: {.columns}
-::: {.column width="80%"}
+::: {.column width=80%}
 ```{r headline-text}
 #| results: asis
-headline_text(state = "National")
+headline_text(state = "National", branch = params$branch)
 ```
+:::
+::: {.column width=20%}
 :::
 ::::
 
-<hr>
+---
 
 :::: {.columns}
 ::: {.column width="12%"}
 ![](https://raw.githubusercontent.com/markjrieke/2024-potus/dev/img/biden.png){width=120}
 :::
-
 ::: {.column width="38%"}
 ```{r candidate-summary-biden}
 #| results: asis
-candidate_summary("Joe Biden", col_b)
+candidate_summary("Joe Biden", col_b, branch = params$branch)
 ```
-
 :::
-
 ::: {.column width="12%"}
 ![](https://raw.githubusercontent.com/markjrieke/2024-potus/dev/img/trump.png){width=120}
 :::
-
 ::: {.column width="38%"}
 ```{r candidate-summary-trump}
 #| results: asis
-candidate_summary("Donald Trump", col_t)
+candidate_summary("Donald Trump", col_t, branch = params$branch)
 ```
-
 :::
-
 ::::
 
-<hr>
+---
 
 :::: {.columns}
 ::: {.column width="60%"}
@@ -84,14 +75,16 @@ candidate_summary("Donald Trump", col_t)
 #| results: asis
 blurb_evs(header_font)
 ```
-
+:::
+::: {.column width="40%"}
 :::
 ::::
+
 ```{r plot-evs}
-plot_evs(col_b, col_t)
+plot_evs(col_b, col_t, branch = params$branch)
 ```
 
-<hr>
+---
 
 :::: {.columns}
 ::: {.column width="60%"}
@@ -99,21 +92,21 @@ plot_evs(col_b, col_t)
 #| results: asis
 blurb_prob(header_font)
 ```
-
+:::
+::: {.column width="40%"}
 :::
 ::::
 
 ```{r plot-prob}
-plot_prob("National", col_b, col_t)
+plot_prob("National", col_b, col_t, branch = params$branch)
 ```
-
 
 ```{r footnote-tie}
 #| results: asis
-tie_text()
+tie_text(branch = params$branch)
 ```
 
-<hr>
+---
 
 :::: {.columns}
 ::: {.column width="60%"}
@@ -121,13 +114,14 @@ tie_text()
 #| results: asis
 blurb_map(header_font)
 ```
-
+:::
+::: {.column width="40%"}
 :::
 ::::
 
 ```{r plot-map-generate}
 #| output: false
-ec_map <- plot_map()
+ec_map <- plot_map(branch = params$branch)
 ```
 
 ```{r plot-map-display}
@@ -135,8 +129,7 @@ ec_map <- plot_map()
 render_interactive_map(ec_map)
 ```
 
-
-<hr>
+---
 
 :::: {.columns}
 ::: {.column width="60%"}
@@ -145,15 +138,17 @@ render_interactive_map(ec_map)
 blurb_vote(header_font)
 ```
 :::
+::: {.column width="40%"}
+:::
 ::::
 
 ```{r plot-vote}
-plot_vote("National", col_b, col_t)
+plot_vote("National", col_b, col_t, branch = params$branch)
 ```
 
 ```{r table-polls-text}
 #| results: asis
-polls_table <- table_polls("National", col_b, col_t)
+polls_table <- table_polls("National", col_b, col_t, branch = params$branch)
 if (class(polls_table)[1] == "glue") {
   print(polls_table)
 }
@@ -165,15 +160,28 @@ if (class(polls_table)[1] != "glue") {
 }
 ```
 
-
-<hr>
+---
 
 :::: {.columns}
 ::: {.column width="30%"}
 ```{r footer}
 #| results: asis
-footer()
+footer(branch = params$branch)
 ```
-
+:::
+::: {.column width="70%"}
 :::
 ::::
+
+---
+
+:::::
+
+::::: {.column-margin-custom}
+
+```{r margin-text}
+#| results: asis
+margin_text(branch = params$branch)
+```
+
+:::::
