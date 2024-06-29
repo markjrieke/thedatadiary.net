@@ -1,0 +1,30 @@
+---
+title: "No, Biden shouldn't be replaced as the Democratic nominee"
+date: '2023-11-24'
+categories: [stan, survival]
+description: "If you want to see a Democrat in the white house next year, Biden is your best bet"
+image: header.png
+filters:
+  - add-code-files
+---
+
+Things are looking a bit bleak for Biden's re-election at the moment. As of this writing, the [forecast](https://projects.fivethirtyeight.com/2024-election-forecast/) most bullish on Biden, FiveThirtyEight, only gives him a 51% chance of remaining in the white house. Other forecasters, like the [Economist](https://www.economist.com/interactive/us-2024-election/prediction-model/president/), [Jack Khersting](https://projects.jhkforecasts.com/2024/president/#standard), [Nate Silver](https://www.natesilver.net/p/the-presidential-election-isnt-a), and [even me](https://github.com/markjrieke/2024-potus),^[I plan on releasing publicly next week!] are more bearish, hovering around a 30% chance of re-election. In the aftermath of his [poor showing at the first presidential debate](https://www.cnn.com/2024/06/28/politics/biden-trump-presidential-debate-analysis/index.html) with Trump, there has been an outcry online wondering if the Democrats would be better served by Biden stepping down. Notably, the [New York Times](https://www.nytimes.com/2024/06/28/opinion/biden-election-debate-trump.html) and [Nate Silver](https://www.natesilver.net/p/joe-biden-should-drop-out) have suggested that a new nominee take his place in order to improve the chances of a Democrat occupying the white house next year. 
+
+The arguments for removing Biden as the nominee in the wake of the debate, however, fail to support the suggestion with any electoral analysis beyond "Biden's age is a problem for voters." I've been [working on a presidential forecast](https://github.com/markjrieke/2024-potus) for over a little over a year now, so I have a unique opportunity to fill this analysis gap. 
+
+Per my model, which, in short,^[Upon launch, I'll share the full methodology in detail.] mixes polls with economic data, approval ratings, and historical forecasts, Biden has about a **24% chance of winning.** As an incumbent running for re-election, *this is not great.* Replacing him with a (hopefully) stronger alternative sounds like an appealing proposition to Democrats in theory. In reality, however, Biden's hypothetical replacement **only has a 7% chance of defeating Trump.**
+
+![](electoral_college.png)
+
+This is largely due to the fact that Biden is *the* incumbent president and incumbency is still worth something, electorally.^[Trump's loss as an incumbent was a rare occurrence in the modern election era!] Specifically, incumbency it's worth about **2.5%** in terms of the two-party voteshare. In many states, this doesn't change the expected outcome. Biden losing by 40% in Oklahoma is not meaningfully different than another Democrat losing by 42%. In tightly contested states, however, a 2.5% change in expected voteshare has a massive impact on the probability of winning.
+
+![](probs.png)
+
+There are sound reasons to believe that Biden should retire --- he is *very old* and has a *very high-stress, high impact job.* But the belief that Biden should retire to improve the chance of a Democratic win in November isn't supported by this analysis. Biden's age is a [huge concern for voters](https://apnews.com/article/biden-age-poll-trump-2024-620e0a5cfa0039a6448f607c17c7f23e) and an electoral liability contributing to his grim chances, but the outlook for an as-of-yet-named hypothetical replacement candidate is even worse.
+
+Of course, this analysis hinges on this model being a reasonable one. I think it is, but am open to critiques or alternatives --- you can view the source for this page to explore for yourself. The important thing is that a model provides a framework for evaluating the world in a principled manner, even if the result is counter-intuitive. In Nate Silver's [own words](https://www.natesilver.net/i/145982342/the-purpose-of-a-model-is-to-discipline-your-thinking):
+
+>But what a model ideally provides you with is a structured way of thinking through a challenging problem. Because our intuitions, even if they’re right, often lack any statistical precision.
+>
+> --Nate Silver, in *[The presidential election isn't a tossup](https://www.natesilver.net/p/the-presidential-election-isnt-a)*
+
