@@ -1,6 +1,6 @@
 ---
 title: "No, Biden shouldn't be replaced as the Democratic nominee"
-date: '2023-11-24'
+date: '2024-06-28'
 categories: [stan, survival]
 description: "If you want to see a Democrat in the white house next year, Biden is your best bet"
 image: electoral_college.png
