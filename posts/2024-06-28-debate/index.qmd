@@ -1,7 +1,7 @@
 ---
 title: "No, Biden shouldn't be replaced as the Democratic nominee"
 date: '2024-06-28'
-categories: [stan, survival]
+categories: [stan, politics]
 description: "If you want to see a Democrat in the white house next year, Biden is your best bet"
 image: electoral_college.png
 filters:
@@ -22,7 +22,7 @@ This is largely due to the fact that Biden is *the* incumbent president and incu
 
 There are sound reasons to believe that Biden should retire --- he is *very old* and has a *very high-stress, high impact job.* But the belief that Biden should retire to improve the chance of a Democratic win in November isn't supported by this analysis. Biden's age is a [huge concern for voters](https://apnews.com/article/biden-age-poll-trump-2024-620e0a5cfa0039a6448f607c17c7f23e) and an electoral liability contributing to his grim chances, but the outlook for an as-of-yet-named hypothetical replacement candidate is even worse.
 
-Of course, this analysis hinges on this model being a reasonable one. I think it is, but am open to critiques or alternatives --- you can view the source for this page to explore for yourself. The important thing is that a model provides a framework for evaluating the world in a principled manner, even if the result is counter-intuitive. In Nate Silver's [own words](https://www.natesilver.net/i/145982342/the-purpose-of-a-model-is-to-discipline-your-thinking):
+Of course, this analysis hinges on this model being a reasonable one. I think it is, but am open to critiques or alternatives --- you can view the [source for this page](https://github.com/markjrieke/thedatadiary.net/tree/main/posts/2024-06-28-debate) to explore for yourself. The important thing is that a model provides a framework for evaluating the world in a principled manner, even if the result is counter-intuitive. In Nate Silver's [own words](https://www.natesilver.net/i/145982342/the-purpose-of-a-model-is-to-discipline-your-thinking):
 
 >But what a model ideally provides you with is a structured way of thinking through a challenging problem. Because our intuitions, even if they’re right, often lack any statistical precision.
 >
