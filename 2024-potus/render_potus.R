@@ -4,7 +4,7 @@
 library(tidyverse)
 
 # set branch (dev or main)
-branch <- "dev"
+branch <- "main"
 
 # import list of states to render
 states <- 
