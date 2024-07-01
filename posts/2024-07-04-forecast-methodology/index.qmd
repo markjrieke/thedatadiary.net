@@ -1,0 +1,586 @@
+---
+title: "A forecast of the 2024 presidential election"
+date: '2024-07-04'
+categories: [stan, politics]
+description: "The methodology behind the model"
+image: header.png
+execute: 
+  echo: false
+filters:
+  - add-code-files
+---
+
+```{r}
+library(tidyverse)
+library(riekelib)
+library(cmdstanr)
+library(ggdist)
+
+col_dd <- "#5A9282"
+
+# i'm being 'lazy' and just repeating myself in code rather than writing a theme function
+# roast me in the fork of this repository, see if i care
+```
+
+
+### Introduction
+
+To celebrate July 4th, I'm releasing a forecast of the 2024 presidential election, a rematch between Joe Biden and Donald Trump. Each day, the forecast simulates thousands of plausible election results in each state, the nation, and the electoral college. The output can be fully explored at the forecast's homepage [here](../../2024-potus/National.qmd). 
+
+Much like other outlets, such as [FiveThirtyEight](https://projects.fivethirtyeight.com/2024-election-forecast/) or [The Economist](https://www.economist.com/interactive/us-2024-election/prediction-model/president/), the forecast is the output of a statistical model that methodologically updates each candidate's chances of winning as polls are conducted throughout the election cycle. Uniquely, *all* portions of the model follow the framework of [Bayesian statistics](https://en.wikipedia.org/wiki/Bayesian_statistics), allowing for the mixture of prior beliefs with observed data while propagating uncertainty from each stage of the model to the next. Further, the model and surrounding data infrastructure are fully open source, from tip to tail. Everything from the [data gathering pipeline](https://github.com/markjrieke/2024-potus/tree/main/R/model/functions), to the [model code](https://github.com/markjrieke/2024-potus/tree/main/stan), to [support for generating graphics](https://github.com/markjrieke/2024-potus/tree/main/R/site) found on the site can be found in the project's [repository on GitHub](https://github.com/markjrieke/2024-potus/tree/main). 
+
+I encourage readers to explore the full codebase at their leisure, but for those who prefer plain-text language to thousands of lines of [R](https://www.r-project.org/) and [Stan](https://mc-stan.org/) code, a summary of the how the model generates the forecast follows below.
+
+### The past and future of presidential approval
+
+Rather than beginning with polls or other direct predictors of electoral success, the first step the model takes is to estimate incumbent presidential net approval on election day. Incumbent approval, in combination with other indicators like economic growth and partisan lean, can be used to generate a reasonable estimate of the outcome in the absence of polls. As such, the model first looks to estimate the net approval of presidents past, then applies the information it gleans towards forecasting Joe Biden's net approval come election day.
+
+In the past, presidential approval was polled less frequently than it is today. Net approval data from [FiveThirtyEight's historical averages](https://projects.fivethirtyeight.com/biden-approval-rating/) shows, for example, days or even weeks-long stretches with no updates for mid-century presidents. To address this, a [dynamic linear model](https://mc-stan.org/docs/functions-reference/distributions_over_unbounded_vectors.html#gaussian-dynamic-linear-models) is used to fill in the gaps. This type of model ebbs and flows to match changing approval over time while allowing uncertainty to grow during times of little-to-no polling. When there haven't been any recent polls, the estimates for election-day approval are highly uncertain; when there is a flood of polling data, the estimates are highly precise.
+
+```{r}
+approval_historical <- 
+  read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/out/approval-prior/e_day_approval_historical.csv")
+
+approval_historical_plot <- 
+  approval_historical %>%
+  mutate(net = A_mu,
+         .width = 0.95,
+         .lower = qnorm(0.025, A_mu, A_sigma),
+         .upper = qnorm(0.975, A_mu, A_sigma)) %>%
+  bind_rows(approval_historical %>%
+              mutate(net = A_mu,
+                     .width = 0.66,
+                     .lower = qnorm(0.17, A_mu, A_sigma),
+                     .upper = qnorm(0.83, A_mu, A_sigma))) %>%
+  ggplot(aes(x = year,
+             y = net,
+             ymin = .lower,
+             ymax = .upper)) +
+  geom_pointinterval(color = col_dd)
+
+# wonkiness to format the plot correctly
+plot_limits <- ggplot_build(approval_historical_plot)$layout$panel_params[[1]]
+y_limits <- plot_limits$y.range
+x_limits_og <- plot_limits$x.range
+
+x_range_og <- x_limits_og[2] - x_limits_og[1]
+x_expand_lower <- as.numeric(mdy("5/1/24") - mdy("4/20/24"))/as.numeric(mdy("11/5/24") - mdy("5/1/24"))
+
+x_limits <- 
+  c(
+    x_limits_og[1] - x_expand_lower * x_range_og,
+    x_limits_og[2]
+  )
+
+# set breaks & labels explicitly so that new ones aren't introduced
+y_breaks <- layer_scales(approval_historical_plot)$y$break_positions()
+y_labels <- scales::label_percent(accuracy = 1)(y_breaks)
+
+x_breaks <- seq(from = 1956, to = 2020, by = 16)
+x_labels <- x_breaks
+
+approval_historical_plot + 
+  scale_x_continuous(breaks = x_breaks,
+                     labels = x_labels) + 
+  scale_y_continuous(breaks = y_breaks,
+                     labels = y_labels,
+                     position = "right") + 
+  geom_hline(yintercept = y_limits[1],
+             color = "#363a3c") + 
+  ggh4x::coord_axes_inside(labels_inside = TRUE,
+                           yintercept = y_limits[1]) + 
+  theme_rieke() + 
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_line(linewidth = 0.4),
+        axis.ticks.x = element_line(),
+        axis.text.y = ggtext::element_markdown(vjust = -0.5,
+                                               hjust = 2,
+                                               halign = 1)) +
+  expand_limits(x = x_limits) + 
+  labs(title = "**Predictions in retrograde**",
+       subtitle = "Estimated incumbent net approval on election day for elections up to 2020",
+       x = NULL,
+       y = NULL,
+       caption = paste("Pointrange indicate 66/95% credible",
+                       "intervals based on 10,000 MCMC samples",
+                       sep = "<br>"))
+```
+
+```{r}
+approval_current <- 
+  read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/out/approval/e_day_approval_current.csv")
+
+approval_current <- 
+  approval_current %>%
+  select(run_date,
+         mean, 
+         sd) %>%
+  mutate(q025 = qnorm(0.025, mean, sd),
+         q975 = qnorm(0.975, mean, sd),
+         q170 = qnorm(0.170, mean, sd),
+         q830 = qnorm(0.830, mean, sd))
+
+approval_forecast <- 
+  approval_current %>%
+  filter(run_date == max(run_date)) %>%
+  select(q025, q975) %>%
+  pivot_longer(everything(),
+               names_to = "quantile",
+               values_to = "net") %>%
+  arrange(quantile) %>%
+  pull(net) %>%
+  scales::label_percent(accuracy = 1)(.)
+```
+
+A similar method is used to forecast Mr. Biden's net approval rating on election day. A dynamic linear model, having learned how net approval tends to change over the course of an election cycle, fills in the gap between Biden's net approval today and election day, while accounting for the uncertainty inherent in the four month gap between now and then. At the time of this writing, Biden's net approval is expected to land somewhere between `r approval_forecast[1]` and `r approval_forecast[2]` on election day. As we inch closer to election day itself, the uncertainty around the forecasted estimate will decrease.
+
+```{r}
+approval_current_plot <- 
+  approval_current %>%
+  ggplot(aes(x = run_date,
+             y = mean)) + 
+  geom_ribbon(aes(ymin = q025,
+                  ymax = q975),
+              alpha = 0.125,
+              fill = col_dd) +
+  geom_ribbon(aes(ymin = q170,
+                  ymax = q830),
+              alpha = 0.125,
+              fill = col_dd) +
+  geom_line(linewidth = 2.5,
+            color = "white") +
+  geom_line(linewidth = 1.2,
+            color = col_dd) 
+
+# wonkiness to format the plot correctly
+plot_limits <- ggplot_build(approval_current_plot)$layout$panel_params[[1]]
+y_limits <- plot_limits$y.range
+x_limits_og <- plot_limits$x.range
+
+x_range_og <- x_limits_og[2] - x_limits_og[1]
+x_expand_lower <- as.numeric(mdy("5/1/24") - mdy("4/20/24"))/as.numeric(mdy("11/5/24") - mdy("5/1/24"))
+
+breaks <- seq.Date(from = mdy("5/1/24"), to = mdy("7/1/24"), by = "month")
+labels <- scales::label_date("%B")(breaks)
+
+x_limits <- 
+  c(
+    x_limits_og[1] - x_expand_lower * x_range_og,
+    x_limits_og[2]
+  )
+
+approval_current_plot +
+  scale_x_date(breaks = breaks,
+               labels = labels) + 
+  scale_y_percent(position = "right") + 
+  geom_hline(yintercept = y_limits[1],
+             color = "#363a3c") + 
+  ggh4x::coord_axes_inside(labels_inside = TRUE,
+                           yintercept = y_limits[1]) + 
+  theme_rieke() + 
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_line(linewidth = 0.4),
+        axis.ticks.x = element_line(),
+        axis.text.y = ggtext::element_markdown(vjust = -0.5,
+                                               hjust = 2,
+                                               halign = 1)) +
+  expand_limits(x = as.Date(x_limits)) + 
+  labs(title = "**Forecasting a wide net**",
+       subtitle = "Biden's forecasted election day net approval",
+       x = NULL,
+       y = NULL,
+       caption = paste("Shaded areas indicate 66/95% credible",
+                       "intervals based on 10,000 MCMC samples",
+                       sep = "<br>"))
+```
+
+### Time for change
+
+```{r}
+#| output: false
+
+# utils
+fetch_cpi <- function() {
+
+  current_date <- Sys.Date()
+  last_month <- floor_date(floor_date(current_date, "month") - 1, "month")
+
+  out <-
+    read_csv(
+      paste0(
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1317&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=CPIAUCSL&scale=left&cosd=1947-01-01&coed=",
+        last_month,
+        "&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Monthly&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=",
+        current_date,
+        "&revision_date=",
+        current_date,
+        "&nd=1947-01-01"
+      )
+    )
+
+  return(out)
+
+}
+
+fetch_gdp <- function() {
+
+  current_date <- Sys.Date()
+  last_quarter <- mdy("4/1/24")
+
+  out <-
+    read_csv(
+      paste0(
+        "https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23e1e9f0&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1317&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=GDP&scale=left&cosd=1947-01-01&coed=",
+        last_quarter,
+        "&line_color=%234572a7&link_values=false&line_style=solid&mark_type=none&mw=3&lw=2&ost=-99999&oet=99999&mma=0&fml=a&fq=Quarterly&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=",
+        current_date,
+        "&revision_date=",
+        current_date,
+        "&nd=1947-01-01"
+      )
+    )
+
+  return(out)
+
+}
+
+# import economic data
+gdp <- fetch_gdp()
+cpi <- fetch_cpi()
+
+# estimate inflation relative to most recent cpi release
+max_cpi <-
+  cpi %>%
+  filter(DATE == max(DATE)) %>%
+  pull(CPIAUCSL)
+
+cpi <-
+  cpi %>%
+  rename_with(str_to_lower) %>%
+  rename(cpi = cpiaucsl) %>%
+  mutate(inflation = max_cpi/cpi)
+
+# adjust gdp for inflation
+real_gdp <-
+  gdp %>%
+  rename_with(str_to_lower) %>%
+  left_join(cpi) %>%
+  select(-cpi) %>%
+  mutate(real_gdp = gdp * inflation) %>%
+  select(date, real_gdp)
+
+# append national data with 2nd quarter real annualized gdp growth
+prior_model_data <-
+  read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/data/static/abramowitz.csv") %>%
+  mutate(begin_quarter = mdy(paste0("4/1/", year - 1)),
+         end_quarter = mdy(paste0("4/1/", year))) %>%
+  left_join(real_gdp, by = c("begin_quarter" = "date")) %>%
+  rename(begin_gdp = real_gdp) %>%
+  left_join(real_gdp, by = c("end_quarter" = "date")) %>%
+  rename(end_gdp = real_gdp) %>%
+  mutate(real_gdp_growth = end_gdp/begin_gdp - 1) %>%
+  select(-ends_with("quarter"),
+         -ends_with("gdp"))
+
+# import historical election day approval estimates
+e_day_approval_historical <-
+  read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/out/approval-prior/e_day_approval_historical.csv")
+
+# prep for passing to stan
+prior_model_data <-
+  prior_model_data %>%
+  left_join(e_day_approval_historical) %>%
+  transmute(V = if_else(inc_party == "dem", dem, rep),
+            V = V/(dem + rep),
+            G = real_gdp_growth,
+            I = inc_running,
+            A_mu,
+            A_sigma)
+
+# import current approval forecast
+e_day_approval_current <-
+  read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/out/approval/e_day_approval_current.csv") %>%
+  filter(run_date == max(run_date))
+
+# get most recent gdp growth
+G_new <-
+  real_gdp %>%
+  filter(date == max(date)) %>%
+  mutate(begin_quarter = date - years(1)) %>%
+  rename(end_quarter = date,
+         end_gdp = real_gdp) %>%
+  left_join(real_gdp, by = c("begin_quarter" = "date")) %>%
+  rename(begin_gdp = real_gdp) %>%
+  mutate(G_new = end_gdp/begin_gdp - 1) %>%
+  pull(G_new)
+
+# import pvi prior
+pvi_summary <-
+  read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/out/pvi/pvi_summary.csv")
+
+# compile model to exe
+prior_model <-
+  cmdstan_model(
+    "priors_1.0.stan",
+  )
+
+# pass to stan
+stan_data <-
+  list(
+    N = nrow(prior_model_data),
+    V = prior_model_data$V,
+    G = prior_model_data$G,
+    I = prior_model_data$I,
+    A_mu = prior_model_data$A_mu,
+    A_sigma = prior_model_data$A_sigma,
+    alpha_mu = 0,
+    alpha_sigma = 1,
+    beta_a_mu = 0,
+    beta_a_sigma = 1,
+    beta_g_mu = 0,
+    beta_g_sigma = 1,
+    beta_i_mu = 0,
+    beta_i_sigma = 1,
+    sigma_sigma = 1,
+    A_new_mu = e_day_approval_current$mean,
+    A_new_sigma = e_day_approval_current$sd,
+    G_new = G_new,
+    I_new = 1,
+    S = nrow(pvi_summary),
+    e_day_mu = pvi_summary$pvi_mu,
+    e_day_sigma = pvi_summary$pvi_sd
+  )
+
+# fit !
+prior_fit <-
+  prior_model$sample(
+    data = stan_data,
+    seed = 2024,
+    iter_warmup = 1250,
+    iter_sampling = 1250,
+    chains = 8,
+    parallel_chains = 8
+  )
+
+# historical summary
+y_rep <- 
+  prior_fit$summary("y_rep")
+
+time_for_change <- 
+  y_rep %>%
+  bind_cols(read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/data/static/abramowitz.csv")) %>%
+  mutate(dem2pv = dem/(dem + rep),
+         inc2pv = if_else(inc_party == "dem", dem2pv, 1 - dem2pv)) %>%
+  select(year,
+         inc2pv,
+         mean,
+         sd)
+
+time_for_change <- 
+  bind_rows(time_for_change %>%
+            mutate(.width = 0.95,
+                   .lower = qnorm(0.025, mean, sd),
+                   .upper = qnorm(0.975, mean, sd)),
+          time_for_change %>%
+            mutate(.width = 0.66,
+                   .lower = qnorm(0.170, mean, sd),
+                   .upper = qnorm(0.830, mean, sd)))
+
+# national vote prior
+theta_nat <-
+  prior_fit$summary("theta_nat")
+
+biden_nat <- qnorm(c(0.025, 0.975), theta_nat$mean, theta_nat$sd)
+trump_nat <- 1 - biden_nat
+
+biden_nat <- scales::label_percent(accuracy = 0.1)(biden_nat)
+trump_nat <- scales::label_percent(accuracy = 0.1)(trump_nat)
+```
+
+After having estimated Biden's net approval on election day, the model is next tasked with using this information to estimate the results of the national popular vote. To do so, it employs a variant of a model first devised in 1988 by Dr. Alan Abramowitz, a political scientist and professor at Emory University, dubbed the *[Time for Change](https://www.washingtonpost.com/blogs/ezra-klein/files/2012/08/abramowitz.pdf)* model. The Time for Change model predicts the incumbent party's voteshare (excluding third parties) using only three variables: economic growth measured in the year-over-year change in real GDP, incumbent approval, and whether (or not) the incumbent president is running. 
+
+There have only been 19 presidential elections in the modern electoral era.^[1948 is widely used as the starting point of the modern electoral era.] With a small selection of training data, a model should necessarily produce uncertain, yet reasonable, predictions.^[Be wary of models that claim to produce highly precise estimates with little data --- they are likely [overfit](https://en.wikipedia.org/wiki/Overfitting) and unable to predict outside of the training set.] This is certainly the case with the Time for Change model. Applied to the 2024 election, the Time for Change model expects Biden, the incumbent, to win between `r biden_nat[1]` and `r biden_nat[2]` of the national popular vote (conversely, it expects Trump to win between `r trump_nat[2]` and `r trump_nat[1]` of the national popular vote).
+
+```{r}
+time_for_change_plot <- 
+  time_for_change %>%
+  ggplot(aes(x = inc2pv,
+             y = mean,
+             ymin = .lower,
+             ymax = .upper)) + 
+  geom_abline(linetype = "dashed",
+              color = "#363a3c") + 
+  geom_pointinterval(color = col_dd,
+                     alpha = 0.75)
+
+# wonkiness to format the plot correctly
+plot_limits <- ggplot_build(time_for_change_plot)$layout$panel_params[[1]]
+y_limits <- plot_limits$y.range
+x_limits_og <- plot_limits$x.range
+
+x_range_og <- x_limits_og[2] - x_limits_og[1]
+x_expand_lower <- as.numeric(mdy("5/1/24") - mdy("4/20/24"))/as.numeric(mdy("11/5/24") - mdy("5/1/24"))
+
+x_limits <- 
+  c(
+    x_limits_og[1] - x_expand_lower * x_range_og,
+    x_limits_og[2]
+  )
+
+# set breaks & labels explicitly so that new ones aren't introduced
+y_breaks <- layer_scales(time_for_change_plot)$y$break_positions()
+y_labels <- scales::label_percent(accuracy = 1)(y_breaks)
+
+x_breaks <- layer_scales(time_for_change_plot)$x$break_positions()
+x_labels <- scales::label_percent(accuracy = 1)(x_breaks)
+
+time_for_change_plot + 
+  scale_x_continuous(breaks = x_breaks,
+                     labels = x_labels) +
+  scale_y_continuous(breaks = y_breaks,
+                     labels = y_labels,
+                     position = "right")  +
+  geom_hline(yintercept = y_limits[1],
+             color = "#363a3c") +
+  ggh4x::coord_axes_inside(labels_inside = TRUE,
+                           yintercept = y_limits[1]) +
+  theme_rieke() +
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_line(linewidth = 0.4),
+        axis.ticks.x = element_line(),
+        axis.text.y = ggtext::element_markdown(vjust = -0.5,
+                                               hjust = 2,
+                                               halign = 1)) +
+  expand_limits(x = x_limits) +
+  labs(title = "**The timeless *Time for Change***",
+       subtitle = "Incumbent party's predicted national popular voteshare in elections up to 2020",
+       x = "Actual voteshare",
+       y = "Modeled voteshare",
+       caption = paste("Pointrange indicate 66/95% credible",
+                       "intervals based on 10,000 MCMC samples",
+                       sep = "<br>"))
+```
+
+
+### Partisan lean cuisine
+
+As Al Gore and Hillary Clinton know all too well, winning the popular vote is not enough to become America's next president. Candidates must win at least 270 of the electoral college's 538 votes, which are awarded by winning in each state.^[As a further wrinkle, electoral votes are awarded by both state *and* congressional district in both Nebraska and Maine.] To have a reasonable expectation of who the next president will be, reasonable estimates of the national vote are not enough --- you need state-by-state projections.
+
+To generate these state-by-state projections, the model needs to estimate the partisan lean of each state. Partisan lean is simply how much more democratic or republican a state is relative to the nation as a whole. Having a partisan lean towards one party, however, doesn't necessarily mean the state votes for that party. For example, in 2020, Joe Biden won 52.2% of the national two-party voteshare but only won 50.1% of the two-party voteshare in Georgia. The state voted 2.1% to the right of the nation, yet still awarded its 16 electoral college votes to Biden. Had Biden dropped in the national polls to only 51%, Georgia likely would have been won by Trump.
+
+The model fits [Cook's Partisan Voter Index (PVI)](https://www.cookpolitical.com/cook-pvi), an approximation of partisan lean based on how each state voted in the previous two election cycles, to the observed partisan lean in each state for elections up to 2020. It then uses 2016 and 2020 results to estimate what each state's partisan lean will be in 2024. Simply adding the expected partisan lean in each state to the expected national popular vote yields reasonable state-by-state expectations. Notably, this is done *prior* to having observed any polling data, while maintaining and combining the uncertainty inherent to both estimations.
+
+```{r}
+theta_state <-
+  prior_fit$summary("theta_state")
+
+theta_state <- 
+  theta_state %>%
+  bind_cols(pvi_summary) %>%
+  select(state,
+         mean,
+         sd)
+
+theta_state_plot <- 
+  bind_rows(theta_state %>%
+              mutate(.width = 0.95,
+                     .lower = qnorm(0.025, mean, sd),
+                     .upper = qnorm(0.975, mean, sd)),
+            theta_state %>%
+              mutate(.width = 0.66,
+                     .lower = qnorm(0.170, mean, sd),
+                     .upper = qnorm(0.830, mean, sd))) %>%
+  nest(data = -c(state, mean)) %>%
+  mutate(heat = 1 - 2 * abs(0.5 - mean)) %>%
+  arrange(desc(heat)) %>%
+  slice_head(n = 10) %>%
+  unnest(data) %>%
+  mutate(state = fct_reorder(state, mean)) %>%
+  ggplot(aes(y = state,
+             x = mean,
+             xmin = .lower,
+             xmax = .upper)) + 
+  geom_vline(xintercept = 0.5,
+             linetype = "dashed",
+             color = "#363a3c") +
+  geom_pointinterval(color = col_dd)
+  
+# wonkiness to format the plot correctly
+plot_limits <- ggplot_build(theta_state_plot)$layout$panel_params[[1]]
+y_limits <- plot_limits$y.range
+x_limits_og <- plot_limits$x.range
+
+x_range_og <- x_limits_og[2] - x_limits_og[1]
+x_expand_lower <- as.numeric(mdy("5/1/24") - mdy("4/20/24"))/as.numeric(mdy("11/5/24") - mdy("5/1/24"))
+
+x_limits <- 
+  c(
+    x_limits_og[1] - x_expand_lower * x_range_og,
+    x_limits_og[2]
+  )
+
+# set breaks & labels explicitly so that new ones aren't introduced
+x_breaks <- layer_scales(theta_state_plot)$x$break_positions()
+x_labels <- scales::label_percent(accuracy = 1)(x_breaks)
+
+theta_state_plot + 
+  scale_y_discrete(position = "right") + 
+  scale_x_continuous(breaks = x_breaks,
+                     labels = x_labels) +
+  geom_hline(yintercept = y_limits[1],
+             color = "#363a3c") +
+  ggh4x::coord_axes_inside(labels_inside = TRUE,
+                           yintercept = y_limits[1]) +
+  theme_rieke() + 
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.y = element_line(linewidth = 0.4),
+        axis.ticks.x = element_line(),
+        axis.text.y = ggtext::element_markdown(vjust = -0.5,
+                                               hjust = 2,
+                                               halign = 1)) +
+  expand_limits(x = x_limits,
+                y = c(0, y_limits[2])) +
+  labs(title = "**The pre-polling playing field**",
+       subtitle = "Expected democratic voteshare prior to observing polls in select states",
+       x = NULL,
+       y = NULL,
+       caption = paste("Pointrange indicate 66/95% credible",
+                       "intervals based on 10,000 MCMC samples",
+                       sep = "<br>"))
+```
+
+### Poll vaulting to election day
+
+With reasonable prior expectations for the voteshare in each state, the model can now start to incorporate polling data collected throughout the campaign. Not all polls, however, are created equal. As such, polls must meet a minimum set of criteria to be included in the dataset influencing the model:
+
+**The poll must include both Joe Biden and Donald Trump as named candidates.** Biden and Trump are the nominees for the two major parties and are therefore the only candidates with non-zero chances of winning the presidency.
+
+**The poll must not include any hypothetical candidates, nor any candidates who have dropped out of the race.** Michelle Obama, for example, is not running for president, yet sometimes appears as an option on presidential polls. This does not represent an actual choice voters will be presented with come November, so a poll that includes her should be excluded. For similar reasons, polls that include candidates like Ron DeSantis or Dean Phillips, who have both dropped out of the race, are excluded.^[A full list of allowed candidates can be found [here](https://github.com/markjrieke/2024-potus/blob/main/data/static/allowed_candidates.csv).]
+
+**Polls conducted by pollsters with a track record of shoddy methodology or a history of peddling conspiracy theories are excluded outright.** This is not meant to exclude good faith pollsters who tend to produce results favoring one party or the other. Polling is an imperfect science, and pollsters with good methodology can still produce biased results. Pollsters who are unable or unwilling to engage in good-faith science, however, cannot produce modelable results, and are therefore removed.^[A full list of banned pollsters can be found [here](https://github.com/markjrieke/2024-potus/blob/main/data/static/banned_pollsters.csv).]
+
+With eligible polls in hand, the model attempts to estimate the underlying support for each candidate in each state. Polls are assumed to be a combination of the true underlying voter preference and structural biases associated with the poll itself. For example, polls conducted via landline telephone vs. online panels reach very different types of people. By modeling the bias introduced by outreach mode or other poll characteristics,^[Other poll characteristics modeled include: the pollster conducting the poll, the target population, and whether or not the poll was sponsored by a particular party] the model can, ideally, subtract out the bias, leaving only the true underlying voter preference.
+
+Similar to estimating presidential approval, a dynamic linear model is used to fill in the gaps on days where no polls are conducted. Between now and election day, the modeled trendline will tend to revert back to the prior expectations for the voteshare in each state. As we get closer to election day, there will be less time for this reversion to occur, and the forecast's election day estimates will more closely match the polling data. 
+
+Even in states with little or no polling, the model is still able to detect shifts in public opinion, for several reasons. Firstly, the national popular vote is an aggregation of state-level voteshares, so shifts in candidate support nationally are propagated down through the states. Secondly, and more interestingly, state voteshares are modeled as correlated, allowing for shifts in one state to influence similar states. For example, Michigan and Wisconsin are demographically similar. If polls conducted in Wisconsin detect a 1% change, we can likely assume a similar roughly 1% change has occurred in Michigan, even if there have been no polls in Michigan to confirm. Conversely, states that are incredibly different, like Hawaii and West Virginia, have little effect on one another.
+
+Once the model has estimated the election-day voteshare in each state, it simulates 10,000 plausible outcomes, from landslide victories to tightly contested races. In each simulation, the model adds up the total number of states and electoral votes won by each candidate. Each candidate's probability of winning either the electoral college or a particular state is simply the proportion of simulations in which they emerge victorious.^[With the caveat that this model makes no attempts to model extremely unlikely events, like faithless electors or a successful January 6th-style coup.]
+
+### Closing time
+
+This model, for all the attempts to be as data-driven as possible, necessarily involves many individual choices which reflect the modeling preferences of the analyst,^[Me, in this case.] as all statistical models inherently do. This is not to say that the model is reflective of my personal political leanings. Rather, the specific choices I've made, like the variables to include in the state similarity calculation or the criteria used to filter polls, are different from other choices I could have made during the model's construction. These alternative choices would necessarily have produced different, albeit, likely similar, results.
+
+Other forecasters likely made different, reasonable, choices in the process of developing their models. Forecasting the outcome of an event months ahead of time is a difficult business, and there's wisdom to be had in the crowd, so I encourage readers to view the output of this model in concert with other forecasts.^[A list of forecasters I trust can be found [here](https://github.com/markjrieke/2024-potus/tree/main?tab=readme-ov-file#other-forecasts).]
+
+The choices made in the construction of this model and the system around it were driven by a few fundamental ideals: the model should be built with transparent, open source software, produce accurate results, and honestly account for uncertainty throughout the modeling process. I believe these to be important goals to strive for and hope that the model I've put together has achieved them. 
+
+
