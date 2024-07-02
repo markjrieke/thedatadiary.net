@@ -107,8 +107,9 @@ blurb_similarity(header_font)
 ::::
 
 ```{r plot-similarity}
-#| fig-height: 8
-plot_similarity(params$state, branch = params$branch)
+#| results: asis
+img_settings <- "{height=700 fig-align='center'}"
+glue::glue("![](https://raw.githubusercontent.com/markjrieke/2024-potus/{params$branch}/img/{params$state}.png){img_settings}")
 ```
 
 ---
