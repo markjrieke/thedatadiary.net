@@ -12,7 +12,7 @@ Things are looking a bit bleak for Biden's re-election at the moment. As of this
 
 The arguments for removing Biden as the nominee in the wake of the debate, however, fail to support the suggestion with any electoral analysis beyond "Biden's age is a problem for voters." I've been [working on a presidential forecast](https://github.com/markjrieke/2024-potus) for over a little over a year now, so I have a unique opportunity to fill this analysis gap. 
 
-Per my model, which, in short,^[Upon launch, I'll share the full methodology in detail.] mixes polls with economic data, approval ratings, and historical forecasts, Biden has about a **24% chance of winning.** As an incumbent running for re-election, *this is not great.* Replacing him with a (hopefully) stronger alternative sounds like an appealing proposition to Democrats in theory. In reality, however, Biden's hypothetical replacement **only has a 7% chance of defeating Trump.**
+Per my model, which, in short,^[Upon launch, I'll share the full methodology in detail.] mixes polls with economic data, approval ratings, and historical forecasts, Biden has about a **28% chance of winning.** As an incumbent running for re-election, *this is not great.* Replacing him with a (hopefully) stronger alternative sounds like an appealing proposition to Democrats in theory. In reality, however, Biden's hypothetical replacement doesn't fare any better and **only has a 20% chance of defeating Trump.**
 
 ![](electoral_college.png)
 
@@ -27,4 +27,10 @@ Of course, this analysis hinges on this model being a reasonable one. I think it
 >But what a model ideally provides you with is a structured way of thinking through a challenging problem. Because our intuitions, even if they’re right, often lack any statistical precision.
 >
 > --Nate Silver, in *[The presidential election isn't a tossup](https://www.natesilver.net/p/the-presidential-election-isnt-a)*
+
+::: {.callout-note}
+This article was re-published on July 2nd, after having [found a bug in the model](https://github.com/markjrieke/2024-potus/commit/793e991ab10cb2fd1c55bae9562d4f3c279fc0df) code used when the article was originally written on June 28th. The bugged version underestimated the correlation across states, resulting in a tighter distribution of electoral college votes. 
+
+While the overall conclusion is the same --- a generic replacement is less likely to win than Biden --- the severity of the change is different. As originally written, Biden had a 24% chance of winning and a generic replacement had a 7% chance of winning. In the corrected version, Biden has a 28% chance of winning, while a generic replacement has a 20% chance of winning.
+:::
 

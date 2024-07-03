@@ -287,6 +287,11 @@ wt <- read_rds("https://raw.githubusercontent.com/markjrieke/2024-potus/dev/data
 # read in wrangled polls
 polls <- read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/dev/out/polls/polls_out.csv")
 
+# filter out to day after debate
+polls <- 
+  polls %>%
+  filter(end_date <= mdy("6/28/24"))
+
 # modify priors
 priors_biden <- 
   priors_biden %>%
@@ -471,7 +476,8 @@ evs_draws %>%
              y = candidate,
              fill = candidate)) + 
   ggdist::stat_histinterval(.width = c(0.66, 0.95),
-                            alpha = 0.75) +
+                            alpha = 0.75,
+                            breaks = seq(from = 0, to = 540, by = 7)) +
   geom_vline(xintercept = 269,
              linetype = "dashed",
              color = "gray40") + 
