@@ -561,7 +561,7 @@ theta_state_plot +
 
 With reasonable prior expectations for the voteshare in each state, the model can now start to incorporate polling data collected throughout the campaign. Not all polls, however, are created equal. As such, polls must meet a minimum set of criteria to be included in the dataset influencing the model:
 
-**The poll must include both Joe Biden and Donald Trump as named candidates.** Biden and Trump are the nominees for the two major parties and are therefore the only candidates with non-zero chances of winning the presidency.
+**The poll must include both Joe Biden and Donald Trump as named candidates.** Biden and Trump are the nominees for the two major parties; polls that exclude either candidate do not represent the choice that voters will be making come November.
 
 **The poll must not include any hypothetical candidates, nor any candidates who have dropped out of the race.** Michelle Obama, for example, is not running for president, yet sometimes appears as an option on presidential polls. This does not represent an actual choice voters will be presented with come November, so a poll that includes her should be excluded. For similar reasons, polls that include candidates like Ron DeSantis or Dean Phillips, who have both dropped out of the race, are excluded.^[A full list of allowed candidates can be found [here](https://github.com/markjrieke/2024-potus/blob/main/data/static/allowed_candidates.csv).]
 
