@@ -33,6 +33,10 @@ for (i in 1:length(files)) {
 
 ::::: {.column-body-custom}
 
+::: {.callout-note}
+On July 21st, Joe Biden announced that he will no longer be seeking re-election and suspended his presidential campaign. This forecast will be re-published once the new presumptive Democratic nominee is announced. 
+:::
+
 :::: {.columns}
 ::: {.column width=80%}
 ```{r headline-text}
