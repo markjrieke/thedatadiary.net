@@ -30,7 +30,7 @@ $gray-projects: #363a3c;
 /*-- scss:rules --*/
 
 // use default sans-serif font
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, .quarto-title-banner h1, .card-title {
   font-family: $font-family-headings;
   color: $headings-color-custom;
 }
