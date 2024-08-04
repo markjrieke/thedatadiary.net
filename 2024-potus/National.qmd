@@ -33,10 +33,6 @@ for (i in 1:length(files)) {
 
 ::::: {.column-body-custom}
 
-::: {.callout-note}
-On July 21st, Joe Biden announced that he will no longer be seeking re-election and suspended his presidential campaign. This forecast will be re-published once the new presumptive Democratic nominee is announced. 
-:::
-
 :::: {.columns}
 ::: {.column width=80%}
 ```{r headline-text}
@@ -52,12 +48,12 @@ headline_text(state = "National", branch = params$branch)
 
 :::: {.columns}
 ::: {.column width="12%"}
-![](https://raw.githubusercontent.com/markjrieke/2024-potus/dev/img/biden.png){width=120}
+![](https://raw.githubusercontent.com/markjrieke/2024-potus/dev/img/harris.png){width=120}
 :::
 ::: {.column width="38%"}
-```{r candidate-summary-biden}
+```{r candidate-summary-harris}
 #| results: asis
-candidate_summary("Joe Biden", col_b, branch = params$branch)
+candidate_summary("Kamala Harris", col_h, branch = params$branch)
 ```
 :::
 ::: {.column width="12%"}
@@ -85,7 +81,7 @@ blurb_evs(header_font)
 ::::
 
 ```{r plot-evs}
-plot_evs(col_b, col_t, branch = params$branch)
+plot_evs(col_h, col_t, branch = params$branch)
 ```
 
 ---
@@ -102,7 +98,7 @@ blurb_prob(header_font)
 ::::
 
 ```{r plot-prob}
-plot_prob("National", col_b, col_t, branch = params$branch)
+plot_prob("National", col_h, col_t, branch = params$branch)
 ```
 
 ```{r footnote-tie}
@@ -147,12 +143,12 @@ blurb_vote(header_font)
 ::::
 
 ```{r plot-vote}
-plot_vote("National", col_b, col_t, branch = params$branch)
+plot_vote("National", col_h, col_t, branch = params$branch)
 ```
 
 ```{r table-polls-text}
 #| results: asis
-polls_table <- table_polls("National", col_b, col_t, branch = params$branch)
+polls_table <- table_polls("National", col_h, col_t, branch = params$branch)
 if (class(polls_table)[1] == "glue") {
   print(polls_table)
 }

@@ -34,10 +34,6 @@ for (i in 1:length(files)) {
 
 ::::: {.column-body-custom}
 
-::: {.callout-note}
-On July 21st, Joe Biden announced that he will no longer be seeking re-election and suspended his presidential campaign. This forecast will be re-published once the new presumptive Democratic nominee is announced. 
-:::
-
 :::: {.columns}
 ::: {.column width="80%"}
 ```{r headline-text}
@@ -63,7 +59,7 @@ blurb_prob(header_font)
 ::::
 
 ```{r plot-prob}
-plot_prob(params$state, col_b, col_t, branch = params$branch)
+plot_prob(params$state, col_h, col_t, branch = params$branch)
 ```
 
 ---
@@ -80,12 +76,12 @@ blurb_vote(header_font)
 ::::
 
 ```{r plot-vote}
-plot_vote(params$state, col_b, col_t, branch = params$branch)
+plot_vote(params$state, col_h, col_t, branch = params$branch)
 ```
 
 ```{r table-polls-text}
 #| results: asis
-polls_table <- table_polls(params$state, col_b, col_t, branch = params$branch)
+polls_table <- table_polls(params$state, col_h, col_t, branch = params$branch)
 if (class(polls_table)[1] == "glue") {
   print(polls_table)
 }
