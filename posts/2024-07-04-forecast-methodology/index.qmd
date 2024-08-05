@@ -22,6 +22,11 @@ col_dd <- "#5A9282"
 # roast me in the fork of this repository, see if i care
 ```
 
+::: {.callout-note}
+## Changes for Biden's dropout
+
+On July 21st, Joe Biden ended his campaign for re-election and Kamala Harris became the presumptive democratic nominee. The adjustments to account for Harris as the new candidate are [appended to this article](#unburdened) but the bulk of the methodology remains unchanged.
+:::
 
 ### Introduction
 
@@ -117,6 +122,7 @@ approval_current <-
   select(run_date,
          mean, 
          sd) %>%
+  filter(run_date <= mdy("7/4/24")) %>%
   mutate(q025 = qnorm(0.025, mean, sd),
          q975 = qnorm(0.975, mean, sd),
          q170 = qnorm(0.170, mean, sd),
@@ -304,7 +310,7 @@ prior_model_data <-
 # import current approval forecast
 e_day_approval_current <-
   read_csv("https://raw.githubusercontent.com/markjrieke/2024-potus/main/out/approval/e_day_approval_current.csv") %>%
-  filter(run_date == max(run_date))
+  filter(run_date == mdy("7/4/24"))
 
 # get most recent gdp growth
 G_new <-
@@ -582,5 +588,14 @@ This model, for all the attempts to be as data-driven as possible, necessarily i
 Other forecasters likely made different, reasonable, choices in the process of developing their models. Forecasting the outcome of an event months ahead of time is a difficult business, and there's wisdom to be had in the crowd, so I encourage readers to view the output of this model in concert with other forecasts.^[A list of forecasters I trust can be found [here](https://github.com/markjrieke/2024-potus/tree/main?tab=readme-ov-file#other-forecasts).]
 
 The choices made in the construction of this model and the system around it were driven by a few fundamental ideals: the model should be built with transparent, open source software, produce accurate results, and honestly account for uncertainty throughout the modeling process. I believe these to be important goals to strive for and hope that the model I've put together has achieved them. 
+
+### Unburdened by what has been {#unburdened}
+
+Following his [disastrous performance in an early debate with Trump](https://www.nbcnews.com/politics/2024-election/biden-debate-performance-democrats-panic-rcna157279), Joe Biden [announced](https://x.com/JoeBiden/status/1815080881981190320) on July 21st that he would no longer be seeking re-election and suspended his presidential campaign. Later that same day, he [endorsed Kamala Harris](https://x.com/JoeBiden/status/1815087772216303933). Since then, Harris has garnered support from elected officials across the democratic party and received enough pledges from party delegates to become the presumptive democratic nominee.
+
+While much of the modeling architecture remains the same with Harris as the candidate, two slight changes are required to accommodate her stepping in as the presumptive nominee. Firstly, although she served in the incumbent administration, Harris herself is not the incumbent president. Thus, the output for the *Time for Change* model is based on a non-incumbent nominee.^[This portion of the model is still based on the incumbent's net approval rating, regardless of whether or not the incumbent is running, and therefore still uses Biden's net approval.] Secondly, polls of Harris and Trump are now used to update the model.^[Polls of Biden and Trump are still included as they still contain information on pollster biases, state correlation, and the rate that public opinion can change. The results of a matchup between Biden and Trump are simply not retained in the model's output.] In polls conducted prior to Biden dropping out, I include a parameter that adjusts for Harris as a hypothetical candidate. In post-dropout polls, however, Harris is modeled as the presumptive nominee.
+
+
+
 
 
