@@ -163,6 +163,25 @@ if (class(polls_table)[1] != "glue") {
 ---
 
 :::: {.columns}
+::: {.column width="60%"}
+```{r blurb-conditionals}
+#| results: asis
+blurb_conditional(header_font)
+```
+
+:::
+::: {.column width="40%"}
+:::
+::::
+
+```{r plot-conditionals}
+#| fig-height: 6
+plot_conditionals(branch = params$branch)
+```
+
+---
+
+:::: {.columns}
 ::: {.column width="30%"}
 ```{r footer}
 #| results: asis
