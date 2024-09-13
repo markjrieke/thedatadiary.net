@@ -125,7 +125,7 @@ ec_map <- plot_map(branch = params$branch)
 ```
 
 ```{r plot-map-display}
-#| fig-height: 8
+#| fig-height: 7.3
 render_interactive_map(ec_map)
 ```
 
