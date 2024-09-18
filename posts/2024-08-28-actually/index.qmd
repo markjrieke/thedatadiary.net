@@ -90,7 +90,7 @@ Overall, using win count to measure the best Um, Actually player brushes away a 
 * winning by many points is more impressive than eeking out a 1-point win;
 * a contestant's point total is not independent of other contestants' skill.
 
-In the pedantic spirit of the game, I propose here a better way of measuring player skill that addresses the shortcomings introduced by simply counting total wins. By using a hierarchical Bayesian model of latent player skill to estimate the point totals of each contestant in each game, I uncover who, statistically, is the best Um, Actually player.
+A better method for measuring player skill would instead consider the points won by each contestant while taking into account the relative skill of the other players in each game. In the pedantic spirit of the game, I propose one such alternative method. By estimating latent player skill with a hierarchical Bayesian model, I uncover who, statistically, is the best Um, Actually player.
 
 ::: {.callout-note}
 
