@@ -126,6 +126,8 @@ Three episodes^[Season 3, episode 2, season 5, episodes 1 and 21.] break from th
 
 At New York's Comic Con in 2019, Mike Trapp hosted a live episode^[Season 2, episode 11] of Um, Actually with a fan, Jamel Wood, as a fourth contestant. Although players *could* potentially be awarded multiple points per question, this didn't happen. Thankfully, the model doesn't need to account for the possibility of multiple players being awarded points on a single question in a four-player game.^[The math to estimate this is a clunky mess of algebra: ![](four_person_math.jpg)] It does, however, need to accommodate the four-person structure.
 
+![Mike Trapp as host for a live episode of Um, Actually at New York Comic Con in 2019 --- Season 2, Episode 11](live.jpg)
+
 ## Um, Actually: The Model
 
 This is, to say the least, a fairly complex model. To throw some fancy terminology at the wall, I might refer to this as a hierarchical Bayesian model of latent player skill with a finite mixture of possible point awards. But complexity is the cost we pay to jointly model all the possible edge cases brought up by varying show formats. To quote Andrew Gelman, ["big data needs big model."](https://statmodeling.stat.columbia.edu/2014/05/22/big-data-needs-big-model/)
