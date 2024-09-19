@@ -147,6 +147,11 @@ $$
 \end{align*}
 $$
 
+::: {add-from=actually.stan start-line=71 end-line=72 code-line-numbers="true"}
+```{.stan}
+```
+:::
+
 #### Multiple awards in team games
 
 In each team game, $g$, I estimate the number of questions with points awarded to both teams, $S_g$ as a draw from a binomial distribution where $K_g$ is the number of questions in each game and $\delta$ is the probability that points are awarded to both teams. This is a relatively rare occurrence, so I place an informative prior over $\text{logit}(\delta)$. 
@@ -180,6 +185,11 @@ p_3 &= 1 - q_2 \\
 \kappa &\sim \text{Normal}(0, 1.5)
 \end{align*}
 $$
+
+::: {add-from=functions.stan start-line=27 end-line=38 code-line-numbers="true"}
+```{.stan}
+```
+:::
 
 #### Single point awarded in a three-player game
 
@@ -226,6 +236,11 @@ beta %>%
   softmax() %>%
   round(2)
 ```
+
+::: {add-from=functions.stan start-line=40 end-line=59 code-line-numbers="true"}
+```{.stan}
+```
+:::
 
 #### Multiple points awarded in a three-player game
 
@@ -322,6 +337,11 @@ $$
 \end{align*}
 $$
 
+::: {add-from=functions.stan start-line=1 end-line=25 code-line-numbers="true"}
+```{.stan}
+```
+:::
+
 $$
 \begin{align*}
 \theta_{\text{split},g} &= \theta_{g,p} \left(1 + \sum_{j=1 \\ j \neq p}^{J=P} \frac{\theta_{g,p[j]}}{\sum \theta_{g,p[-j]}} \right) \\
@@ -329,6 +349,11 @@ $$
 \gamma_g &= \begin{bmatrix} \beta_{\text{pid}[g,1]} \\ \beta_{\text{pid}[g,2]} \\ \beta_{\text{pid}[g,3]} \end{bmatrix}
 \end{align*}
 $$
+
+::: {add-from=functions.stan start-line=61 end-line=80 code-line-numbers="true"}
+```{.stan}
+```
+:::
 
 * all three players awarded a point
 * doesn't contribute any information ($\theta_p = 1$ for all players)
@@ -349,6 +374,12 @@ R_{\text{team},g,t} &\sim \text{Poisson}(\lambda_{g,p}) \\
 \gamma_g &= \begin{bmatrix} \beta_{\text{pid}[g,1]} + \beta_{\text{pid}[g,2]} \\ \beta_{\text{pid}[g,3]} + \beta_{\text{pid}[g,4]} \\ 0 \end{bmatrix}
 \end{align*}
 $$
+
+::: {add-from=functions.stan start-line=82 end-line=99 code-line-numbers="true"}
+```{.stan}
+```
+:::
+
 
 #### The four-player game
 
