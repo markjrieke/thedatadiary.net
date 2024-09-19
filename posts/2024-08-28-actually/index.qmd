@@ -227,6 +227,35 @@ beta %>%
 
 #### Multiple points awarded in a three-player game
 
+**invoke the _garden of forking paths_ analogy**
+
+```{r}
+dagitty::dagitty("dag {
+  Start -> Po1
+  Start -> Po2
+  Start -> Po3
+  Po2 -> P21
+  Po2 -> P23
+  Po3 -> P31
+  Po3 -> P32
+}") %>%
+  ggdag::tidy_dagitty(layout = "partition") %>%
+  mutate(name = case_match(name,
+                           "Po1" ~ "\u03b8[1]",
+                           "Po2" ~ "\u03b8[2]",
+                           "Po3" ~ "\u03b8[3]",
+                           "P21" ~ "\u03b8[2-1]",
+                           "P23" ~ "\u03b8[2-3]",
+                           "P31" ~ "\u03b8[3-1]",
+                           "P32" ~ "\u03b8[3-2]",
+                           .default = name)) %>%
+  ggdag::ggdag(parse = TRUE) +
+  scale_color_identity() + 
+  coord_flip() +
+  theme_void()
+```
+
+
 $$
 \begin{align*}
 R_{\text{3-player},g,p,q} &\sim \text{Bernoulli}(\theta_{\text{split},g,p}) \\
