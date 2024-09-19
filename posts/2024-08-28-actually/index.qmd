@@ -158,7 +158,7 @@ $$
 
 #### Multiple awards in three-player games
 
-In a three-player game, estimating the how often points are awarded to multiple contestants is a bit more complex. Here, $S_g$ is a vector with three elements that counts the number of questions in each game, $g$, in which the point was awarded to one player (or no one), two players, or all three players. $K_g$ is the number of questions in each game and $\phi$ is a vector of probabilities corresponding to each category in $S$. 
+In a three-player game, estimating how often points are awarded to multiple contestants is a bit more complex. Here, $S_g$ is a vector with three elements that counts the number of questions in each game, $g$, in which the point was awarded to one player (or no one), two players, or all three players. $K_g$ is the number of questions in each game and $\phi$ is a vector of probabilities corresponding to each category in $S$. 
 
 $$
 \begin{align*}
@@ -227,7 +227,21 @@ beta %>%
 
 #### Multiple points awarded in a three-player game
 
-**invoke the _garden of forking paths_ analogy**
+* Consider each individual player and each individual question
+* There's a chance they do or don't get a point --- model it as a bernoulli
+* The probability of each individual receiving a point is $\theta_{\text{split},g,p}$
+* Named differently because it's calculated differently
+
+$$
+\begin{align*}
+R_{\text{3-player},g,p,q} &\sim \text{Bernoulli}(\theta_{\text{split},g,p})
+\end{align*}
+$$
+
+* invoke garden of forking paths analogy
+* Let's pretend we're player 1
+* what are the chances that we receive one of the two points
+* well, it has to follow one of the sequences below
 
 ```{r}
 dagitty::dagitty("dag {
@@ -241,13 +255,13 @@ dagitty::dagitty("dag {
 }") %>%
   ggdag::tidy_dagitty(layout = "partition") %>%
   mutate(name = case_match(name,
-                           "Po1" ~ "\u03b8[1]",
-                           "Po2" ~ "\u03b8[2]",
-                           "Po3" ~ "\u03b8[3]",
-                           "P21" ~ "\u03b8[2-1]",
-                           "P23" ~ "\u03b8[2-3]",
-                           "P31" ~ "\u03b8[3-1]",
-                           "P32" ~ "\u03b8[3-2]",
+                           "Po1" ~ "Pr(1)",
+                           "Po2" ~ "Pr(2)",
+                           "Po3" ~ "Pr(3)",
+                           "P21" ~ "Pr(2-1)",
+                           "P23" ~ "Pr(2-3)",
+                           "P31" ~ "Pr(3-1)",
+                           "P32" ~ "Pr(3-2)",
                            .default = name)) %>%
   ggdag::ggdag(parse = TRUE) +
   scale_color_identity() + 
@@ -255,17 +269,75 @@ dagitty::dagitty("dag {
   theme_void()
 ```
 
+* 1st point can go to player 1, 2, or 3
+* If it goes to player 1, we don't care where the second point goes --- so the diagram below ends at that node
+* Probability that the first point goes to each player is simply $\theta_p$
 
 $$
 \begin{align*}
-R_{\text{3-player},g,p,q} &\sim \text{Bernoulli}(\theta_{\text{split},g,p}) \\
+\Pr(1) &= \theta_1 \\
+\Pr(2) &= \theta_2 \\
+\Pr(3) &= \theta_3 \\
+\end{align*}
+$$
+
+* If the first point goes to us (player 1), we don't care where the 2nd point goes
+* If it goes to players 2 or 3, however, the 2nd point can go to either us or player 3
+* The probability of us winning the point *conditional* on the first point going to player 2 is our chances of winning *relative* to player 3
+
+$$
+\begin{align*}
+\Pr(1 | 2) &= \frac{\theta_1}{\theta_1 + \theta_3}
+\end{align*}
+$$
+
+* to get the probability of the sequence occurring, we just need to multiply by the probability of player 2 being awarded the first point
+
+$$
+\begin{align*}
+\Pr(\text{2-1}) &= \theta_2\frac{\theta_1}{\theta_1 + \theta_3}
+\end{align*}
+$$
+
+* $\theta_{\text{split},1}$ is the sum of all possible paths that lead to player 1 being awarded a point
+* So, repeating the process for the path where player 3 is awarded the first point, we get the following:
+
+$$
+\begin{align*}
+\theta_{\text{split},1} &= \theta_1 + \theta_2\frac{\theta_1}{\theta_1 + \theta_3} + \theta_3\frac{\theta_1}{\theta_1 + \theta_2}
+\end{align*}
+$$
+
+* We can reduce with a bit of algebra and generalize with a bit of notation
+* Notice that $\theta_1$, $\theta_2$, and $\theta_3$ appear in both fractions. 
+* The sum in the denominator always excludes the value in the numerator, so we can write the denominator as $\sum \theta_{-j}$, where $\theta_j$ is the value that appears in the numerator
+* Notice also that $\theta_1$ never appears in the numerator and always appears in the denominator. We can enforce this notationally by indicating that $j \neq p$ in the summation.
+
+$$
+\begin{align*}
+\theta_{\text{split},1} &= \theta_1 \left(1 + \frac{\theta_2}{\theta_1 + \theta_3} + \frac{\theta_3}{\theta_1 + \theta_2} \right) \\
+&= \theta_1 \left(1 + \sum_{j=2}^{J=3} \frac{\theta_j}{\sum \theta_{-j}} \right )
+\end{align*}
+$$
+
+$$
+\begin{align*}
 \theta_{\text{split},g} &= \theta_{g,p} \left(1 + \sum_{j=1 \\ j \neq p}^{J=P} \frac{\theta_{g,p[j]}}{\sum \theta_{g,p[-j]}} \right) \\
 \theta_g &= \text{softmax}(\gamma_g) \\
 \gamma_g &= \begin{bmatrix} \beta_{\text{pid}[g,1]} \\ \beta_{\text{pid}[g,2]} \\ \beta_{\text{pid}[g,3]} \end{bmatrix}
 \end{align*}
 $$
 
+* all three players awarded a point
+* doesn't contribute any information ($\theta_p = 1$ for all players)
+
 #### Team games
+
+* Number of points each team receives is modeled as a poisson
+* lambda is the team's expected number of points
+* product of each team's probability of earning a point and the total number of points to be awarded
+* probability per question is softmax of the skill vector
+* only difference is that team skill is the sum of individual player skill
 
 $$
 \begin{align*}
@@ -277,6 +349,9 @@ R_{\text{team},g,t} &\sim \text{Poisson}(\lambda_{g,p}) \\
 $$
 
 #### The four-player game
+
+* super similar to the 3 player game
+* only need to add in another index in the skill vector
 
 $$
 \begin{align*}
