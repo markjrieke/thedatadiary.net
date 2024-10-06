@@ -1,0 +1,7 @@
+name,score,.lower,.upper,.width,.point,.interval
+Ally Beardsley,2,1,4,0.66,median,qi
+Brennan Lee Mulligan,5,4,7,0.66,median,qi
+Ify Nwadiwe,4,2,6,0.66,median,qi
+Ally Beardsley,2,0,5,0.95,median,qi
+Brennan Lee Mulligan,5,2,9,0.95,median,qi
+Ify Nwadiwe,4,1,7,0.95,median,qi
