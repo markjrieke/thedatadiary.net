@@ -1,0 +1,7 @@
+name,score,.lower,.upper,.width,.point,.interval
+Amy Vorpahl,3,2,4,0.66,median,qi
+Gustavo Sorola,3,2,5,0.66,median,qi
+Matt Mercer,5,3,7,0.66,median,qi
+Amy Vorpahl,3,0,6,0.95,median,qi
+Gustavo Sorola,3,1,7,0.95,median,qi
+Matt Mercer,5,2,9,0.95,median,qi

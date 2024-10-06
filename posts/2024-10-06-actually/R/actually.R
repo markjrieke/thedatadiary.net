@@ -1,8 +1,10 @@
+# setup ------------------------------------------------------------------------
+
 library(tidyverse)
 library(riekelib)
 library(cmdstanr)
 
-# actually 01-02 ---------------------------------------------------------------
+# import results ---------------------------------------------------------------
 
 actually <- 
   jsonlite::fromJSON("https://raw.githubusercontent.com/tekkamanendless/umactually/master/data.json") %>%
@@ -26,7 +28,7 @@ episodes <-
          questions) %>%
   filter(season <= 8)
 
-# 3-player game - split point model --------------------------------------------
+# how many points were awarded in a three-player game? -------------------------
 
 # number of times in each 3-player game that points are awarded to 0/1 player,
 # 2 players, or all 3 players
@@ -45,7 +47,7 @@ split_point_3 <-
               values_from = n,
               values_fill = 0)
 
-# team game - split point model ------------------------------------------------
+# how many points were awarded in a team game? ---------------------------------
 
 split_point_team <- 
   episodes %>%
@@ -60,7 +62,7 @@ split_point_team <-
               values_from = n,
               values_fill = 0)
 
-# 3-player game - 0-1 correct responses ----------------------------------------
+# which player earned the point when one is awarded in a three-player game? ----
 
 questions_301 <- 
   episodes %>%
@@ -102,7 +104,7 @@ pim_301 <-
   pivot_wider(names_from = position,
               values_from = pid)
 
-# 3-player game - 2 correct responses ------------------------------------------
+# which players earned points when two are awarded in a three-player game? -----
 
 questions_32 <- 
   episodes %>%
@@ -151,7 +153,7 @@ responses_32 <-
   responses_32 %>%
   select(eid, starts_with("response"))
 
-# 4-player game - 0-1 correct responses ----------------------------------------
+# which player earned a point when one was awarded in a four-player game? ------
 
 questions_4 <- 
   episodes %>%
@@ -191,7 +193,7 @@ pim_4 <-
   pivot_wider(names_from = position,
               values_from = pid)
 
-# team games - 0/1 correct responses -------------------------------------------
+# which team earned a point when one was awarded in a team game? ---------------
 
 questions_teams <- 
   actually %>%
@@ -256,9 +258,14 @@ pim_teams <-
   pivot_wider(names_from = position,
               values_from = pid)
 
+# model! -----------------------------------------------------------------------
+
 # compile model
 actually_model <-
-  cmdstan_model("posts/2024-08-28-actually/actually.stan")
+  cmdstan_model(
+    "posts/2024-10-06-actually/stan/actually.stan",
+    dir = "posts/2024-10-06-actually/exe/"
+  )
 
 stan_data <-
   list(
@@ -304,258 +311,98 @@ actually_fit <-
     parallel_chains = 4
   )
 
-# blegh ------------------------------------------------------------------------
+# explore output ---------------------------------------------------------------
 
-# just episodes without split points / no team episodes
-easy_eps <- 
-  episodes %>%
-  filter(!eid %in% c("s03e02", "s05e01", "s05e21")) %>%
-  unnest(questions) %>%
-  mutate(n_winners = map_int(winners, length)) %>%
-  select(eid, n_winners) %>%
-  group_by(eid) %>%
-  summarise(n_winners = max(n_winners)) %>%
-  filter(n_winners <= 1) %>%
-  pull(eid)
+# raw skill parameters
+player_skill <-
+  actually_fit$draws("beta", format = "df") %>%
+  as_tibble()
 
-episodes <- 
-  episodes %>%
-  filter(eid %in% easy_eps)
-
-# just episodes with 3 players
-easy_eps <- 
-  episodes %>%
-  mutate(n_players = map_int(players, nrow)) %>%
-  filter(n_players <= 3) %>%
-  pull(eid)
-
-episodes <- 
-  episodes %>%
-  filter(eid %in% easy_eps)
-
-# assign player ids
-pids <- 
-  episodes %>%
-  unnest(players) %>%
+player_skill <- 
+  player_skill %>%
+  pivot_longer(starts_with("beta"),
+               names_to = "variable",
+               values_to = "estimate") %>%
+  nest(data = -variable) %>%
+  mutate(pid = parse_number(variable)) %>%
   left_join(people) %>%
-  distinct(name) %>%
-  arrange(name) %>%
-  rowid_to_column("pid")
+  select(name, data) %>%
+  nplyr::nest_select(data, .draw, estimate)
 
-# map players to episodes
-eid_pid <- 
-  episodes %>%
-  unnest(players) %>%
+# average rank based on skill
+avg_rank <-
+  player_skill %>% 
+  unnest(data) %>%
+  group_by(.draw) %>%
+  arrange(desc(estimate)) %>%
+  mutate(rank = rank(-estimate)) %>%
+  group_by(name) %>%
+  summarise(rank_score = mean(rank)) %>%
+  arrange(rank_score) %>%
+  rowid_to_column("rank")
+
+# probability that each player is the best player
+prob_best <- 
+  actually_fit$summary("prob_best")
+
+prob_best <- 
+  prob_best %>%
+  mutate(pid = parse_number(variable)) %>%
   left_join(people) %>%
-  left_join(pids) %>%
-  mutate(position = paste0("p", position)) %>%
-  select(eid,
-         position,
-         pid) %>%
-  pivot_wider(names_from = position,
-              values_from = pid)
+  select(name, 
+         prob_best = mean) 
 
-# map players to position
-positions <- 
-  episodes %>%
-  unnest(players) %>%
-  left_join(people) %>%
-  left_join(pids) %>%
-  select(eid, pid, position) %>%
-  mutate(position = paste0("p", position))
+alpha <- actually_fit$summary("alpha")
 
-responses <- 
-  episodes %>%
-  unnest(questions) %>%
-  select(eid, 
-         question = number,
-         winners) %>%
-  mutate(n_winners = map_int(winners, length),
-         winners = if_else(n_winners == 0, list("host"), winners)) %>%
-  select(-n_winners) %>%
-  unnest(winners) %>%
-  left_join(people, by = c("winners" = "id")) %>%
-  left_join(pids) %>%
-  left_join(positions) %>%
-  mutate(position = replace_na(position, "host")) %>%
-  count(eid, position) %>%
-  pivot_wider(names_from = position,
-              values_from = n) %>%
-  rename_with(~str_replace(.x, "p", "y")) %>%
-  mutate(across(c(host, starts_with("y")), ~replace_na(.x, 0)))
+# write main results -----------------------------------------------------------
 
-results <- 
-  eid_pid %>%
-  left_join(responses) %>%
-  mutate(K = y1 + y2 + y3 + host) 
+avg_rank %>%
+  write_csv("posts/2024-10-06-actually/out/avg_rank.csv")
 
-pim <- 
-  results %>%
-  select(starts_with("p")) %>%
-  as.matrix()
+prob_best %>%
+  write_csv("posts/2024-10-06-actually/out/prob_best.csv")
 
-R <- 
-  results %>%
-  select(starts_with("y"), 
-         host) %>%
-  as.matrix()
+player_skill %>%
+  write_csv("posts/2024-10-06-actually/out/player_skill.csv")
 
-stan_data <- 
-  list(
-    N = nrow(results),
-    K = results$K,
-    R = R
-  )
+alpha %>%
+  write_csv("posts/2024-10-06-actually/out/alpha.csv")
 
-actually_model <- 
-  cmdstan_model("actually_01.stan")
+# game-specific simulations ----------------------------------------------------
 
-actually_fit <-
-  actually_model$sample(
-    data = stan_data,
-    seed = 2024,
-    iter_warmup = 2000,
-    iter_sampling = 2000,
-    chains = 4,
-    parallel_chains = 4,
-    init = 0.01,
-    step_size = 0.002
-  )
-
-stan_data <- 
-  list(
-    N = nrow(results),
-    P = nrow(pids),
-    K = results$K,
-    R = R,
-    pim = pim
-  )
-
-actually_model <- 
-  cmdstan_model("posts/2024-08-28-actually/actually_02.stan")
-
-actually_fit <-
-  actually_model$sample(
-    data = stan_data,
-    seed = 2024,
-    iter_warmup = 2000,
-    iter_sampling = 2000,
-    chains = 4,
-    parallel_chains = 4,
-    init = 0.01,
-    step_size = 0.002
-  )
-
-actually_fit$summary("eta_p") -> tmp
-
-tmp %>%
-  mutate(pid = parse_number(variable)) %>% 
-  left_join(pids) %>%
-  mutate(name = fct_reorder(name, median)) %>%
-  ggplot(aes(x = name,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_pointrange() + 
-  coord_flip() +
-  riekelib::theme_rieke()
+summarise_game <- function(p1, p2, p3) {
   
-str_split_teams <- function(str) {
+  actually_fit$draws(glue::glue("game_{p1}_{p2}_{p3}"), format = "df") %>%
+    as_tibble() %>%
+    pivot_longer(starts_with("game"),
+                 names_to = "variable",
+                 values_to = "score") %>%
+    nest(data = -variable) %>%
+    mutate(pid = case_when(str_detect(variable, "\\[1\\]") ~ p1,
+                           str_detect(variable, "\\[2\\]") ~ p2,
+                           str_detect(variable, "\\[3\\]") ~ p3)) %>%
+    left_join(people) %>%
+    select(name, data) %>%
+    unnest(data) %>%
+    group_by(name) %>%
+    tidybayes::median_qi(score, .width = c(0.66, 0.95)) %>%
+    write_csv(glue::glue("posts/2024-10-06-actually/out/scores_{p1}_{p2}_{p3}.csv"))
   
-  str %>%
-    str_flatten(collapse = "|") %>%
-    str_replace("kaitlin-and-jess", "kaitlin-thompson|jessica-ross") %>%
-    str_replace("matt-and-marisha", "matt-mercer|marisha-ray") %>%
-    str_replace("becca-and-david", "becca-scott|david-kerns") %>%
-    str_replace("justin-and-ben", "justin-matson|benjamin-siemon") %>%
-    str_replace("ify-and-brodie", "ify-nwadiwe|brodie-reed") %>%
-    str_replace("dani-and-danielle", "dani-fernandez|danielle-radford") %>%
-    str_split_1("\\|")
+  actually_fit$summary(glue::glue("prob_{p1}_{p2}_{p3}")) %>%
+    mutate(pid = case_when(str_detect(variable, "\\[1\\]") ~ p1,
+                           str_detect(variable, "\\[2\\]") ~ p2,
+                           str_detect(variable, "\\[3\\]") ~ p3)) %>%
+    left_join(people) %>%
+    select(name, p_win = mean) %>%
+    write_csv(glue::glue("posts/2024-10-06-actually/out/prob_{p1}_{p2}_{p3}.csv"))
   
 }
 
-actually %>%
-  select(episodes) %>%
-  unnest(episodes) %>% 
-  select(season = season_number,
-         episode = number,
-         questions) %>% 
-  filter(season <= 8) %>%
-  unnest(questions) %>%
-  select(season,
-         episode,
-         question = number,
-         winners) %>% 
-  mutate(n_winners = map_int(winners, length),
-         winners = if_else(n_winners == 0, list("host"), winners),
-         winners = map(winners, str_split_teams),
-         eid = glue::glue("S{season}E{episode}")) %>%
-  filter(n_winners <= 1,
-         !eid %in% c("S3E2", "S5E1", "S5E21")) %>%
-  unnest(winners) %>%
-  rename(id = winners) %>%
-  left_join(people) %>%
-  mutate(name = replace_na(name, "host")) %>%
-  group_by(season, 
-           episode) %>%
-  count(name)
+summarise_game(7, 25, 68)
+summarise_game(57, 153, 168)
+summarise_game(11, 63, 128)
+summarise_game(24, 27, 51)
 
-actually %>%
-  select(episodes) %>%
-  unnest(episodes) %>% 
-  select(season = season_number,
-         episode = number,
-         players) %>%
-  unnest(players) %>%
-  filter(season <= 8) %>%
-  group_by(season, episode) %>%
-  filter(score == max(score)) %>%
-  ungroup() %>%
-  count(id) %>%
-  arrange(desc(n)) %>%
-  left_join(people) %>%
-  slice_head(n = 10) %>%
-  mutate(name = fct_reorder(name, n)) %>%
-  ggplot(aes(x = name,
-             y = n)) + 
-  geom_col() + 
-  coord_flip() +
-  expand_limits(y = c(0, 10))
-  
-# actually 03 ------------------------------------------------------------------
 
-episodes <-
-  actually %>%
-  select(episodes) %>%
-  unnest(episodes) %>%
-  select(eid = dropouttv_productid,
-         season = season_number,
-         episode = number,
-         players,
-         questions) %>%
-  filter(season <= 8)
-
-episodes <- 
-  episodes %>%
-  filter(!eid %in% c("s03e02", "s05e01", "s05e21")) %>%
-  mutate(n_players = map_int(players, nrow)) %>%
-  filter(n_players == 3) %>%
-  select(-n_players) %>%
-  unnest(questions) %>%
-  mutate(n_winners = map_int(winners, length)) %>%
-  select(eid, n_winners) %>%
-  mutate(category = case_when(n_winners <= 1 ~ "n_0_1",
-                              n_winners == 2 ~ "n_2",
-                              n_winners == 3 ~ "n_3")) %>%
-  group_by(eid) %>%
-  count(category) %>%
-  ungroup() %>%
-  pivot_wider(names_from = category,
-              values_from = n,
-              values_fill = 0) %>%
-  mutate(n_tot = n_0_1 + n_2 + n_3)
-
-actually_03 <-
-  cmdstan_model("posts/2024-08-28-actually/actually_03.stan")
 
 

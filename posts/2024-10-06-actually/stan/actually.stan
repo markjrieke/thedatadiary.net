@@ -111,3 +111,26 @@ model {
     target += bernoulli_lpmf(R32[:,p] | theta_32[:,p]);
   }
 }
+
+generated quantities {
+  // Probability that each player is the best
+  vector[P] prob_best = prob_best_rng(beta);
+  
+  // -- Simulate example games -- //
+  // Ally Beardsley, Brennan Lee Mulligan, Ify Nwadiwe
+  vector[3] game_7_25_68 = simulate_game_rng(7, 25, 68, beta, phi, 13);
+  vector[3] prob_7_25_68 = win_probability(game_7_25_68);
+  
+  // Grant O'Brien, Rachel Bloom, Siobhan Thompson
+  vector[3] game_57_153_168 = simulate_game_rng(57, 153, 168, beta, phi, 13);
+  vector[3] prob_57_153_168 = win_probability(game_57_153_168);
+  
+  // Amy Vorpahl, Gustavo Sorola, Matt Mercer
+  vector[3] game_11_63_128 = simulate_game_rng(11, 63, 128, beta, phi, 13);
+  vector[3] prob_11_63_128 = win_probability(game_11_63_128);
+  
+  // Brian Murphy, Caldwell Tanner, Emily Axford
+  vector[3] game_24_27_51 = simulate_game_rng(24, 27, 51, beta, phi, 13);
+  vector[3] prob_24_27_51 = win_probability(game_24_27_51);
+}
+

@@ -1,0 +1,7 @@
+name,score,.lower,.upper,.width,.point,.interval
+Grant O'Brien,4,2,5,0.66,median,qi
+Rachel Bloom,3,2,5,0.66,median,qi
+Siobhan Thompson,4,3,6,0.66,median,qi
+Grant O'Brien,4,1,7,0.95,median,qi
+Rachel Bloom,3,0.9750000000001648,7,0.95,median,qi
+Siobhan Thompson,4,1,8,0.95,median,qi

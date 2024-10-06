@@ -1,0 +1,7 @@
+name,score,.lower,.upper,.width,.point,.interval
+"Brian ""Murph"" Murphy",4,2,6,0.66,median,qi
+Caldwell Tanner,4,2,6,0.66,median,qi
+Emily Axford,3,2,5,0.66,median,qi
+"Brian ""Murph"" Murphy",4,1,8,0.95,median,qi
+Caldwell Tanner,4,1,8,0.95,median,qi
+Emily Axford,3,0,7,0.95,median,qi
