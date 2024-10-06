@@ -4,6 +4,7 @@
 .Ruserdata
 .httr-oauth
 *.DS_Store
+*exe/
 
 /.quarto/
 /_site/
