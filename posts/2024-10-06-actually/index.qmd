@@ -3,7 +3,7 @@ title: "Um, Factually"
 date: '2024-10-06'
 categories: [stan, dropout]
 description: "A power ranking for the title of most pedantic nerd on Dropout's *Um, Actually*"
-image: header.png
+image: img/header.png
 filters:
   - add-code-files
 ---
@@ -104,7 +104,7 @@ If you're just here to see the results and power ranking of each contestant, you
 
 Before diving headfirst into the results or the code to generate them, it's probably helpful to explain in detail how the game works. In each episode, three contestants vie to earn points by identifying the incorrect piece of information in a statement read by the host. Contestants buzz in to propose their corrections, which must begin with the phrase "um, actually...". If their correction is, paradoxically, incorrect, or if they forget to say "um, actually," the other contestants can buzz in to try to scoop the point. If no one is able to correct the host's statement, the host reveals what was wrong and the point is lost to the ether.
 
-![(Left to right) Brennan Lee Mulligan, Kirk Damato, and Marisha Ray as contestants --- Season 2, Episode 1](actually_set.jpg)
+![(Left to right) Brennan Lee Mulligan, Kirk Damato, and Marisha Ray as contestants --- Season 2, Episode 1](img/actually_set.jpg)
 
 Players can also scoop points by being *more correct* than other contestants. For example, say a player identifies the incorrect portion of the host's statement but their correction is wrong. The host may give the other contestants a chance to scoop by correcting the correction. If the other players aren't able to correct the correction, the first player keeps the point.
 
@@ -319,9 +319,9 @@ $$
 
 ### The four player game
 
-At New York's Comic Con in 2019, Mike Trapp hosted a live episode^[Season 2, episode 11] of Um, Actually with a fan, Jamel Wood, as a fourth contestant. Although players *could* potentially be awarded multiple points per question, this didn't happen. Thankfully, the model doesn't need to account for the possibility of multiple players being awarded points on a single question in a four-player game.^[The math to estimate this is an even clunkier mess of algebra than the case of two points awarded in a three-player game: ![](four_person_math.jpg)] It does, however, need to accommodate the four-person structure.
+At New York's Comic Con in 2019, Mike Trapp hosted a live episode^[Season 2, episode 11] of Um, Actually with a fan, Jamel Wood, as a fourth contestant. Although players *could* potentially be awarded multiple points per question, this didn't happen. Thankfully, the model doesn't need to account for the possibility of multiple players being awarded points on a single question in a four-player game.^[The math to estimate this is an even clunkier mess of algebra than the case of two points awarded in a three-player game: ![](img/four_person_math.jpg)] It does, however, need to accommodate the four-person structure.
 
-![Mike Trapp as host for a live episode of Um, Actually at New York Comic Con in 2019 --- Season 2, Episode 11](live.jpg)
+![Mike Trapp as host for a live episode of Um, Actually at New York Comic Con in 2019 --- Season 2, Episode 11](img/live.jpg)
 
 The setup is nearly identical to the base case of a three-player game. The only difference is that the vectors $\theta_g$ and $\gamma_g$ now include an additional element to accommodate the fourth player.
 
