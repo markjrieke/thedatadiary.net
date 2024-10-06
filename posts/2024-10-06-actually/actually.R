@@ -258,7 +258,7 @@ pim_teams <-
 
 # compile model
 actually_model <-
-  cmdstan_model("posts/2024-08-28-actually/actualy_04.stan")
+  cmdstan_model("posts/2024-08-28-actually/actually.stan")
 
 stan_data <-
   list(
