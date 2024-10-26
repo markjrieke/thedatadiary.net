@@ -20,6 +20,8 @@ website:
         file: about/about.qmd
       - text: "Projects"
         file: projects/projects.qmd
+      - text: "Consulting"
+        file: consulting/consulting.qmd
   
   page-footer:
     left: |

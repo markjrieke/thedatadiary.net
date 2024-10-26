@@ -20,7 +20,7 @@ repo-actions: [source, issue]
 * [2022 House Forecast](2022-midterms/house.qmd): A simulation-based forecast of House elections in 2022.
 * [2022 Governor Forecasts](2022-midterms/governor.qmd): A simulation-based forecast of Governor elections in 2022.
 
-## Talks, Presetntations, etc.
+## Talks, Presentations, etc.
 
 * [rstudio::conf(2022)](https://www.youtube.com/watch?v=F4osY469UoY): Intro to Workboots: Make Prediction Intervals from Tidymodel Workflows
 * [Data Humans Podcast](https://open.spotify.com/episode/3WYo7Fmiv03ujIJHUs8sYh): Meet Mark Rieke: career transition from mechanical engineering, craving more technical work, and how we all belong in data
