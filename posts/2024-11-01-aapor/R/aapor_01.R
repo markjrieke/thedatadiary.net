@@ -5,7 +5,6 @@ library(tidyverse)
 library(ggdist)
 library(ggblend)
 library(riekelib)
-library(cmdstanr)
 
 # true underlying population/group characteristics
 groups <-
@@ -56,11 +55,6 @@ crossing(poll = 1:n_sims,
   pivot_longer(ends_with("weighted"),
                names_to = "method",
                values_to = "p") %>%
-  filter(differential_response,
-         group_correlation,
-         method == "weighted") %>%
-  pull(p) %>%
-  sd()
   mutate(case = case_when(differential_response & group_correlation ~ "Cell 4: Bias ↓ Variance ↓",
                           !differential_response & group_correlation ~ "Cell 3: Bias -- Variance ↓",
                           differential_response & !group_correlation ~ "Cell 2: Bias -- Variance ↑",
@@ -89,93 +83,7 @@ crossing(poll = 1:n_sims,
                        "Dashed line indicates simulated true population mean",
                        sep = "<br>"))
 
-groups %>%
-  nest(data = everything()) %>%
-  mutate(n = map(data, ~rmultinom(1, 1e4, .x$population)[,1])) %>%
-  unnest(c(data, n)) %>%
-  bind_cols(n0 = rbinom(nrow(.), .$n, .$p_respond)) %>%
-  mutate(n1 = n - n0,
-         pc = n/sum(n),
-         v = pc^2/n0) %>%
-  summarise(v = (sum(v) * 0.05) |> sqrt())
 
-crossing(poll = 1:5000,
-         differential_response = c(TRUE, FALSE),
-         group_correlation = c(TRUE, FALSE),
-         groups) %>%
-  mutate(group_mean = if_else(group_correlation, group_mean, true_mean),
-         p_respond = if_else(differential_response, p_respond, sum(groups$p_respond * groups$population))) %>%
-  nest(data = -c(poll, differential_response, group_correlation)) %>%
-  mutate(n = map(data, ~rmultinom(1, 1e4, .x$population)[,1])) %>%
-  unnest(c(data, n)) %>%
-  bind_cols(n0 = rbinom(nrow(.), .$n, .$p_respond)) %>%
-  mutate(n1 = n - n0,
-         p)
 
-sims <- 
-  groups %>%
-  bind_cols(sigma = c(0.05, 0.075, 0.1, 0.15)) %>%
-  nest(data = everything()) %>%
-  mutate(n = map(data, ~rmultinom(1, 1e4, .x$population)[,1])) %>%
-  unnest(c(data, n)) %>%
-  bind_cols(n0 = rbinom(nrow(.), .$n, .$p_respond)) %>%
-  uncount(n0) %>%
-  bind_cols(Y = rnorm(nrow(.), .$group_mean, .$sigma)) %>%
-  left_join(groups %>% select(group) %>% rowid_to_column("gid"))
-
-wtmean <- cmdstan_model("posts/2024-11-01-aapor/wtmean.stan")
-
-stan_data <-
-  list(
-    N = nrow(sims),
-    G = nrow(groups),
-    Y = sims$Y,
-    gid = sims$gid,
-    wt = groups$population
-  )
-
-wtfit <-
-  wtmean$sample(
-    data = stan_data,
-    seed = 4321,
-    chains = 4,
-    parallel_chains = 4,
-    iter_warmup = 2000,
-    iter_sampling = 2000
-  )
-
-# 0.527, 0.00245sd
-# 0.534, 0.00595
-wtfit$summary("wt_mean")
-
-library(survey)
-library(srvyr)
-
-data(api)
-data(scd)
-
-apistrat %>%
-  as_survey_design(1,
-                   strata = stype,
-                   fpc = fpc,
-                   weight = pw,
-                   variables = c(stype, starts_with("api"))) %>%
-  mutate(api_diff = api00 - api99) %>%
-  rename(api_students = api.stu) %>%
-  summarise(api_diff = survey_mean(api_diff, vartype = "se"))
-
-sims %>%
-  nest(data = -group) %>%
-  left_join(groups %>% select(group, population)) %>%
-  mutate(observed = map_dbl(data, nrow),
-         observed = observed/sum(observed),
-         weight = population/observed) %>%
-  select(group, data, weight) %>%
-  unnest(data) %>%
-  as_survey_design(1, 
-                   strata = group,
-                   weight = weight,
-                   variables = Y) %>%
-  summarise(pop_mean = survey_mean(Y, vartype = "se"))
 
 
