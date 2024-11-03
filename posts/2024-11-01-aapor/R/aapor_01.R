@@ -21,11 +21,14 @@ true_mean <-
   summarise(true_mean = sum(group_mean * population)) %>%
   pull(true_mean)
 
-# simulate polls given differential response rates by group
+# simulation parameters
 n_sims <- 5000
 sample_size <- 700
 sigma <- 0.05
 
+# plot! ------------------------------------------------------------------------
+
+# setup simulation conditions
 crossing(poll = 1:n_sims,
          differential_response = c(TRUE, FALSE),
          group_correlation = c(TRUE, FALSE),
@@ -33,11 +36,15 @@ crossing(poll = 1:n_sims,
   left_join(groups) %>%
   mutate(p_sampled = if_else(differential_response, p_sampled, population),
          group_mean = if_else(group_correlation, group_mean, true_mean)) %>%
+  
+  # simulate responses
   nest(data = -c(poll, differential_response, group_correlation)) %>%
   mutate(K = map(data, ~rmultinom(1, sample_size, .x$p_sampled)[,1])) %>%
   unnest(c(data, K)) %>%
   uncount(K) %>%
   bind_cols(Y = rnorm(nrow(.), .$group_mean, sigma)) %>%
+  
+  # summarize weighted/unweighted mean per simulation
   group_by(poll,
            group,
            differential_response,
@@ -52,6 +59,8 @@ crossing(poll = 1:n_sims,
   summarise(weighted = sum(Y * weight)/sum(weight),
             unweighted = mean(Y)) %>%
   ungroup() %>%
+  
+  # prep for plotting
   pivot_longer(ends_with("weighted"),
                names_to = "method",
                values_to = "p") %>%
@@ -59,6 +68,8 @@ crossing(poll = 1:n_sims,
                           !differential_response & group_correlation ~ "Cell 3: Bias -- Variance ↓",
                           differential_response & !group_correlation ~ "Cell 2: Bias -- Variance ↑",
                           !differential_response & !group_correlation ~ "Cell 1: Bias -- Variance --")) %>%
+  
+  # plot!
   ggplot(aes(x = case,
              y = p,
              color = method,
