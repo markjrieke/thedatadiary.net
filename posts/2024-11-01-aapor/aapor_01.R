@@ -114,12 +114,13 @@ crossing(poll = 1:5000,
 
 sims <- 
   groups %>%
+  bind_cols(sigma = c(0.05, 0.075, 0.1, 0.15)) %>%
   nest(data = everything()) %>%
   mutate(n = map(data, ~rmultinom(1, 1e4, .x$population)[,1])) %>%
   unnest(c(data, n)) %>%
   bind_cols(n0 = rbinom(nrow(.), .$n, .$p_respond)) %>%
   uncount(n0) %>%
-  bind_cols(Y = rnorm(nrow(.), .$group_mean, sigma)) %>%
+  bind_cols(Y = rnorm(nrow(.), .$group_mean, .$sigma)) %>%
   left_join(groups %>% select(group) %>% rowid_to_column("gid"))
 
 wtmean <- cmdstan_model("posts/2024-11-01-aapor/wtmean.stan")
@@ -136,7 +137,7 @@ stan_data <-
 wtfit <-
   wtmean$sample(
     data = stan_data,
-    seed = 1234,
+    seed = 4321,
     chains = 4,
     parallel_chains = 4,
     iter_warmup = 2000,
@@ -144,19 +145,155 @@ wtfit <-
   )
 
 # 0.527, 0.00245sd
+# 0.533, 0.00501sd
 wtfit$summary("wt_mean")
 
-sims %>%
-  group_by(group, n) %>%
-  summarise(n0 = n(),
-            mean = mean(Y)) %>%
-  ungroup() %>%
-  mutate(n1 = n - n0,
-         pc = n/sum(n),
-         v = pc^2/n0) %>%
-  summarise(sd = sqrt(sum(v) * sigma^2))
+gpt_data <- 
+  tibble(
+    group = c('A', 'B', 'C'),
+    gid = 1:3,
+    group_mean = c(20, 25, 15),
+    group_sd = c(5, 7, 4),
+    n = c(500, 400, 600),
+    wt = c(0.3, 0.4, 0.3)
+  )
 
-mutate(n1 = n - n0,
-       pc = n/sum(n),
-       v = pc^2/n0) %>%
-  summarise(v = (sum(v) * 0.05) |> sqrt())
+gpt_Y <- 
+  gpt_data %>%
+  uncount(n) %>%
+  bind_cols(Y = rnorm(nrow(.), .$group_mean, .$group_sd))
+
+stan_data <-
+  list(
+    N = nrow(gpt_Y),
+    G = nrow(gpt_data),
+    Y = gpt_Y$Y,
+    gid = gpt_Y$gid,
+    wt = gpt_data$wt
+  )
+
+wtfit <-
+  wtmean$sample(
+    data = stan_data,
+    seed = 4321,
+    chains = 4,
+    parallel_chains = 4,
+    iter_warmup = 2000,
+    iter_sampling = 5000
+  )
+
+wtfit$summary("wt_mean")
+
+tmp <- 
+  sims %>%
+  group_by(group) %>%
+  summarise(n = max(n),
+            n0 = n(),
+            mean = mean(Y),
+            sd = sd(Y)) %>%
+  mutate(proportion = n/sum(n))
+
+weighted_mean <- 
+  tmp %>%
+  summarise(weighted_mean = sum(proportion * mean)) %>%
+  pull(weighted_mean)
+
+tmp %>%
+  mutate(var = sd^2,
+         var_contrib = (proportion^2/n0) * var) %>%
+  summarise(variance_weighted_mean = sum(var_contrib)) %>%
+  mutate(sd = sqrt(variance_weighted_mean))
+
+gpt_data %>%
+  mutate(var = group_sd^2 / n,
+         weighted_var = wt^2 * var) %>%
+  summarise(wt_var = sum(weighted_var)/sum(wt^2)) %>%
+  mutate(wt_sd = sqrt(wt_var))
+
+weighted_mean_sd <- sqrt(sum((data$wt^2) * (data$group_sd^2)) / (sum(data$wt))^2)
+
+data <- tibble(
+  value = c(10, 20, 30, 40),
+  weight = c(2, 3, 5, 4),    # importance weights
+  uncertainty = c(1.2, 0.5, 1.0, 1.5)  # standard deviation of each observation
+)
+
+wt_mean <- sum(gpt_data$group_mean * gpt_data$wt) / sum(gpt_data$wt)
+wt_var <- sum(gpt_data$wt * ((gpt_data$group_mean - wt_mean)^2 + gpt_data$group_sd^2)) / sum(gpt_data$wt)
+sqrt(wt_var)
+
+sims %>%
+  group_by(group) %>%
+  summarise(n = max(n),
+            n0 = n(),
+            ymean = mean(Y),
+            yvar = var(Y))
+  
+weighted.se.mean <- function(x, w) {
+  
+  # calculate effective N & correction factor
+  n_eff <- (sum(w))^2 / sum(w^2)
+  correction = n_eff / (n_eff - 1)
+  
+  # get weighted variance
+  numerator <- sum(w * (x - weighted.mean(x, w))^2)
+  denominator <- sum(w)
+  
+  # get weighted standard error of the mean
+  se <- sqrt((correction * (numerator/denominator))/n_eff)
+  return(se)
+  
+}
+
+sims %>%
+  select(-c(group_mean, population, p_respond, p_sampled, sigma)) %>%
+  nest(data = Y) %>%
+  mutate(n0 = map_int(data, nrow),
+         o = n0/sum(n0),
+         p = n/sum(n),
+         wt = p/o,
+         mean = map_dbl(data, ~mean(.x$Y)),
+         wt_mean = sum(p * mean)/sum(p)) %>%
+  unnest(data) %>%
+  mutate(wt2 = wt^2,
+         wY2 = wt * Y^2) %>%
+  summarise(sum_wY2 = sum(wY2),
+            sum_w = sum(wt),
+            wt_mean = max(wt_mean),
+            sum_w2 = sum(wt2)) %>%
+  mutate(a = sum_wY2/sum_w - wt_mean^2,
+         b = sum_w2 / (sum_w^2 - sum_w2),
+         var = a * b,
+         sd = sqrt(var))
+
+
+
+  group_by(group) %>%
+  summarise(n = max(n),
+            n0 = n(),
+            group_mean = mean(Y),
+            group_sd = sd(Y)) %>%
+  mutate(observed = n0/sum(n0),
+         population = n/sum(n),
+         wt = population/observed * n0) %>%
+  nest(data = everything()) %>%
+  mutate(wt_mean = map_dbl(data, ~sum(.x$wt * .x$group_mean)/sum(.x$wt)),
+         wt_sd_mean = map_dbl(data, ~sqrt(sum((.x$wt^2) * (.x$group_sd^2)) / (sum(.x$wt))^2)))
+  
+  mutate(weighted_mean = map_dbl(data, ~weighted.mean(.x$Y, .x$w)),
+         weighted_var = map_dbl(data, ~Hmisc::wtd.var(.x$Y, .x$w)),
+         weighted_sd = sqrt(weighted_var))
+  mutate(weighted_mean = map_dbl(data, ~weighted.mean(.x$Y, .x$w)),
+         weighted_se_mean = map_dbl(data, ~weighted.se.mean(.x$Y, .x$w)),
+         weighted_sd = map_dbl(data, ~weighted_se_mean))
+  
+  
+  # Calculate the weighted mean and standard deviation of the weighted mean
+  weighted_mean_sd <- sqrt(sum((data$wt^2) * (data$group_sd^2)) / (sum(data$wt))^2)
+  
+  # Display the result
+  weighted_mean_sd
+
+
+
+

@@ -8,12 +8,12 @@ data {
 
 parameters {
   vector[G] mu;
-  real<lower=0> sigma;
+  vector<lower=0>[G] sigma;
 }
 
 model {
   for (n in 1:N) {
-    target += normal_lpdf(Y[n] | mu[gid[n]], sigma);
+    target += normal_lpdf(Y[n] | mu[gid[n]], sigma[gid[n]]);
   }
 }
 
