@@ -145,155 +145,37 @@ wtfit <-
   )
 
 # 0.527, 0.00245sd
-# 0.533, 0.00501sd
+# 0.534, 0.00595
 wtfit$summary("wt_mean")
 
-gpt_data <- 
-  tibble(
-    group = c('A', 'B', 'C'),
-    gid = 1:3,
-    group_mean = c(20, 25, 15),
-    group_sd = c(5, 7, 4),
-    n = c(500, 400, 600),
-    wt = c(0.3, 0.4, 0.3)
-  )
+library(survey)
+library(srvyr)
 
-gpt_Y <- 
-  gpt_data %>%
-  uncount(n) %>%
-  bind_cols(Y = rnorm(nrow(.), .$group_mean, .$group_sd))
+data(api)
+data(scd)
 
-stan_data <-
-  list(
-    N = nrow(gpt_Y),
-    G = nrow(gpt_data),
-    Y = gpt_Y$Y,
-    gid = gpt_Y$gid,
-    wt = gpt_data$wt
-  )
-
-wtfit <-
-  wtmean$sample(
-    data = stan_data,
-    seed = 4321,
-    chains = 4,
-    parallel_chains = 4,
-    iter_warmup = 2000,
-    iter_sampling = 5000
-  )
-
-wtfit$summary("wt_mean")
-
-tmp <- 
-  sims %>%
-  group_by(group) %>%
-  summarise(n = max(n),
-            n0 = n(),
-            mean = mean(Y),
-            sd = sd(Y)) %>%
-  mutate(proportion = n/sum(n))
-
-weighted_mean <- 
-  tmp %>%
-  summarise(weighted_mean = sum(proportion * mean)) %>%
-  pull(weighted_mean)
-
-tmp %>%
-  mutate(var = sd^2,
-         var_contrib = (proportion^2/n0) * var) %>%
-  summarise(variance_weighted_mean = sum(var_contrib)) %>%
-  mutate(sd = sqrt(variance_weighted_mean))
-
-gpt_data %>%
-  mutate(var = group_sd^2 / n,
-         weighted_var = wt^2 * var) %>%
-  summarise(wt_var = sum(weighted_var)/sum(wt^2)) %>%
-  mutate(wt_sd = sqrt(wt_var))
-
-weighted_mean_sd <- sqrt(sum((data$wt^2) * (data$group_sd^2)) / (sum(data$wt))^2)
-
-data <- tibble(
-  value = c(10, 20, 30, 40),
-  weight = c(2, 3, 5, 4),    # importance weights
-  uncertainty = c(1.2, 0.5, 1.0, 1.5)  # standard deviation of each observation
-)
-
-wt_mean <- sum(gpt_data$group_mean * gpt_data$wt) / sum(gpt_data$wt)
-wt_var <- sum(gpt_data$wt * ((gpt_data$group_mean - wt_mean)^2 + gpt_data$group_sd^2)) / sum(gpt_data$wt)
-sqrt(wt_var)
+apistrat %>%
+  as_survey_design(1,
+                   strata = stype,
+                   fpc = fpc,
+                   weight = pw,
+                   variables = c(stype, starts_with("api"))) %>%
+  mutate(api_diff = api00 - api99) %>%
+  rename(api_students = api.stu) %>%
+  summarise(api_diff = survey_mean(api_diff, vartype = "se"))
 
 sims %>%
-  group_by(group) %>%
-  summarise(n = max(n),
-            n0 = n(),
-            ymean = mean(Y),
-            yvar = var(Y))
-  
-weighted.se.mean <- function(x, w) {
-  
-  # calculate effective N & correction factor
-  n_eff <- (sum(w))^2 / sum(w^2)
-  correction = n_eff / (n_eff - 1)
-  
-  # get weighted variance
-  numerator <- sum(w * (x - weighted.mean(x, w))^2)
-  denominator <- sum(w)
-  
-  # get weighted standard error of the mean
-  se <- sqrt((correction * (numerator/denominator))/n_eff)
-  return(se)
-  
-}
-
-sims %>%
-  select(-c(group_mean, population, p_respond, p_sampled, sigma)) %>%
-  nest(data = Y) %>%
-  mutate(n0 = map_int(data, nrow),
-         o = n0/sum(n0),
-         p = n/sum(n),
-         wt = p/o,
-         mean = map_dbl(data, ~mean(.x$Y)),
-         wt_mean = sum(p * mean)/sum(p)) %>%
+  nest(data = -group) %>%
+  left_join(groups %>% select(group, population)) %>%
+  mutate(observed = map_dbl(data, nrow),
+         observed = observed/sum(observed),
+         weight = population/observed) %>%
+  select(group, data, weight) %>%
   unnest(data) %>%
-  mutate(wt2 = wt^2,
-         wY2 = wt * Y^2) %>%
-  summarise(sum_wY2 = sum(wY2),
-            sum_w = sum(wt),
-            wt_mean = max(wt_mean),
-            sum_w2 = sum(wt2)) %>%
-  mutate(a = sum_wY2/sum_w - wt_mean^2,
-         b = sum_w2 / (sum_w^2 - sum_w2),
-         var = a * b,
-         sd = sqrt(var))
-
-
-
-  group_by(group) %>%
-  summarise(n = max(n),
-            n0 = n(),
-            group_mean = mean(Y),
-            group_sd = sd(Y)) %>%
-  mutate(observed = n0/sum(n0),
-         population = n/sum(n),
-         wt = population/observed * n0) %>%
-  nest(data = everything()) %>%
-  mutate(wt_mean = map_dbl(data, ~sum(.x$wt * .x$group_mean)/sum(.x$wt)),
-         wt_sd_mean = map_dbl(data, ~sqrt(sum((.x$wt^2) * (.x$group_sd^2)) / (sum(.x$wt))^2)))
-  
-  mutate(weighted_mean = map_dbl(data, ~weighted.mean(.x$Y, .x$w)),
-         weighted_var = map_dbl(data, ~Hmisc::wtd.var(.x$Y, .x$w)),
-         weighted_sd = sqrt(weighted_var))
-  mutate(weighted_mean = map_dbl(data, ~weighted.mean(.x$Y, .x$w)),
-         weighted_se_mean = map_dbl(data, ~weighted.se.mean(.x$Y, .x$w)),
-         weighted_sd = map_dbl(data, ~weighted_se_mean))
-  
-  
-  # Calculate the weighted mean and standard deviation of the weighted mean
-  weighted_mean_sd <- sqrt(sum((data$wt^2) * (data$group_sd^2)) / (sum(data$wt))^2)
-  
-  # Display the result
-  weighted_mean_sd
-
-
+  as_survey_design(1, 
+                   strata = group,
+                   weight = weight,
+                   variables = Y) %>%
+  summarise(pop_mean = survey_mean(Y, vartype = "se"))
 
 
