@@ -8,10 +8,10 @@ library(riekelib)
 
 # true underlying population/group characteristics
 groups <-
-  tibble(group = LETTERS[1:4],
-         group_mean = c(400, 800, 700, 600),
-         population = c(0.6, 0.2, 0.1, 0.1),
-         p_respond = c(0.1, 0.05, 0.03, 0.01)) %>%
+  tibble(group = LETTERS[1:2],
+         group_mean = c(0.03, 0.97),
+         population = c(0.5, 0.5),
+         p_respond = c(0.05, 0.07)) %>%
   mutate(p_sampled = population * p_respond,
          p_sampled = p_sampled/sum(p_sampled))
 
@@ -24,7 +24,6 @@ true_mean <-
 # simulation parameters
 n_sims <- 5000
 sample_size <- 700
-sigma <- 50
 
 # plot! ------------------------------------------------------------------------
 
@@ -41,23 +40,17 @@ crossing(poll = 1:n_sims,
   nest(data = -c(poll, differential_response, group_correlation)) %>%
   mutate(K = map(data, ~rmultinom(1, sample_size, .x$p_sampled)[,1])) %>%
   unnest(c(data, K)) %>%
-  uncount(K) %>%
-  bind_cols(Y = rnorm(nrow(.), .$group_mean, sigma)) %>%
+  bind_cols(Y = rbinom(nrow(.), .$K, .$group_mean)) %>%
   
   # summarize weighted/unweighted mean per simulation
   group_by(poll,
-           group,
            differential_response,
            group_correlation) %>%
-  mutate(n_group = n()) %>%
-  group_by(poll,
-           differential_response,
-           group_correlation) %>%
-  mutate(n_total = n(),
-         observed = n_group/n_total,
+  mutate(n_total = sum(K),
+         observed = K/n_total,
          weight = population/observed) %>%
-  summarise(weighted = sum(Y * weight)/sum(weight),
-            unweighted = mean(Y)) %>%
+  summarise(weighted = sum(Y * weight)/sum(K * weight),
+            unweighted = sum(Y)/sum(K)) %>%
   ungroup() %>%
   
   # prep for plotting
@@ -74,25 +67,27 @@ crossing(poll = 1:n_sims,
              y = p,
              color = method,
              fill = method)) + 
-  stat_histinterval(slab_alpha = 0.75) %>% partition(vars(method)) %>% blend("darken") +
+  stat_histinterval(slab_alpha = 0.75,
+                    breaks = seq(from = 0.4, to = 0.7, by = 0.003125)) %>% partition(vars(method)) %>% blend("darken") +
   geom_hline(yintercept = true_mean,
              linetype = "dotted",
              color = "gray40") +
   scale_color_brewer(palette = "Set2") + 
   scale_fill_brewer(palette = "Set2") + 
+  scale_y_percent() +
   coord_flip() + 
   theme_rieke() + 
   theme(legend.position = "bottom") + 
   labs(title = "**Effect of weighting on estimates of the population mean**",
        subtitle = paste("Weighting on subgroups **decreases biase** and **decreases variance** when group",
-                        "membership is highly correlated with response rate and preference in **continuous outcomes**",
+                        "membership is highly correlated with response rate and preference in **binary outcomes**",
                         sep = "<br>"),
        x = NULL,
        y = NULL,
        caption = paste("Distribution of weighted and unweighted population means for 5,000 simulated surveys",
                        "Dashed line indicates simulated true population mean",
                        sep = "<br>"))
-  
+
 
 
 
