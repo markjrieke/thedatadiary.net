@@ -1,22 +1,23 @@
 data {
   int N;
   int G;
-  vector[N] Y;
+  array[N] int Y;
+  array[N] int K;
   array[N] int<lower=1,upper=G> gid;
   vector[G] wt;
 }
 
 parameters {
   vector[G] mu;
-  vector<lower=0>[G] sigma;
 }
 
 model {
   for (n in 1:N) {
-    target += normal_lpdf(Y[n] | mu[gid[n]], sigma[gid[n]]);
+    target += binomial_logit_lpmf(Y[n] | K[n], mu[gid[n]]);
   }
 }
 
 generated quantities {
-  real wt_mean = dot_product(mu, wt);
+  vector[G] theta = inv_logit(mu);
+  real wt_mean = sum(theta .* wt .* to_vector(K))/sum(wt .* to_vector(K));
 }
