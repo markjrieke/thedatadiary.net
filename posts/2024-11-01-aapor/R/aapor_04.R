@@ -5,6 +5,7 @@ library(tidyverse)
 library(riekelib)
 library(cmdstanr)
 library(ggdist)
+library(ggblend)
 
 # plot colors
 dd_green <- "#5A9282"
