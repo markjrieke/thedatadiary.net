@@ -1,9 +1,18 @@
 # setup ------------------------------------------------------------------------
 
+# libraries
 library(tidyverse)
 library(riekelib)
 library(cmdstanr)
+library(ggdist)
+
+# plot colors
+dd_green <- "#5A9282"
+dd_oppo <- "#c0aa72"
   
+# true conditions --------------------------------------------------------------
+
+# group-level probability of support, population proportion, and probability of response
 groups <- 
   crossing(strata_1 = LETTERS[1:2],
            strata_2 = 1:2) %>%
@@ -14,7 +23,7 @@ groups <-
          p_sampled = population * p_respond,
          p_sampled = p_sampled/sum(p_sampled))
   
-
+# pollster bias, frequency of surveying, and target sample size
 set.seed(123)
 pollsters <-
   tibble(pollster = paste("Pollster", 1:20),
@@ -23,12 +32,39 @@ pollsters <-
   bind_cols(p_survey = gamlss.dist::rBE(nrow(.), 1/7, 0.1))  %>%
   bind_cols(target_sample = rnorm(nrow(.), 1000, 200))
 
+# stan models ------------------------------------------------------------------
+
+# util stan "model" for estimating the weighted mean/sd
 wtmean <-
   cmdstan_model(
     "posts/2024-11-01-aapor/stan/wtmean.stan",
     dir = "posts/2024-11-01-aapor/exe/"
   )
+
+# poll aggregation model with a binomial likelihood
+binomial_model <-
+  cmdstan_model(
+    "posts/2024-11-01-aapor/stan/binomial.stan",
+    dir = "posts/2024-11-01-aapor/exe/"
+  )
+
+# poll aggregation model with a beta likelihood (mean-variance parameterization)
+beta_model <-
+  cmdstan_model(
+    "posts/2024-11-01-aapor/stan/beta.stan",
+    dir = "posts/2024-11-01-aapor/exe/"
+  )
+
+# poll aggregation model with a normal likelihood
+normal_model <-
+  cmdstan_model(
+    "posts/2024-11-01-aapor/stan/normal.stan",
+    dir = "posts/2024-11-01-aapor/exe/"
+  )
+
+# simulation functions ---------------------------------------------------------
   
+# simulate whether (or not) each pollster conducts a survey on any given day
 simulate_survey <- function() {
   
   pollsters %>%
@@ -38,6 +74,7 @@ simulate_survey <- function() {
   
 }
 
+# compute the weighted mean/sd for a survey given a weighting strategy
 weighted_mean <- function(data,
                           strategy) {
   
@@ -96,6 +133,146 @@ weighted_mean <- function(data,
   
 }
 
+# plotting functions -----------------------------------------------------------
+
+# extract the likelihood from a model fit to be used in the plot
+extract_likelihood <- function(model) {
+  
+  # extract raw stan code
+  model_code <- 
+    model$code() %>%
+    str_c(collapse = "\n")
+  
+  # infer likelihood from model code
+  likelihood <- 
+    case_when(
+      str_detect(model_code, "binomial_logit_lpmf\\(Y \\| K, mu\\)") ~ "binomial",
+      str_detect(model_code, "beta_lpdf\\(Y \\| alpha_poll, beta_poll\\)") ~ "beta",
+      str_detect(model_code, "normal_lpdf\\(Y \\| mu, sigma\\)") ~ "normal"
+    )
+  
+  return(likelihood)
+  
+}
+
+# plot the modeled two-party voteshare along with the distribution of polls
+plot_voteshare <- function(model, cred_level = 0.95) {
+  
+  # extract likelihood to use in chart
+  likelihood <- extract_likelihood(model)
+  
+  # extract parameter draws for voteshare
+  draws <- 
+    model$draws("theta", format = "df") %>%
+    as_tibble()
+  
+  # used in caption
+  n_draws <- nrow(draws)
+  
+  # plot!
+  out <- 
+    draws %>% 
+    pivot_longer(starts_with("theta"),
+                 names_to = "did",
+                 values_to = "theta") %>%
+    nest(data = -did) %>%
+    mutate(did = parse_number(did),
+           med = map_dbl(data, ~quantile(.x$theta, probs = 0.5)),
+           .lower = map_dbl(data, ~quantile(.x$theta, probs = (1 - cred_level)/2)),
+           .upper = map_dbl(data, ~quantile(.x$theta, probs = (1 - cred_level)/2 + cred_level))) %>%
+    ggplot(aes(x = did,
+               y = med,
+               ymin = .lower,
+               ymax = .upper)) + 
+    geom_ribbon(alpha = 0.4,
+                fill = dd_green) +
+    geom_point(data = polls,
+               mapping = aes(x = day,
+                             y = mean,
+                             size = n,
+                             ymin = NULL,
+                             ymax = NULL),
+               shape = 21,
+               color = dd_green,
+               alpha = 0.5) + 
+    geom_line(color = dd_green,
+              linewidth = 0.8) %>% copy_under(color = "white", linewidth = 1.6) + 
+    scale_y_percent() + 
+    theme_rieke() + 
+    theme(legend.position = "none") + 
+    labs(title = "**A Summary of Simulated Sentiment**",
+         subtitle = glue::glue("Two-party candidate voteshare as modeled by a ",
+                               "**{color_text(likelihood, dd_green)}** likelihood"),
+         x = "Day of campaign",
+         y = NULL,
+         caption = glue::glue("Shaded region indicates {scales::label_percent(accuracy = 1)(cred_level)} ",
+                              "posterior credible<br>",
+                              "interval based on {scales::label_comma()(n_draws)} MCMC samples")) +
+    expand_limits(y = c(0.4, 0.6))
+  
+  return(out)
+  
+}
+
+# plot the parameter estimates as fitted by the model
+plot_parameters <- function(model) {
+  
+  # extract likelihood to use in chart
+  likelihood <- extract_likelihood(model)
+  
+  # extract parameter draws for voteshare
+  draws <- 
+    model$draws("beta_p", format = "df") %>%
+    as_tibble()
+  
+  # used in caption
+  n_draws <- nrow(draws)
+  
+  # plot!
+  out <- 
+    draws %>%
+    pivot_longer(starts_with("beta"),
+                 names_to = "pollster",
+                 values_to = "beta") %>%
+    mutate(pollster = paste("Pollster", parse_number(pollster))) %>%
+    group_by(pollster) %>%
+    median_qi(beta, .width = c(0.66, 0.95)) %>%
+    left_join(pollsters) %>%
+    left_join(polls %>% count(pollster)) %>%
+    mutate(pollster = glue::glue("{pollster} ({n})"),
+           pollster = fct_reorder(pollster, bias),
+           strategy = if_else(strategy == "cross",
+                              "Weight on Highly Correlated Vars",
+                              "Weight on Mildly Correlated Vars")) %>%
+    ggplot(aes(x = pollster,
+               y = beta,
+               ymin = .lower,
+               ymax = .upper)) +
+    geom_pointinterval(color = dd_green) + 
+    geom_point(aes(y = bias),
+               color = dd_oppo,
+               size = 3,
+               alpha = 0.75) +
+    facet_wrap(~strategy, scales = "free_y") + 
+    coord_flip() + 
+    theme_rieke() +
+    labs(title = "**Poll-model Parameters**",
+         subtitle = glue::glue("**{color_text('Parameter estimates', dd_green)}** and ",
+                               "**{color_text('simulated values', dd_oppo)}** of pollster bias as modeled by a ",
+                               "**{color_text(likelihood, dd_green)}** likelihood"),
+         x = NULL,
+         y = "\u03b2<sub>p</sub> (logit scale)",
+         caption = glue::glue("Pointrange indicates 66/95% posterior credible",
+                              "interval based on {scales::label_comma()(n_draws)} MCMC samples",
+                              .sep = "<br>")) + 
+    expand_limits(y = c(-0.13, 0.13))
+  
+  return(out)
+  
+}
+
+# simulate polls ---------------------------------------------------------------
+
 set.seed(4321)
 polls <- 
   tibble(day = 1:90) %>%
@@ -118,6 +295,8 @@ polls <-
   mutate(across(c(mean, median, q5, q95),
                 ~expit(logit(.x) + bias)))
 
+# binomial model ---------------------------------------------------------------
+
 binomial_data <- 
   polls %>%
   select(day,
@@ -128,12 +307,6 @@ binomial_data <-
          K = n,
          did = day,
          pid = parse_number(pollster))
-
-binomial_model <-
-  cmdstan_model(
-    "posts/2024-11-01-aapor/stan/binomial.stan",
-    dir = "posts/2024-11-01-aapor/exe/"
-  )
 
 stan_data <-
   list(
@@ -163,32 +336,11 @@ binomial_fit <-
     step_size = 0.002
   )
 
-binomial_fit$summary("theta") %>%
-  mutate(did = parse_number(variable)) %>%
-  ggplot(aes(x = did,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_ribbon(alpha = 0.125) + 
-  geom_line() +
-  expand_limits(y = c(0.4, 0.6))
+# plots
+binomial_fit %>% plot_voteshare()
+binomial_fit %>% plot_parameters()
 
-binomial_fit$summary("beta_p") %>%
-  mutate(pollster = paste("Pollster", parse_number(variable))) %>%
-  left_join(pollsters) %>%
-  left_join(binomial_data %>% count(pollster)) %>%
-  mutate(pollster = paste0(pollster, " (", n, ")"),
-         pollster = fct_reorder(pollster, bias)) %>%
-  ggplot(aes(x = pollster,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_pointrange() +
-  geom_point(aes(y = bias),
-             color = "red") +
-  coord_flip() +
-  facet_wrap(~strategy, scales = "free") +
-  expand_limits(y = c(-0.1, 0.1))
+# beta model -------------------------------------------------------------------
 
 beta_data <- 
   polls %>%
@@ -200,12 +352,6 @@ beta_data <-
          sigma = sd,
          did = day,
          pid = parse_number(pollster))
-
-beta_model <-
-  cmdstan_model(
-    "posts/2024-11-01-aapor/stan/beta.stan",
-    dir = "posts/2024-11-01-aapor/exe/"
-  )
 
 stan_data <-
   list(
@@ -235,40 +381,13 @@ beta_fit <-
     step_size = 0.002
   )
 
-beta_fit$summary("theta") %>%
-  mutate(did = parse_number(variable)) %>%
-  ggplot(aes(x = did,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_ribbon(alpha = 0.125) + 
-  geom_line() +
-  expand_limits(y = c(0.4, 0.6))
+beta_fit %>% plot_voteshare()
+beta_fit %>% plot_parameters()
 
-beta_fit$summary("beta_p") %>%
-  mutate(pollster = paste("Pollster", parse_number(variable))) %>%
-  left_join(pollsters) %>%
-  left_join(binomial_data %>% count(pollster)) %>%
-  mutate(pollster = paste0(pollster, " (", n, ")"),
-         pollster = fct_reorder(pollster, bias)) %>%
-  ggplot(aes(x = pollster,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_pointrange() +
-  geom_point(aes(y = bias),
-             color = "red") +
-  coord_flip() +
-  facet_wrap(~strategy, scales = "free") +
-  expand_limits(y = c(-0.1, 0.1))
+# normal model -----------------------------------------------------------------
 
+# normal model uses the same data as the beta model
 normal_data <- beta_data
-
-normal_model <-
-  cmdstan_model(
-    "posts/2024-11-01-aapor/stan/normal.stan",
-    dir = "posts/2024-11-01-aapor/exe/"
-  )
 
 stan_data <-
   list(
@@ -298,29 +417,5 @@ normal_fit <-
     step_size = 0.002
   )
 
-normal_fit$summary("theta") %>%
-  mutate(did = parse_number(variable)) %>%
-  ggplot(aes(x = did,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_ribbon(alpha = 0.125) + 
-  geom_line() +
-  expand_limits(y = c(0.4, 0.6))
-
-normal_fit$summary("beta_p") %>%
-  mutate(pollster = paste("Pollster", parse_number(variable))) %>%
-  left_join(pollsters) %>%
-  left_join(binomial_data %>% count(pollster)) %>%
-  mutate(pollster = paste0(pollster, " (", n, ")"),
-         pollster = fct_reorder(pollster, bias)) %>%
-  ggplot(aes(x = pollster,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_pointrange() +
-  geom_point(aes(y = bias),
-             color = "red") +
-  coord_flip() +
-  facet_wrap(~strategy, scales = "free") +
-  expand_limits(y = c(-0.1, 0.1))
+normal_fit %>% plot_voteshare()
+normal_fit %>% plot_parameters()

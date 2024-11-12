@@ -55,7 +55,7 @@ transformed parameters {
   mu = inv_logit(mu);
   
   // Convert to beta parameters
-  vector[N] alpha_poll = mu .* (1 - sigma^2) ./ (sigma^2);
+  vector[N] alpha_poll = mu^2 .* (1 - mu) ./ sigma^2 - mu;
   vector[N] beta_poll = alpha_poll .* (1 - mu) ./ mu;
 }
 
