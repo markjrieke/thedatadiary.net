@@ -10,7 +10,7 @@ groups <-
          population = c(0.5, 0.5))
 
 # simulation parameters
-n_sims <- 500
+n_sims <- 5000
 sample_size <- 700
 
 # simulate responses -----------------------------------------------------------
