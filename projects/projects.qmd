@@ -22,7 +22,7 @@ repo-actions: [source, issue]
 
 ## Talks, Presentations, etc.
 
-* **2024 Corporate Retreat**: Machine go brrrrr: Making analysis easy and fun with computational statistics ([slides](https://markjrieke.github.io/2024-corporate-retreat/statistics-is-fun.html) | [repo](https://github.com/markjrieke/2024-corporate-retreat)).
+* **2024 Corporate Retreat**: Machine go brrrrr: Statistics is easy if you let the computer do all the work ([slides](https://markjrieke.github.io/2024-corporate-retreat/statistics-is-fun.html) | [repo](https://github.com/markjrieke/2024-corporate-retreat)).
 * **Kudzu Vine Radio Show**: Mark Rieke of the Data Diary discusses his election forecasting model ([recording](https://www.blogtalkradio.com/kudzu/2024/09/29/mark-rieke-of-the-data-diary)).
 * **Data Humans Podcast**: Meet Mark Rieke: career transition from mechanical engineering, craving more technical work, and how we all belong in data ([recording](https://open.spotify.com/episode/3WYo7Fmiv03ujIJHUs8sYh)).
 * **rstudio::conf(2022)**: Intro to Workboots: Make Prediction Intervals from Tidymodel Workflows ([recording](https://www.youtube.com/watch?v=F4osY469UoY) | [slides](https://github.com/markjrieke/rstudio-conf-2022) | [package site](https://markjrieke.github.io/workboots/)).
