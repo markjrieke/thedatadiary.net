@@ -50,7 +50,7 @@ Although the project was largely successful, nothing is ever perfect. I have a l
 
 ### Re-write the prior model
 
-The [prior model](https://github.com/markjrieke/2024-potus/blob/main/stan/priors.stan) that generates state-level priors is, frankly, far too simple. It's based on Alan Abramowitz' [*Time for Change*](https://www.washingtonpost.com/blogs/ezra-klein/files/2012/08/abramowitz.pdf) model, which estimates the national two-party voteshare for the incumbent party using three variables: economioc growth measured in the year-over-year change in real GDP, incumbent approval, and whether (or not) the incumbent president is running. 
+The [prior model](https://github.com/markjrieke/2024-potus/blob/main/stan/priors.stan) that generates state-level priors is, frankly, far too simple. It's based on Alan Abramowitz' [*Time for Change*](https://www.washingtonpost.com/blogs/ezra-klein/files/2012/08/abramowitz.pdf) model, which estimates the national two-party voteshare for the incumbent party using three variables: economic growth measured in the year-over-year change in real GDP, incumbent approval, and whether (or not) the incumbent president is running. 
 
 $$
 \begin{align*}
