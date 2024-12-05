@@ -1,0 +1,149 @@
+---
+title: "2024 POTUS Model Retrospective"
+date: '2024-12-03'
+categories: [politics]
+description: "What went well, what could be improved, and where to go from here"
+image: img/header.png
+---
+
+It's a little less than month out from election day, 2024. Votes are still being tallied to determine the final results,^[Looking at you, [CA-13](https://www.nbcnews.com/politics/2024-elections/california-us-house-district-13-results).] but the topline result has been clear for some time: Donald Trump has been re-elected to the presidency and Republicans have won control of both the House and Senate. 
+
+Candidly, this is not the result I was hoping for. Presidential models (including [my own](../../2024-potus/National.qmd)) showed a highly uncertain race that either candidate could win. I had hoped that, in what was a coin toss election, Kamala Harris and the Democratic Party would emerge victorious. The fact that this didn't happen kept me from engaging in political endeavors for a bit.^[For example, I had originally planned to write this article a week or so after election day.]
+
+Still, it's important to divorce the outcome I wanted from a retrospective analysis of the successes and failures of the model as a large scale project. Here, I describe what went well, what could be improved, and broader thoughts about the political modeling landscape writ large.
+
+## What went well
+
+### Quantifying Uncertainty
+
+Fundamentally, this project achieved the stated goal of providing readers with a reasonable outlook on the presidential race. The model was generally correct in terms of predicting the winner in each state.^[With the exception of Wisconsin and Michigan, all state forecasts allocated a higher probability of winning to the eventual winner.] More importantly, however, the model *quantified uncertainty* in the outcome. The final forecast gave Trump a 53% chance of winning, but plausible outcomes in the electoral college included everything from a clear victory for either candidate to a narrowly decided election. 
+
+:::{.column-page-inset}
+
+![](img/ev.png)
+
+:::
+
+Further, I took great care in ensuring that the outcome reflected the uncertainty collected at each stage in the modeling process. Biden's approval rating, for example, is an estimated value that comes with uncertainty but is also used as a predictor. The model incorporates [measurement error](https://en.wikipedia.org/wiki/Observational_error) in the predictors so that the uncertainty is propagated throughout the model. 
+
+### Open Source 
+
+This project was fully open source --- the Stan models, data pipeline, and site support functions all reside in the public [project repository](https://github.com/markjrieke/2024-potus). Making everything open source was very important to me, for several reasons:
+
+* Science is predicated on knowledge propagation and open science fosters knowledge sharing better than closed science. This ideally helps to improve the quality of work for the field in general. For example, [good faith critiques](https://x.com/gelliottmorris/status/1833573065374187557) of the model methodology were made *because* the model was public and available for critiquing. If I build another election model,^[More on this, later.] I will likely implement changes based on these critiques to improve the model!
+* I owe a lot to open source development. In 2020, I discovered an interest^[Or perhaps, a borderline obsession.] with Bayesian inference and modeling in part because the Economist made a portion of their [2020 presidential model](https://github.com/TheEconomist/us-potus-model) open source. This led to a full 180-degree career change and I am now happily employed as a Data Scientist who writes Stan for a living. Neat!
+* As far as I can tell, no other forecasters --- and certainly not any of the [more prominent ones](https://github.com/markjrieke/2024-potus/tree/main?tab=readme-ov-file#other-forecasts) --- made their model code public, though I understand the business decision to not do so. While I would have made the model open source regardless, doing so also (selfishly) was a unique selling point.
+* I didn't want to pay for github premium.
+
+Making everything open source also was a forcing function for *writing really clean code*. I am pretty proud of the fact that the scripts are very legible, every function includes robust documentation, and the model specifications are written out in explicit detail via READMEs. I would be absolutely tickled if someone is able to take this repository as a launching point or inspiration for their own forecast in 2028. 
+
+
+### Graphics and site design
+
+The design of the project page is, at risk of tooting my own horn too much, absolutely sick. I am, by no stretch of the word, a front-end developer. Still, I was able to figure out enough custom HTML and CSS^[With [some guidance](https://forum.posit.co/t/directory-level-yaml-gets-applied-to-entire-quarto-website/188328) from the helpful folks at Posit.] to be able to layout the project pages in a slick manner. I can't write Javascript, but I was able to make every chart interactive. I even figured out how to make paired highlighting work between the state map and electoral vote bar beneath it! I worked hard on the site design, and I'm happy with how it turned out.
+
+![](img/map.png)
+
+## What could be improved
+
+Although the project was largely successful, nothing is ever perfect. I have a lengthy list of [open issues](https://github.com/markjrieke/2024-potus/issues) that give ideas for potential improvements. They're too long to go through in full detail here (and most are minor modeling improvements), but I'll highlight a few that are important and top of mind. 
+
+### Re-write the prior model
+
+The [prior model](https://github.com/markjrieke/2024-potus/blob/main/stan/priors.stan) that generates state-level priors is, frankly, far too simple. It's based on Alan Abramowitz' [*Time for Change*](https://www.washingtonpost.com/blogs/ezra-klein/files/2012/08/abramowitz.pdf) model, which estimates the national two-party voteshare for the incumbent party using three variables: economic growth measured in the year-over-year change in real GDP, incumbent approval, and whether (or not) the incumbent president is running. 
+
+$$
+\begin{align*}
+V_i &\sim \text{Normal}(\mu_i, \sigma) \\
+\text{logit}(\mu_i) &= \alpha + \beta_{\text{approval}}A_i + \beta_{\text{GDP}} G_i + \beta_{\text{incumbent}} I_i
+\end{align*}
+$$
+
+Simplicity in and of itself is not a bad thing! To keep the project moving, it made sense to keep the prior allocation model simple --- this allowed me to spend more time on the more difficult poll model. Selection on a few predictors, however, hinges on the specific set of predictors included. Public sentiment is messy and complex, so a small subset of predictors is [unlikely to provide consistent out-of-sample predictive value](https://fivethirtyeight.com/features/which-economic-indicators-best-predict-presidential-elections/). 
+
+A better methodology is presented in [Lauderdale & Linzer, 2015](https://votamatic.org/wp-content/uploads/2015/08/2015LauderdaleLinzerIJF.pdf), in which *state-level* results are estimated using a large number of state and national predictors. They use Bayesian regularization to guard against over-estimating the effects of each individual predictor and avoid over-fitting the model while still returning a posterior distribution.^[Unlike frequentist or machine learning-based regularization techniques, which can [only return point estimates](https://stats.stackexchange.com/questions/402267/how-to-obtain-confidence-intervals-for-a-lasso-regression).] If I build out another presidential model, I'd rewrite the prior model to make use of Lauderdale & Linzer-esque priors.
+  
+### Re-paramaterize the poll model
+
+Although the [poll model](https://github.com/markjrieke/2024-potus/blob/main/stan/polls.stan) involves a bit of somewhat complicated math along the way, the actual estimation for the voteshare in each state is simply:
+
+$$
+\begin{align*}
+\hat{\mu}_{s,d} &= \alpha_s + \beta_s + \beta_{s,d}
+\end{align*}
+$$
+
+where, for each state, $s$, on each day, $d$, $\hat{\mu}_{s,d}$ is the mean predicted voteshare, $\alpha_s$ is the election-day prior mean, $\beta_s$ is the state-level average deviation from the prior mean throughout the election cycle, and $\beta_{s,d}$ is a time varying parameter that captures any further deviation from the cycle-level average in state $s$ on day $d$.^[For clarity, everything here is on the logit scale.] The site predictions always display the election day forecast ($d=D$).
+
+My thinking with this parameterization was the following:
+
+* $\alpha_s$ is the prior mean voteshare,
+* $\beta_s$ captures how wrong the prior is on average, based on state-level polls, and
+* $\beta_{s,d}$ captures changes in voter preference over time.
+
+This was reasonable, but in hindsight flawed, thinking. $\beta_s$ updates to match the state-level average voteshare as polls come in. This means that the model could see large jumps when a state gets its first few polls --- when the first poll comes in, $\beta_s$ rushes to match the average! This resulted in some flatly ridiculous behavior. Take, for example, the projected voteshare in [North Dakota](../../2024-potus/North Dakota.qmd):
+
+::: {.column-page-inset}
+
+![](img/north_dakota.png)
+
+:::
+
+In highly-polled states with static public opinion,^[Public opinion as measured by polls was pretty much [a horizontal line](https://projects.fivethirtyeight.com/polls/president-general/2024/national/) throughout the campaign.] this wasn't much of a problem. And the fix to the parameterization wouldn't have changed the final election day forecast. But this small change *would* have made for a more stable and beliveable forecast.
+
+$$
+\begin{align*}
+\hat{\mu}_{s,d} &= \alpha_s + \beta_{s,d}
+\end{align*}
+$$
+
+Removing $\beta_s$ from the model forces all deviations from the state-level prior to be accounted for by $\beta_{s,d}$. This would have resulted in a more stable forecast. $\beta_{s,d}$ has a mean-0 election day prior and works backwards through time to fit a trendline to polls conducted throughout the campaign.^[Linzer, 2013, refers to this as a ["reverse random walk"](https://votamatic.org/wp-content/uploads/2013/07/Linzer-JASA13.pdf).] Far away from election day, $\beta_{s,D}$ is still be close to 0 on average. This means that $\hat{\mu}_{s,D}$ wouldn't be able to bounce around wildly, since $\beta_s$ is no longer present to "chase" the average.
+  
+### Visualization and communication
+
+Although I expended a lot of effort and am quite happy with how the site looks on desktop/laptop, the experience when viewed from a phone is serviceable at best. If I make another electoral forecast, I'll need to spend a lot more time making sure the site provides a good user experience on both desktop *and* mobile. Since I want to keep interactivity and chart customization at the forefront, this may involve finally learning D3 --- a potentially scary but potentially worthwhile endeavor. 
+
+In thinking about models as tools for communicating probabilities and uncertainty more broadly, I'm exploring more options for displaying results that [focus on uncertainty, rather than point estimates](https://github.com/markjrieke/2024-potus/issues/24). Due in part because the outcome was so uncertain this election cycle, entire news cycles were driven by *tiny* (< 0.3 percentage point) changes in polling averages, despite the fact that the fundamental state of the race --- uncertain --- remained unchanged!^[I'm no longer active on twitter --- keep up with me [on Bluesky](https://bsky.app/profile/markjrieke.bsky.social) instead.]
+
+{{< tweet markjrieke 1851004557150539825 >}}
+
+## More philosophical
+
+### Public polling is a public good
+
+As I stated earlier, open science fosters good science. Polling is the science of measuring public opinion and pollsters who release publicly polls are doing the public a favor. News and media platforms benefit in terms of traffic they generate in covering the results of public polls and aggregators/forecasters like me benefit from freely available data for modeling.^[It's *really* worth stressing that pollsters are giving us, the public, their product *for free*.]
+
+Pollsters catch a lot of undue flack during election cycles, especially when a race is close and the public is hyper-analyzing imperceptibly small shifts in the median topline result.^[For clarity, polling "error" this year was on the average-to-low side relative to presidential elections historically.] When pollsters report toplines that deviate from the polling average, they are ridiculed for implausible results. When their polls are close to the average, they are chastised for herding.^[To be fully transparent, [I am guilty of this too](https://x.com/markjrieke/status/1839037822524629066), but [I've learned the error of my ways!](https://bsky.app/profile/markjrieke.bsky.social/post/3l7oxffefaf2y)] 
+
+I don't really know how to achieve this, but my hopes are twofold:
+
+* that we, the collective public who benefit from pollsters' gift of public polling, treat honest pollsters better and respect the uncertainty inherent to public opinion measurement; and
+* that good pollsters continue to provide the public service that is public polling --- the absence of good science isn't *no science*, it's *bad science*.^[[Ann Selzer's retirement from public polling](https://www.desmoinesregister.com/story/opinion/columnists/2024/11/17/ann-selzer-conducts-iowa-poll-ending-election-polling-moving-to-other-opportunities/76334909007/), for example, is a truly great loss in publicly available public opinion research.]
+
+### Fundamental statistical problems
+
+Election forecasting offers a funny set of dichotomies. On the one hand, polls are such strong predictors that it's pretty easy for an election model based off of polls to be generally correct.^[Certainly, it's better than any vibes-based punditry that you'd see in the absence of polls.] On the other hand, building a model that incorporates polls requires a forecaster to introduce some fundamental statistical problems into the model and hand wave away the data generating process of each poll.
+
+For example, some polls are "head-to-head" --- respondents can only choose between the Democratic and Republican candidates. Others are "multiway" polls that allow respondents to select from a list that include third party candidates --- and the list of third party candidates isn't necessarily the same from poll to poll! Models that include polls with varying candidate options can do pretty well but are clearly making the (incorrect) assumption of the [independence of irrelevant alternatives](https://en.wikipedia.org/wiki/Independence_of_irrelevant_alternatives)!
+
+Further, no forecast incorporates the fact that polls *themselves* are models into the forecast! The process by which pollsters convert an imperfect sample of respondents into an (ideally) unbiased population estimate is eschewed by election forecasts, which treat polls as data. There may be fundamental limits to this since pollsters can't publicize respondent-level results.
+
+### What are we even doin' here, man?
+
+I've at times throughout this article alluded to future electoral forecasts but have also done so while using vague, hypothetical language. *If I build another forecast...* *In a potential future version of this...* *etc....* I'm wishy-washy with my language because, quite frankly, I'm unsure if the juice is worth the squeeze here.
+
+For starters, building a statistically sound forecast like this is a lot of work! I started some exploratory modeling work in May of 2023 before kicking off in a more focused state in April of 2024. In total, the production system includes over 5,000 lines of code that I wrote over the course of a few months.
+
+![](img/dev.png)
+
+Despite the effort, I'm not sure if the model necessarily adds anything new to the information landscape during election season. I maintain that viewing forecasts that differ is a [good practice to understand specification uncertainty](https://x.com/markjrieke/status/1831705624268169355),^[Every forecaster makes slightly different, yet reasonable, choices during model construction such that each forecast can be thought of as a draw from a distribution of potential forecasts.] but I'm not sure if *one more model* in the mix adds any benefit when there are lots of other forecasters producing similar models. I know this is silly, but it is disheartening at times to sacrifice time and effort into a public project that ends up attracting little attention in a sea of similar projects.
+
+Further, elections are emotionally charged events and the online world is, by and large, a toxic place. Although I received criticism in good faith as mentioned above, I also was on the receiving end of a number of bad faith critiques. I've been called stupid, told that my model is fundamentally broken, and have been lectured on statistics by people who, frankly, have no idea what they're talking about. And I have it easy! People in this field with larger audiences --- and noticeably, women --- are on the receiving end of ten-fold the number of bad faith attacks, in addition to death threats and threats of sexual violence.
+
+So, yeah. I'm not super sure if I'll be making another one of these. Which is sad, because this really has been a four year project (at least in concept) ever since I first browsed through the Economist's source code in 2020. Along the way of trying to figure out how it works, I've fallen in love with Bayesian statistics, jumped into a new career, and fundamentally have grown.
+
+Who knows, maybe I'll change my mind in 2026.
+
+
+
+
