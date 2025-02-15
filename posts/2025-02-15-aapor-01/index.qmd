@@ -1,0 +1,23 @@
+---
+title: "Weighting and Its Consequences"
+date: '2025-02-14'
+categories: [politics]
+description: "Part 1: The Abstract"
+image: header.png
+---
+
+In May, the American Association for Public Opinion Research (AAPOR) will be hosting their [80th annual conference](https://aapor.org/aapor-80th-annual-conference/) in St. Louis. My abstract, *Weighting and Its Consequences*, was selected and I'll be presenting at the conference. I'll also be sharing the core idea of the material here over the next few months in a series of blog posts. The verbatim abstract is written below, but can be summarized in plain English:
+
+* Survey weighting is used to reduce bias in outcomes of interest. A commonly held belief is that this reduction in bias comes at the cost of an increase in variance. Sometimes, however, you get a free lunch --- weighting can reduce both bias *and* variance when the weighting variables are highly correlated with the outcome of interest.
+* I recreate the results from [Little and Vartivarian (2005)](https://www150.statcan.gc.ca/n1/en/pub/12-001-x/2005002/article/9046-eng.pdf?st=V8cCWCpp) and demonstrate the reduction in bias and variance for continuous variables.
+* I further extend this to binary outcomes (i.e., proportions).
+* I explore the relative increase/decrease in variance realized when weighting on variables with varying levels of correlation with the outcome.
+* I demonstrate that forecasters/poll aggregators can reduce the uncertainty in their estimates of statistical bias by modeling each poll's variance directly.
+
+> **Weighting and Its Consequences**: *Variance Reduction in Discrete Outcomes and Its Implications for Survey Aggregation*
+> 
+> Relative to the unweighted estimate, weighting survey responses can reduce both the bias and variance of the population estimate when the weighting variables are highly correlated with both survey nonresponse and the outcome of interest. Little and Vartivarian (2005) highlight this effect for continuous survey outcomes. In discrete outcomes---such as binary or multi-way candidate choices in pre-election polls---a surprisingly high degree of correlation with the outcome is required for weighting to reduce variance relative to the unweighted estimate if differential nonresponse is present.
+>
+> This has direct implications for election forecasters, poll aggregators, or researchers aggregating surveys more broadly. Well-regarded election models such as Linzer (2013), Kemp (2016), and The Economist (2020) model survey responses using a binomial likelihood while adjusting for potential sources of statistical bias, such as poll mode (Online Survey, Live Phone, etc.) or population (Likely Voters, Registered Voters, etc.). This parameterization, however, ignores the potential reduction in variance introduced by weighting and potentially inflates the uncertainty around the parameters measuring statistical bias.
+> 
+> In this study, I explore, via simulation, the degree to which weighting increases or decreases the variance in the population mean estimate across different levels of subgroup correlation with nonresponse and a binary outcome. Further, I demonstrate that researchers can improve the precision of parameter estimates in poll aggregation models by modeling the poll’s reported standard deviation directly via a normal (or beta with a mean-variance parameterization), rather than binomial, likelihood.

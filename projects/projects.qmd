@@ -9,7 +9,7 @@ repo-actions: [source, issue]
 ## Open Source Software
 
 * [workboots](https://markjrieke.github.io/workboots/): Generate bootstrap 🥾 prediction intervals from a tidymodel workflow.
-* [nplyr](https://markjrieke.github.io/nplyr/): A grammar of (nested) data manipulation 🐦.
+* [nplyr](https://jibarozzo.github.io/nplyr/): A grammar of (nested) data manipulation 🐦 (now maintained by [Bolívar Aponte Rolón](https://github.com/jibarozzo)).
 * [riekelib](https://markjrieke.github.io/riekelib/): A collection of functions I use regularly.
 * [heRmann](https://markjrieke.github.io/heRmann/): A collection of functions for the CXA team at Memorial Hermann.
 

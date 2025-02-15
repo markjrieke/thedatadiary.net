@@ -8,22 +8,37 @@ about:
       text: Github
       aria-label: Github
       href: https://github.com/markjrieke
-    - icon: twitter
-      text: twitter
-      aria-label: twitter
-      href: https://twitter.com/markjrieke
+    - icon: brightness-alt-high-fill
+      text: BlueSky
+      aria-label: bluesky
+      href: https://bsky.app/profile/markjrieke.bsky.social
     - icon: linkedin
       text: LinkedIn
       aria-label: LinkedIn
       href: https://www.linkedin.com/in/markjrieke/
 ---
 
+<style>
+
+smalltext {
+  font-size: 14px;
+  color: gray;
+  line-height: 1;
+}
+
+</style>
+
 My name is Mark Rieke and I am a data scientist at [Game Data Pros, Inc.](https://gamedatapros.com/) where I help design experiments and analyze test results from a Bayesian perspective. I love making beautiful charts, working on home improvement projects, and playing jazzy piano.
 
-I earned my bachelor's degree in Mechanical Engineering from the [University of Tulsa](https://utulsa.edu/) in 2018. I worked with [Siemens Energy](https://www.siemens-energy.com/us/en.html) for three years desiging mobile gas-turbine power plants before more moving into a more data-centric role at [Memorial Hermann Health System](https://www.memorialhermann.org/), where I worked with survey data to measure and improve patient satisfaction. I currently use [R](https://www.r-project.org/), [Stan](https://mc-stan.org/), and [Python](https://www.python.org/) to build systems for running and analyzing experiments on player behavior. In my spare time, I love analyzing public political datasets. You can find my work on [GitHub](https://github.com/markjrieke) and my unedited stream of consciousness on [Twitter](https://twitter.com/markjrieke). 
+I earned my bachelor's degree in Mechanical Engineering from the [University of Tulsa](https://utulsa.edu/) in 2018. I worked with [Siemens Energy](https://www.siemens-energy.com/us/en.html) for three years desiging mobile gas-turbine power plants before more moving into a more data-centric role at [Memorial Hermann Health System](https://www.memorialhermann.org/), where I worked with survey data to measure and improve patient satisfaction. I currently use [R](https://www.r-project.org/), [Stan](https://mc-stan.org/), and [Python](https://www.python.org/) to build systems for running and analyzing experiments on player behavior. In my spare time, I love analyzing public political datasets. You can find my work on [GitHub](https://github.com/markjrieke) and my unedited stream of consciousness on [BlueSky](https://twitter.com/markjrieke). 
 
 I live in Tulsa, OK, with my wife and three obnoxious yet lovable pets.
 
-This blog is built with [Quarto](https://quarto.org/) using minor modifications to the [minty theme](https://bootswatch.com/minty/) and is deployed using [Netlify](https://www.netlify.com/). The content on this site is released under the [MIT License](https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE).
+<hr>
 
+<smalltext>This blog is built with [Quarto](https://quarto.org/) using minor modifications to the [minty theme](https://bootswatch.com/minty/) and is deployed using [Netlify](https://www.netlify.com/). The content on this site is released under the [MIT License](https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE).</smalltext>
+
+<centered><smalltext>All content on this site is [Brainmade](https://brainmade.org/) --- unless otherwise stated, all code, text, and images are made by me without the use of large language models.</smalltext></centered>
+
+![](https://raw.githubusercontent.com/0atman/BrainMade-org/refs/heads/main/docs/black-logo.svg){fig-align="center"}
 
