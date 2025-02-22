@@ -14,8 +14,6 @@ website:
     background: light
     foreground: dark
     right: 
-      - text: "2024 Presidential Forecast"
-        file: 2024-potus/National.qmd
       - text: "About"
         file: about/about.qmd
       - text: "Projects"
@@ -32,9 +30,9 @@ website:
       - icon: github
         aria-label: github
         href: https://github.com/markjrieke
-      - icon: twitter
-        aria-label: twitter
-        href: https://twitter.com/markjrieke
+      - icon: brightness-alt-high-fill
+        aria-label: bluesky
+        href: https://bsky.app/profile/markjrieke.bsky.social
       - icon: linkedin
         aria-label: linkedin
         href: https://www.linkedin.com/in/markjrieke/

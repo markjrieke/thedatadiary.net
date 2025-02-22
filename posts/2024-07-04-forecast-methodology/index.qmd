@@ -30,7 +30,7 @@ On July 21st, Joe Biden ended his campaign for re-election and Kamala Harris bec
 
 ### Introduction
 
-To celebrate July 4th, I'm releasing a forecast of the 2024 presidential election, a rematch between Joe Biden and Donald Trump. Each day, the forecast simulates thousands of plausible election results in each state, the nation, and the electoral college. The output can be fully explored at the forecast's homepage [here](../../2024-potus/National.qmd). 
+To celebrate July 4th, I'm releasing a forecast of the 2024 presidential election, a rematch between Joe Biden and Donald Trump. Each day, the forecast simulates thousands of plausible election results in each state, the nation, and the electoral college. The output can be fully explored at the forecast's homepage [here](../../projects/2024-potus/National.qmd). 
 
 Much like other outlets, such as [FiveThirtyEight](https://projects.fivethirtyeight.com/2024-election-forecast/) or [The Economist](https://www.economist.com/interactive/us-2024-election/prediction-model/president/), the forecast is the output of a statistical model that methodologically updates each candidate's chances of winning as polls are conducted throughout the election cycle. Uniquely, *all* portions of the model follow the framework of [Bayesian statistics](https://en.wikipedia.org/wiki/Bayesian_statistics), allowing for the mixture of prior beliefs with observed data while propagating uncertainty from each stage of the model to the next. Further, the model and surrounding data infrastructure are fully open source, from tip to tail. Everything from the [data gathering pipeline](https://github.com/markjrieke/2024-potus/tree/main/R/model/functions), to the [model code](https://github.com/markjrieke/2024-potus/tree/main/stan), to [support for generating graphics](https://github.com/markjrieke/2024-potus/tree/main/R/site) found on the site can be found in the project's [repository on GitHub](https://github.com/markjrieke/2024-potus/tree/main). 
 
@@ -261,7 +261,7 @@ cpi <- fetch_cpi()
 # estimate inflation relative to most recent cpi release
 max_cpi <-
   cpi %>%
-  filter(DATE == max(DATE)) %>%
+  filter(observation_date == max(observation_date)) %>%
   pull(CPIAUCSL)
 
 cpi <-
@@ -277,7 +277,7 @@ real_gdp <-
   left_join(cpi) %>%
   select(-cpi) %>%
   mutate(real_gdp = gdp * inflation) %>%
-  select(date, real_gdp)
+  select(date = observation_date, real_gdp)
 
 # append national data with 2nd quarter real annualized gdp growth
 prior_model_data <-
