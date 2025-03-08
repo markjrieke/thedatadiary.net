@@ -14,6 +14,12 @@ website:
     background: light
     foreground: dark
     right: 
+      - text: "2025 March Madness"
+        menu: 
+          - text: "Men's Bracket"
+            file: projects/2025-march-madness/mens.qmd
+          - text: "Women's Bracket"
+            file: projects/2025-march-madness/womens.qmd
       - text: "About"
         file: about/about.qmd
       - text: "Projects"

@@ -1,0 +1,55 @@
+---
+title: ""
+format:
+  html:
+    page-layout: full
+execute:
+  message: false
+  warning: false
+  echo: false
+params:
+  league: "mens"
+---
+
+<style>
+.centered h1 {
+  text-align: center;
+}
+
+.smalltext {
+  font-size: 16px;
+  color: #666666;
+  line-height: 1;
+  text-align: center;
+}
+
+@media screen and (min-width: 480px) {
+  .deskContent {display:block;}
+}
+
+@media screen and (max-width: 479px) {
+  .deskContent {display:none;}
+}
+</style>
+
+# `r sub("s", "'s", stringr::str_to_title(params$league))` March Madness Predictions {.centered}
+
+<p class="smalltext">Chances of each team advancing through the tournament, updated every game-day</p>
+
+<div class="deskContent">
+
+```{r}
+#| results: asis
+#| echo: false
+readr::read_lines("~/Desktop/Personal/repos/2025-march-madness/site/plot/mens-2025-03-05.html") |>
+  stringr::str_c(collapse = "\n") |>
+  glue::as_glue()
+```
+
+</div>
+
+```{r}
+#| echo: false
+readr::read_rds("~/Desktop/Personal/repos/2025-march-madness/site/table/mens-2025-03-05.rds")
+```
+
