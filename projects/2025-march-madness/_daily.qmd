@@ -1,0 +1,20 @@
+<div id="`r option`">
+
+<div class="deskContent">
+
+```{r}
+#| results: asis
+#| echo: false
+readr::read_lines(glue::glue("~/Desktop/Personal/repos/2025-march-madness/site/plot/{league}-{date}.html")) |>
+  stringr::str_c(collapse = "\n") |>
+  glue::as_glue()
+```
+
+</div>
+
+```{r}
+#| echo: false
+readr::read_rds(glue::glue("~/Desktop/Personal/repos/2025-march-madness/site/table/{league}-{date}.rds"))
+```
+
+</div>
