@@ -1,0 +1,465 @@
+---
+title: "MADHATTRS"
+date: '2025-03-16'
+categories: [stan, march madness]
+description: "An introduction to and description of a March Madness forecasting system"
+image: header.png
+execute: 
+  echo: false
+html:
+  fig-width: 9
+  fig-height: 9
+filters:
+  - add-code-files
+---
+
+```{r setup}
+library(tidyverse)
+library(riekelib)
+library(cmdstanr)
+
+pal <- c("#5a9282", "#838cf1", "#f1838c")
+```
+
+### Introduction
+
+This year, I'm launching my first-ever March Madness forecast for both the [men's](../../projects/2025-march-madness/mens.qmd) and [women's](../../projects/2025-march-madness/womens.qmd) tournaments. Every day, the forecast simulates thousands of potential tournament outcomes to see how far each team will advance and which team has the greatest chance of winning the national title.
+
+Powering the forecast is the first iteration of the **MADHATTRS**^[This is a not-so-subtle nod to my family's long-standing March Madness bracket group name, MadHatters.] system. MADHATTRS --- which stands for **M**ultivariate **A**ttack / **D**efense / **H**ome **A**djustments **T**o **T**eam **R**atings (via) **S**imulation^[What would any forecast be without a wonky [backronym](https://en.wikipedia.org/wiki/Backronym)?] --- is a series of models that estimates each team's offensive and defensive strength as well as their home-court advantage. In the regular season, MADHATTRS can estimate the outcome of individual games. During the playoffs, it considers the strength of *potential* schedules each team could face when projecting each team's probability of advancing. 
+
+As always, this work is fully open source --- code to [prep data](https://github.com/markjrieke/2025-march-madness/tree/main/R/model/functions), fit the [models](https://github.com/markjrieke/2025-march-madness/tree/main/stan), and [render site graphics](https://github.com/markjrieke/2025-march-madness/tree/main/R/site) can found in the project's [repository on GitHub](https://github.com/markjrieke/2025-march-madness). The READMEs throughout the repository describe the system in detail but I provide a high-level overview of the core components of the forecast below.
+
+### The whole game
+
+MADHATTRS is broken up into several different models but each is in service of the same two fundamental objectives:
+
+* Estimate each team's rate of points-per-minute (PPM) in each game.
+* Estimate the number of overtimes played in each game.
+
+Each team's PPM is a function of their offensive output, their opponent's defensive skill, and whether or not they have a home-court advantage. When playing away from home --- either as the away team or on neutral territory --- the *Home Advantage* goes to 0 and doesn't contribute to PPM. 
+
+$$
+\text{PPM} \sim \text{Offense} - \text{Opponent Defense} + \text{Home Advantage}
+$$
+
+The number of overtimes played is estimated based on the absolute difference between each team's PPM^[*Technically*, I estimate both the probability of the game going to overtime *and* the number of overtimes via a [hurdle model](https://mc-stan.org/docs/stan-users-guide/finite-mixtures.html#hurdle-models).] --- games between two teams with similar PPMs are likelier to go to overtime than lopsided games.
+
+$$
+\text{Overtimes} \sim \left| \text{PPM}_{\text{home}} - \text{PPM}_{\text{away}} \right|
+$$
+
+That's pretty much it! All the other components below are slight variations on these two core pillars. I'll walk through each component using my [alma mater](https://www.youtube.com/watch?v=yVBYcANXfXs), the University of Tulsa, as an example.
+
+### History, not a mystery
+
+At the beginning of the season, prior to any teams playing any games, we still have a pretty good idea of which teams will be competitive. Intuitively, we know that teams will *probably* be 
+
+PICK IT UP HERE DAWG
+
+* pre-season training
+  * data since 2002
+  * let these drift season to season
+  * early in each season, we are most uncertain
+  * estimate each team's rate of scoring
+  * pseudo-random walk
+  * posterior from each season is used as a prior for the next season
+
+```{r historical parameters function}
+historical_parameters_team <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_team.parquet")
+historical_parameters_global <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_global.parquet")
+
+plot_historical_parameters <- function(league) {
+  
+  league_int <- league
+  possessive <- str_to_title(str_replace(league, "s", "'s"))
+  
+  historical_parameters_team %>%
+    filter(team_name == "Tulsa",
+           league == league_int,
+           str_detect(variable, "beta")) %>%
+    mutate(variable = case_match(variable,
+                                 "beta_o" ~ "Offense",
+                                 "beta_d" ~ "Defense",
+                                 "beta_h" ~ "Home Advantage"),
+           color = case_match(variable,
+                              "Offense" ~ pal[1],
+                              "Defense" ~ pal[2],
+                              "Home Advantage" ~ pal[3]),
+           variable = fct_relevel(variable, c("Offense", "Defense", "Home Advantage"))) %>%
+    ggplot(aes(x = season,
+               y = median,
+               ymin = q5,
+               ymax = q95)) + 
+    geom_ribbon(aes(fill = color),
+                alpha = 0.25) +
+    geom_line(aes(color = color)) + 
+    scale_color_identity() + 
+    scale_fill_identity() + 
+    facet_wrap(~variable,
+               ncol = 1,
+               scales = "free_y") + 
+    theme_rieke() +
+    theme(legend.position = "none") +
+    labs(title = glue::glue("**Tulsa {possessive} Basketball**"),
+         subtitle = glue::glue("Evolution of ",
+                               color_text("**offensive**", pal[1]),
+                               ", ",
+                               color_text("**defensive**", pal[2]),
+                               ", and ",
+                               color_text("**home advantage**", pal[3]),
+                               "<br>parameters over the years"),
+         x = NULL,
+         y = NULL,
+         caption = paste("Shaded region indicates 90% credible interval",
+                         "based on 10,000 MCMC samples",
+                         sep = "<br>"))
+  
+} 
+
+```
+
+::: {.panel-tabset}
+
+#### Men's
+
+```{r historical paramters mens}
+plot_historical_parameters("mens")
+```
+
+#### Women's
+
+```{r historical parameters womens}
+plot_historical_parameters("womens")
+```
+
+:::
+  
+### Season's greetings
+
+```{r team parameters function}
+team_parameters <- read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/team_parameters.rds")
+
+plot_team_parameters <- function(league) {
+  
+  league_int <- league
+  possessive <- str_to_title(str_replace(league, "s", "'s"))
+  
+  team_parameters %>%
+    filter(team_name == "Tulsa",
+           date < mdy("3/16/25"),
+           league == league_int) %>%
+    mutate(sims = pmap(list(Mu, Sigma), ~MASS::mvrnorm(1e4, ..1, ..2)),
+           med = map(sims, ~c(quantile(.x[,1], probs = 0.5),
+                              quantile(.x[,2], probs = 0.5),
+                              quantile(.x[,3], probs = 0.5))),
+           q5 = map(sims, ~c(quantile(.x[,1], probs = 0.05),
+                             quantile(.x[,2], probs = 0.05),
+                             quantile(.x[,3], probs = 0.05))),
+           q95 = map(sims, ~c(quantile(.x[,1], probs = 0.95),
+                              quantile(.x[,2], probs = 0.95),
+                              quantile(.x[,3], probs = 0.95)))) %>%
+    select(date,
+           league,
+           team_name,
+           variable,
+           med,
+           q5,
+           q95) %>%
+    unnest(c(variable,
+             med,
+             q5,
+             q95)) %>%
+    mutate(variable = case_match(variable,
+                                 "beta_o" ~ "Offense",
+                                 "beta_d" ~ "Defense",
+                                 "beta_h" ~ "Home Advantage"),
+           color = case_match(variable,
+                              "Offense" ~ pal[1],
+                              "Defense" ~ pal[2],
+                              "Home Advantage" ~ pal[3]),
+           variable = fct_relevel(variable, c("Offense", "Defense", "Home Advantage"))) %>%
+    ggplot(aes(x = date,
+               y = med,
+               ymin = q5,
+               ymax = q95)) + 
+    geom_ribbon(aes(fill = color),
+                alpha = 0.25) + 
+    geom_line(aes(color = color)) +
+    scale_color_identity() + 
+    scale_fill_identity() + 
+    facet_wrap(~variable, 
+               ncol = 1,
+               scales = "free_y") + 
+    theme_rieke() +
+    theme(legend.position = "none") + 
+    labs(title = glue::glue("**Tulsa {possessive} Basketball**"),
+         subtitle = glue::glue("Evolution of ",
+                               color_text("**offensive**", pal[1]),
+                               ", ",
+                               color_text("**defensive**", pal[2]),
+                               ", and ",
+                               color_text("**home advantage**", pal[3]),
+                               "<br>parameters throughout the 2024-25 season"),
+         x = NULL,
+         y = NULL,
+         caption = paste("Shaded region indicates 90% credible interval",
+                         "based on 10,000 MCMC samples",
+                         sep = "<br>"))
+  
+}
+```
+
+::: {.panel-tabset}
+
+#### Men's
+
+```{r team parameters mens}
+plot_team_parameters("mens")
+```
+
+#### Women's
+
+```{r team parameters womens}
+plot_team_parameters("womens")
+```
+
+:::
+
+* daily season updates
+  * Tulsa mens/womens parameters from beginning of season -> now
+  * use the output from pre-season as a prior for the current season
+  * really really similar to the pre-season training, but we save the daily output
+  * as the season progresses, the uncertainty around team ratings shrinks
+  * save the correlation structure for offensive/defensive/home advantage ratings
+  
+### Predictions in retrograde
+
+```{r prediction functions}
+read_lines("~/Desktop/Personal/repos/2025-march-madness/stan/prediction.stan") %>%
+  str_c(collapse = "\n") %>%
+  write_lines("prediction.stan")
+
+read_lines("~/Desktop/Personal/repos/2025-march-madness/stan/functions.stan") %>%
+  str_c(collapse = "\n") %>%
+  write_lines("functions.stan")
+
+run_prediction_model <- function(league) {
+  
+  # internal variable renaming
+  league_int <- league
+  
+  # only making one prediction
+  N <- 1
+  T <- 2
+  
+  # consider the game to be played at TU
+  V <- 1
+  
+  # map teams to home/away status
+  tid <- matrix(1:2, nrow = 2)
+  
+  # log-mean score per minute
+  alpha <- log(70/40)
+  
+  # set team parameters
+  team_parameters <- 
+    read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/team_parameters.rds") %>%
+    filter(date < mdy("3/16/25")) %>%
+    filter(league == league_int,
+           team_name %in% c("Tulsa", "Oral Roberts"),
+           date == max(date))
+  
+  tulsa_params <-
+    team_parameters %>%
+    filter(team_name == "Tulsa")
+  
+  oru_params <- 
+    team_parameters %>%
+    filter(team_name == "Oral Roberts")
+  
+  # containers
+  beta_Mu <- array(0, dim = c(2, 3))
+  beta_Sigma <- array(0, dim = c(2, 3, 3))
+  
+  beta_Mu[1,] <- tulsa_params$Mu[[1]]
+  beta_Sigma[1,,] <- tulsa_params$Sigma[[1]]
+  beta_Mu[2,] <- oru_params$Mu[[1]]
+  beta_Sigma[2,,] <- oru_params$Sigma[[1]]
+  
+  # overdispersion scale
+  log_sigma_i <- 
+    arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/update/log_sigma_i.parquet") %>%
+    filter(date < mdy("3/16/25")) %>%
+    filter(league == league_int,
+           date == max(date))
+  
+  # overtime hurdle/poisson params
+  overtime_params <- 
+    read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/global_parameters.rds") %>%
+    filter(date < mdy("3/16/25")) %>%
+    filter(date == max(date),
+           league == league_int)
+  
+  hurdle_params <-
+    overtime_params %>%
+    filter(parameter == "0")
+  
+  poisson_params <-
+    overtime_params %>%
+    filter(parameter == "ot")
+  
+  hurdle_Mu <- hurdle_params$Mu[[1]]
+  hurdle_Sigma <- hurdle_params$Sigma[[1]]
+  
+  poisson_Mu <- poisson_params$Mu[[1]]
+  poisson_Sigma <- poisson_params$Sigma[[1]]
+  
+  # prep data for stan
+  stan_data <-
+    list(
+      N = N,
+      T = T,
+      V = V,
+      tid = tid,
+      alpha = alpha,
+      beta_Mu = beta_Mu,
+      beta_Sigma = beta_Sigma,
+      log_sigma_i_mu = log_sigma_i$mean,
+      log_sigma_i_sigma = log_sigma_i$sd,
+      hurdle_Mu = hurdle_Mu,
+      hurdle_Sigma = hurdle_Sigma,
+      poisson_Mu = poisson_Mu,
+      poisson_Sigma = poisson_Sigma
+    )
+  
+  # compile!
+  prediction <-
+    cmdstan_model(
+      "prediction.stan",
+      dir = "exe/"
+    )
+  
+  # predict!
+  predictions <-
+    prediction$sample(
+      data = stan_data,
+      seed = 2025,
+      chains = 8,
+      parallel_chains = 8,
+      iter_warmup = 100,
+      iter_sampling = 1e4,
+      fixed_param = TRUE
+    )
+  
+  return(predictions)
+  
+} 
+
+plot_predictions <- function(predictions, league) {
+  
+  league_int <- league
+  possessive <- str_replace(league, "s", "'s")
+  
+  # draws for scores
+  predictions$draws(c("Y_rep[1,1]", "Y_rep[2,1]", "Ot"),
+                    format = "df") %>%
+    as_tibble() %>%
+    rename(Tulsa = 1,
+           ORU = 2,
+           OT = 3) %>%
+    count(Tulsa, ORU, OT) %>%
+    ggplot(aes(x = Tulsa,
+               y = ORU,
+               alpha = n,
+               color = OT > 0)) + 
+    geom_point() + 
+    shadowtext::geom_shadowtext(data = tibble(x = 90, 
+                                              y = 65,
+                                              label = "Tulsa wins"),
+                                mapping = aes(x = x,
+                                              y = y,
+                                              label = label,
+                                              color = NULL,
+                                              alpha = NULL),
+                                color = "gray40",
+                                bg.color = "white",
+                                bg.r = 0.35,
+                                size = 5,
+                                family = "IBM Plex Sans") + 
+    shadowtext::geom_shadowtext(data = tibble(x = 65, 
+                                              y = 90,
+                                              label = "ORU wins"),
+                                mapping = aes(x = x,
+                                              y = y,
+                                              label = label,
+                                              color = NULL,
+                                              alpha = NULL),
+                                color = "gray40",
+                                bg.color = "white",
+                                bg.r = 0.35,
+                                size = 5,
+                                family = "IBM Plex Sans") + 
+    scale_color_manual(values = pal[1:2],
+                       guide = "none") + 
+    scale_alpha_continuous(range = c(0.1, 0.5),
+                           guide = "none") + 
+    theme(legend.position = "none") + 
+    theme_rieke() + 
+    labs(title = glue::glue("**Cross-town computations**"),
+         subtitle = glue::glue("Simulated final scores of a **Tulsa** {possessive} home game against **Oral Roberts**<br>",
+                               "where games ",
+                               color_text("**end in regulation**", pal[1]),
+                               " or ",
+                               color_text("**go to overtime**", pal[2])),
+         caption = paste("Each point represents a one of",
+                         "10,000 simulated outcomes",
+                         sep = "<br>"))
+  
+}
+```
+
+::: {.panel-tabset}
+
+#### Men's
+
+```{r mens predictions}
+#| output: false
+mens_predictions <- run_prediction_model("mens")
+```
+
+```{r mens predictions plot}
+plot_predictions(mens_predictions, "mens")
+```
+
+#### Women's
+
+```{r womens predictions}
+#| output: false
+womens_predictions <- run_prediction_model("womens")
+```
+
+```{r womens predictions plot}
+plot_predictions(womens_predictions, "womens")
+```
+
+:::
+
+* prediction
+  * tulsa mens/womens vs oru mens/womens blobs as of 3/16
+  * same as the training, but in reverse!
+  * does the game go to overtime?
+  * does how many overtimes are played?
+  * rate of scoring for each team given number of minutes
+  * estimate mixed scoring distribution(s)
+  
+### bracket title
+
+* bracket
+  * uses the same prediction model described above
+  * in each simulation, the winner advances
+  * so you end up simulating very normal tournaments where 1/2 seeds all beat the 15/16 seess
+  * but also weird edge cases where there's lots of upsets
+  * the result is a mixture of possible tournament outcomes
+  
+
+
