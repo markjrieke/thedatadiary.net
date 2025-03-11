@@ -17,22 +17,97 @@ $theme: "minty" !default;
 $font-family-headings: "Playfair Display";
 $font-family-mono: "IBM Plex Mono";
 $font-family-projects: "IBM Plex Sans";
+$font-bs-default: 
+  system-ui, 
+  -apple-system, 
+  "Segoe UI", 
+  Roboto,
+  "Helvetica Neue",
+  "Noto Sans",
+  "Liberation Sans",
+  Arial,
+  sans-serif,
+  "Apple Color Emoji",
+  "Segoe UI Emoji",
+  "Segoe UI Symbol",
+  "Noto Color Emoji";
+  
+// color settings old
 
-// color settings
-$headings-color-custom: #5A9282;
-$link-color: #78c2ad;
-$link-hover: #609b8a;
+// $headings-color-custom: #5A9282;
+// $link-color: #78c2ad;
+//$link-hover: #609b8a;
 $link-visit: #f3969a;
 $gray-700: #5a5a5a;
 $gray-projects: #363a3c;
 
 
+// color settings new
+//$headings-color-custom: #3f51b5;
+$headings-color-custom: #616ed3;
+$link-color: #838cf1;
+$link-hover: #a2a9f4;
+
 /*-- scss:rules --*/
 
-// use default sans-serif font
+// default font
+/* 
+* {
+  font-family: $font-family-projects;
+}
+*/ 
+
+body {
+  font-family: $font-family-projects;
+  color: $gray-projects;
+}
+
+// Headings ---
 h1, h2, h3, h4, h5, h6, .quarto-title-banner h1, .card-title {
   font-family: $font-family-headings;
   color: $headings-color-custom;
+}
+
+// Navbars ---
+.navbar-title {
+  font-family: $font-family-headings;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.nav-item {
+  font-family: $font-family-projects;
+  color: $gray-700;
+}
+
+// funky links in body text only
+a:not(.quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, .navbar-brand, .anchorjs-link) {
+  color: $link-color;
+  font-weight: 600;
+  text-decoration: none;
+  background: linear-gradient($link-hover, $link-hover) left bottom no-repeat;
+  background-size: 0% 2px;
+  transition: all 0.2s;
+}
+
+a:not(.quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, .navbar-brand, .anchorjs-link):hover {
+  color: $link-hover;
+  background-size: 100% 2px;
+}
+
+// set grid weight to regular text
+.quarto-grid-item {
+  font-weight: 400;
+}
+
+// Keep bs fonts in certain locations ---
+.listing-categories, .card-attribution, .quarto-category, .quarto-title-meta-heading {
+  font-family: $font-bs-default;
+}
+
+// revisit
+p, .quarto-listing-category, .listing-description {
+  font-family: $font-family-projects;
 }
 
 legend {
@@ -62,7 +137,7 @@ pre, code, kdb, samp {
   border-radius: 1em;
 }
 
-// ultrawide layout customization
+// ultrawide layout customization for 2024 potus
 .page-layout-custom {
     display: grid;
     gap: 0;
