@@ -60,7 +60,6 @@ Tulsa's basketball teams, for example, have defensive PPM adjustments that bounc
 
 ```{r historical parameters function}
 historical_parameters_team <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_team.parquet")
-historical_parameters_global <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_global.parquet")
 
 plot_historical_parameters <- function(league) {
   
@@ -127,6 +126,56 @@ plot_historical_parameters("mens")
 
 ```{r historical parameters womens}
 plot_historical_parameters("womens")
+```
+
+:::
+
+A similar psuedo-random walk method is used to estimate the probability of a game going to overtime. 
+
+```{r}
+historical_parameters_global <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_global.parquet")
+
+plot_historical_overtime <- function(league) {
+  
+  league_int <- league
+  possessive <- str_replace(league, "s", "'s")
+  
+  historical_parameters_global %>%
+    filter(variable == "delta_0",
+           league == league_int) %>%
+    mutate(across(c(median, q5, q95), ~1 - expit(.x))) %>%
+    ggplot(aes(x = season,
+               y = median,
+               ymin = q5,
+               ymax = q95)) + 
+    geom_ribbon(alpha = 0.25,
+                fill = pal[1]) + 
+    geom_line(color = pal[1]) +
+    scale_y_percent() + 
+    labs(title = "**Overtime over time**",
+         subtitle = glue::glue("Probability that a game between two evenly-matched {possessive} teams goes to overtime"),
+         x = NULL,
+         y = NULL,
+         caption = paste("Shaded region indicates 90% credible interval",
+                         "based on 10,000 MCMC samples",
+                         sep = "<br>")) +
+    theme_rieke()
+  
+}
+```
+
+::: {.panel-tabset}
+
+#### Men's
+
+```{r}
+plot_historical_overtime("mens")
+```
+
+#### Women's
+
+```{r}
+plot_historical_overtime("womens")
 ```
 
 :::
@@ -313,7 +362,62 @@ plot_correlated_parameters("womens")
 ```
 
 :::
+
+```{r}
+global_parameters <- read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/global_parameters.rds")
+
+plot_overtime <- function(league) {
   
+  league_int <- league
+  possessive <- str_replace(league, "s", "'s")
+  
+  global_parameters %>%
+  filter(date < mdy("3/16/25")) %>%
+  filter(league == league_int,
+         parameter == "0") %>%
+  mutate(sims = pmap(list(Mu, Sigma), ~MASS::mvrnorm(1e4, ..1, ..2)[,2]),
+         median = map_dbl(sims, ~quantile(.x, probs = 0.5)),
+         q5 = map_dbl(sims, ~quantile(.x, probs = 0.05)),
+         q95 = map_dbl(sims, ~quantile(.x, probs = 0.95)),
+         across(c(median, q5, q95), ~1 - expit(.x))) %>%
+  ggplot(aes(x = date,
+             y = median,
+             ymin = q5,
+             ymax = q95)) + 
+  geom_ribbon(fill = pal[1],
+              alpha = 0.25) + 
+  geom_line(color = pal[1]) + 
+  scale_y_percent() + 
+  theme_rieke() +
+  labs(title = "**Overtime over time**",
+         subtitle = glue::glue("Probability that a game between two evenly-matched {possessive} teams goes to overtime"),
+         x = NULL,
+         y = NULL,
+         caption = paste("Shaded region indicates 90% credible interval",
+                         "based on 10,000 MCMC samples",
+                         sep = "<br>")) +
+    theme_rieke()
+  
+}
+
+```
+
+::: {.panel-tabset}
+
+#### Men's
+
+```{r}
+plot_overtime("mens")
+```
+
+#### Women's
+
+```{r}
+plot_overtime("womens")
+```
+
+:::
+
 ### Predictions in retrograde
 
 ```{r prediction functions}
