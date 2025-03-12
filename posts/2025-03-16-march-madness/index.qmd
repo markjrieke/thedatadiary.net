@@ -54,8 +54,7 @@ That's pretty much it! All the other components below are slight variations on t
 
 ### History, not a mystery
 
-For the 2001-02 through 2023-24 seasons, MADHATTRS estimates each team's offensive, defensive, and home-court adjustments to PPM by iteratively fitting an entire season's worth of data at a time. Since players graduate, leave for the NBA/WNBA, transfer, or simply get better/worse at the game, the historical model allows each team's ratings to drift from season to season. In this pseudo-[random walk](https://mc-stan.org/docs/functions-reference/distributions_over_unbounded_vectors.html#gaussian-dynamic-linear-models), the [prior](https://en.wikipedia.org/wiki/Prior_probability) for each season is the [posterior](https://en.wikipedia.org/wiki/Posterior_probability) from the previous season plus a bit of noise.  
-This means that, especially at the beginning of each season, we tend to expect teams to be ranked similar to what they were in the previous season.
+For the 2001-02 through 2023-24 seasons, MADHATTRS estimates each team's offensive, defensive, and home-court adjustments to PPM by iteratively fitting an entire season's worth of data at a time. Since players graduate, leave for the NBA/WNBA, transfer, or simply get better/worse at the game, the historical model allows each team's ratings to drift from season to season. In this pseudo-[random walk](https://mc-stan.org/docs/functions-reference/distributions_over_unbounded_vectors.html#gaussian-dynamic-linear-models), the [prior](https://en.wikipedia.org/wiki/Prior_probability) for each season is the [posterior](https://en.wikipedia.org/wiki/Posterior_probability) from the previous season plus a bit of noise. This means that, especially at the beginning of each season, we tend to expect teams rankings to be similar to what they were in the previous season.
 
 Tulsa's basketball teams, for example, have defensive PPM adjustments that bounce somewhere between 0.0 and 0.2 PPM on average over the years, though the value drifts from season to season. This translates to an average reduction in their opponent's score between 0 and 8 points for games ending in regulation. 
 
@@ -115,7 +114,7 @@ plot_historical_parameters <- function(league) {
 
 ```
 
-::: {.panel-tabset}
+::: {.panel-tabset group="league"}
 
 #### Men's
 
@@ -131,7 +130,7 @@ plot_historical_parameters("womens")
 
 :::
 
-Much like team parameters, a similar pseudo-random walk method is used to estimate the probability of a game going to overtime. Per the output, two evenly matched teams are likelier to go to overtime today than in the early 2000's. 
+Much like team parameters, a similar pseudo-random walk method is used to estimate the probability of a game going to overtime. Per the model's output, two evenly matched teams are likelier to go to overtime today than in the early 2000's. 
 
 ```{r historical overtime function}
 historical_parameters_global <- arrow::read_parquet(paste0(url, "out/historical/historical_parameters_global.parquet"))
@@ -165,7 +164,7 @@ plot_historical_overtime <- function(league) {
 }
 ```
 
-::: {.panel-tabset}
+::: {.panel-tabset group="league"}
 
 #### Men's
 
@@ -263,7 +262,7 @@ plot_team_parameters <- function(league) {
 }
 ```
 
-::: {.panel-tabset}
+::: {.panel-tabset group="league"}
 
 #### Men's
 
@@ -320,7 +319,7 @@ plot_overtime <- function(league) {
 
 ```
 
-::: {.panel-tabset}
+::: {.panel-tabset group="league"}
 
 #### Men's
 
@@ -336,7 +335,7 @@ plot_overtime("womens")
 
 :::
 
-In addition to running daily, the season model is unique in that it records the correlation structure alongside the team parameter estimates. Preserving the correlation structure is important when it comes time to generate predictions. Team defensive PPM adjustments are effectively independent of offensive and home advantage adjustments, but there's a noticeable negative correlation between the offensive and home advantage adjustments!
+In addition to running daily, the season model is unique in that it records the correlation between parameters along with the parameters themselves. Preserving the correlation structure is important when it comes time to generate predictions. Team defensive PPM adjustments are effectively independent of offensive and home advantage adjustments, but there's a noticeable negative correlation between the offensive and home advantage adjustments!
 
 ```{r correlated parameters function}
 plot_correlated_parameters <- function(league) {
@@ -398,7 +397,7 @@ plot_correlated_parameters <- function(league) {
 }
 ```
 
-::: {.panel-tabset}
+::: {.panel-tabset group="league"}
 
 #### Men's
 
@@ -414,15 +413,9 @@ plot_correlated_parameters("womens")
 
 :::
 
-### Predictions in retrograde
+### Running it back --- prediction
 
-* prediction
-  * tulsa mens/womens vs oru mens/womens blobs as of 3/16
-  * same as the training, but in reverse!
-  * does the game go to overtime?
-  * does how many overtimes are played?
-  * rate of scoring for each team given number of minutes
-  * estimate mixed scoring distribution(s)
+To generate predictions, the process used to estimate ratings is simply run in reverse. For each game, the model first estimates whether or not the game will go to overtime and if so, the number of overtime periods played. If the game goes to overtime, the model then guesses what the tied score was leading into the final overtime period.^[In simulations that end in regulation, this is set to 0-0.] Finally, it uses each team's PPM estimates to simulate the number of points scored in the final period^[In the majority of simulations, this "final period" is just the end of regulation.] and adds that to the previously tied score to get to the final score.^[There are some tricks [under the hood](https://github.com/markjrieke/2025-march-madness/blob/main/stan/functions.stan#L181-L233) to ensure that the final score isn't a tie.] This process is repeated thousands of times to get a distribution of possible final scores. Each team's probability of winning is simply the proportion of simulations in which they emerge victorious. 
 
 ```{r prediction functions}
 if (!file.exists("prediction.stan")) {
@@ -612,14 +605,30 @@ plot_predictions <- function(predictions, league) {
 }
 ```
 
-::: {.panel-tabset}
-
-#### Men's
-
 ```{r mens predictions}
 #| output: false
 mens_predictions <- run_prediction_model("mens")
 ```
+
+```{r womens predictions}
+#| output: false
+womens_predictions <- run_prediction_model("womens")
+```
+
+```{r win probability function}
+win_probability <- function(fit) {
+  
+  scales::label_percent(accuracy = 1)(fit$summary("p_home_win")$mean)
+  
+}
+```
+
+
+As an example, let's simulate a Tulsa home game against their cross-town rival, [ORU](https://oru.edu/) --- each point below is a simulated outcome. The majority of simulations end in regulation and include everything from blowouts for either team close finishes. Simulations that go to overtime (potentially many overtimes!) unsurprisinglying tend to result in more points for both teams and a closer final score. Based on this set of simulations, Tulsa's men's team has a **`r win_probability(mens_predictions)`** chance of winning and the women's team has a **`r win_probability(womens_predictions)`** chance of winning. 
+
+::: {.panel-tabset group="league"}
+
+#### Men's
 
 ```{r mens predictions plot}
 plot_predictions(mens_predictions, "mens")
@@ -627,28 +636,19 @@ plot_predictions(mens_predictions, "mens")
 
 #### Women's
 
-```{r womens predictions}
-#| output: false
-womens_predictions <- run_prediction_model("womens")
-```
-
 ```{r womens predictions plot}
 plot_predictions(womens_predictions, "womens")
 ```
 
 :::
-
   
-In the regular season, MADHATTRS can estimate the outcome of individual games. During the playoffs, it considers the strength of *potential* schedules each team could face when projecting each team's probability of advancing. 
-  
-### bracket title
+### 9 billion-billion brackets
 
-* bracket
-  * uses the same prediction model described above
-  * in each simulation, the winner advances
-  * so you end up simulating very normal tournaments where 1/2 seeds all beat the 15/16 seess
-  * but also weird edge cases where there's lots of upsets
-  * the result is a mixture of possible tournament outcomes
+In the regular season, MADHATTRS generates game outcomes by simulating an individual game thousands of times. In the playoffs, it simulates the *entire tournament* thousands of times. Each team's probability of advancing (or winning the tournament) is the proportion of simulations in which they reach that milestone. 
+
+Since the tournament is single-elimination, the simulations includes weird edge cases with huge upsets alongside very normal tournaments in which all the 1 and 2 seeds beat the 15 and 16 seeds. The result is a *mixture* of potential tournament outcomes. Effectively, this means that the the probability of each team advancing to the next stage in the bracket is based on the team's skill pitted against their potential strength of schedule. 
+
+There are 2 × 10<sup>63</sup> (or 9 billion-billion) [possible March Madness brackets](https://www.ncaa.com/news/basketball-men/bracketiq/2023-03-16/perfect-ncaa-bracket-absurd-odds-march-madness-dream). Although I didn't run *quite* that many simulations,^[Based on some back-of-the-napkin math, it'd take ~14 million years for that to run. Unfortunately, the first game is only a few days away!] my hope is that in the thousands of simulations that are run, I capture some of the madness that will emerge from the tournament.
   
 
 
