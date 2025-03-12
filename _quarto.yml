@@ -29,8 +29,8 @@ website:
   
   page-footer:
     left: |
-      {{< fa regular copyright >}} Mark Rieke, 2023<br>
-      All content licensed under [MIT License](https://github.com/markjrieke/thedatadiary.net/blob/master/LICENSE)<br>
+      {{< fa regular copyright >}} Mark Rieke, 2025<br>
+      All content licensed under [MIT License](https://github.com/markjrieke/thedatadiary.net/blob/main/LICENSE)<br>
       Made with {{< fa brands r-project >}} and [Quarto](https://quarto.org)
     right: 
       - icon: github
@@ -49,7 +49,7 @@ format:
     css: styles.css
     highlight-style: kate
     code-block-bg: true
-    code-block-border-left: "#78c2ad"
+    code-block-border-left: "#838cf1"
     code-fold: true
     code-tools: false
     fig-width: 9

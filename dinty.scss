@@ -32,21 +32,12 @@ $font-bs-default:
   "Segoe UI Symbol",
   "Noto Color Emoji";
   
-// color settings old
-
-// $headings-color-custom: #5A9282;
-// $link-color: #78c2ad;
-//$link-hover: #609b8a;
-$link-visit: #f3969a;
-$gray-700: #5a5a5a;
-$gray-projects: #363a3c;
-
-
-// color settings new
-//$headings-color-custom: #3f51b5;
+// color settings
 $headings-color-custom: #616ed3;
 $link-color: #838cf1;
 $link-hover: #a2a9f4;
+$gray-700: #5a5a5a;
+$gray-projects: #363a3c;
 
 /*-- scss:rules --*/
 
@@ -74,7 +65,7 @@ h1, h2, h3, h4, h5, h6, .quarto-title-banner h1, .card-title {
 }
 
 // funky links in body text only
-a:not(.quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, .navbar-brand, .anchorjs-link) {
+:not(.quarto-category, .quarto-appendix-citeas) > a:not(.about-link, .quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, .navbar-brand, .anchorjs-link) {
   color: $link-color;
   font-weight: 600;
   text-decoration: none;
@@ -83,7 +74,7 @@ a:not(.quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, 
   transition: all 0.2s;
 }
 
-a:not(.quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, .navbar-brand, .anchorjs-link):hover {
+:not(.quarto-category, .quarto-appendix-citeas) > a:not(.about-link, .quarto-grid-link, .dropdown-item, .nav-link, .toc-action, .footnote-ref, .navbar-brand, .anchorjs-link):hover {
   color: $link-hover;
   background-size: 100% 2px;
 }
