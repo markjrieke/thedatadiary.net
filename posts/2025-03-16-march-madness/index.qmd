@@ -19,7 +19,8 @@ library(riekelib)
 library(cmdstanr)
 library(patchwork)
 
-pal <- c("#5a9282", "#838cf1", "#f1838c")
+pal <- c("#838cf1", "#f1838c", "#5a9282")
+url <- "~/Desktop/Personal/repos/2025-march-madness/"
 ```
 
 ### Introduction
@@ -53,13 +54,13 @@ That's pretty much it! All the other components below are slight variations on t
 
 ### History, not a mystery
 
-For the 2001-02 through 2023-24 seasons, MADHATTRS estimates each team's offensive, defensive, and home-court adjustments to PPM by iteratively fitting an entire season's worth of data at a time. Since players graduate, leave for the NBA/WNBA, transfer, or simply get better/worse at the game, the historical model uses a pseudo-[random walk](https://mc-stan.org/docs/functions-reference/distributions_over_unbounded_vectors.html#gaussian-dynamic-linear-models) that allows each team's parameters to drift from season to season. In this pseudo-random walk, the [prior](https://en.wikipedia.org/wiki/Prior_probability) for each season is the [posterior](https://en.wikipedia.org/wiki/Posterior_probability) from the previous season plus a bit of noise.  
-This means that --- especially at the beginning of each season --- we tend to expect teams to be similarly ranked near where they were in the previous season.
+For the 2001-02 through 2023-24 seasons, MADHATTRS estimates each team's offensive, defensive, and home-court adjustments to PPM by iteratively fitting an entire season's worth of data at a time. Since players graduate, leave for the NBA/WNBA, transfer, or simply get better/worse at the game, the historical model allows each team's ratings to drift from season to season. In this pseudo-[random walk](https://mc-stan.org/docs/functions-reference/distributions_over_unbounded_vectors.html#gaussian-dynamic-linear-models), the [prior](https://en.wikipedia.org/wiki/Prior_probability) for each season is the [posterior](https://en.wikipedia.org/wiki/Posterior_probability) from the previous season plus a bit of noise.  
+This means that, especially at the beginning of each season, we tend to expect teams to be ranked similar to what they were in the previous season.
 
-Tulsa's basketball teams, for example, have defensive PPM adjustments that bounce somewhere between 0.0 and 0.2 PPM on average over the years, though the value drifts from season to season. This translates to an average reduction in their opponent's score between 0 and 8 points in games ending in regulation. 
+Tulsa's basketball teams, for example, have defensive PPM adjustments that bounce somewhere between 0.0 and 0.2 PPM on average over the years, though the value drifts from season to season. This translates to an average reduction in their opponent's score between 0 and 8 points for games ending in regulation. 
 
 ```{r historical parameters function}
-historical_parameters_team <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_team.parquet")
+historical_parameters_team <- arrow::read_parquet(paste0(url, "out/historical/historical_parameters_team.parquet"))
 
 plot_historical_parameters <- function(league) {
   
@@ -130,10 +131,10 @@ plot_historical_parameters("womens")
 
 :::
 
-A similar psuedo-random walk method is used to estimate the probability of a game going to overtime. 
+Much like team parameters, a similar pseudo-random walk method is used to estimate the probability of a game going to overtime. Per the output, two evenly matched teams are likelier to go to overtime today than in the early 2000's. 
 
-```{r}
-historical_parameters_global <- arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/historical/historical_parameters_global.parquet")
+```{r historical overtime function}
+historical_parameters_global <- arrow::read_parquet(paste0(url, "out/historical/historical_parameters_global.parquet"))
 
 plot_historical_overtime <- function(league) {
   
@@ -168,13 +169,13 @@ plot_historical_overtime <- function(league) {
 
 #### Men's
 
-```{r}
+```{r historical overtime mens}
 plot_historical_overtime("mens")
 ```
 
 #### Women's
 
-```{r}
+```{r historical overtime womens}
 plot_historical_overtime("womens")
 ```
 
@@ -187,7 +188,7 @@ The 2024-25 season model is essentially the same as the historical model. The di
 Much like the historical model, the current season uses the previous season's posterior as a prior to estimate season-level parameters. Unlike the historical model, the current season's model is refit every day that at least one game is played. As the season progresses, the uncertainty around each parameter's estimate decreases.
 
 ```{r team parameters function}
-team_parameters <- read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/team_parameters.rds")
+team_parameters <- read_rds(paste0(url, "out/update/team_parameters.rds"))
 
 plot_team_parameters <- function(league) {
   
@@ -278,16 +279,66 @@ plot_team_parameters("womens")
 
 :::
 
-PICK UP HERE DAWG
+Similarly, the probability of going to overtime uses the previous season's posterior as a prior and is updated every day.
 
-* daily season updates
-  * Tulsa mens/womens parameters from beginning of season -> now
-  * use the output from pre-season as a prior for the current season
-  * really really similar to the pre-season training, but we save the daily output
-  * as the season progresses, the uncertainty around team ratings shrinks
-  * save the correlation structure for offensive/defensive/home advantage ratings
+```{r overtime function}
+global_parameters <- read_rds(paste0(url, "out/update/global_parameters.rds"))
 
-```{r}
+plot_overtime <- function(league) {
+  
+  league_int <- league
+  possessive <- str_replace(league, "s", "'s")
+  
+  global_parameters %>%
+  filter(date < mdy("3/16/25")) %>%
+  filter(league == league_int,
+         parameter == "0") %>%
+  mutate(sims = pmap(list(Mu, Sigma), ~MASS::mvrnorm(1e4, ..1, ..2)[,2]),
+         median = map_dbl(sims, ~quantile(.x, probs = 0.5)),
+         q5 = map_dbl(sims, ~quantile(.x, probs = 0.05)),
+         q95 = map_dbl(sims, ~quantile(.x, probs = 0.95)),
+         across(c(median, q5, q95), ~1 - expit(.x))) %>%
+  ggplot(aes(x = date,
+             y = median,
+             ymin = q5,
+             ymax = q95)) + 
+  geom_ribbon(fill = pal[1],
+              alpha = 0.25) + 
+  geom_line(color = pal[1]) + 
+  scale_y_percent() + 
+  theme_rieke() +
+  labs(title = "**Overtime over time**",
+         subtitle = glue::glue("Probability that a game between two evenly-matched {possessive} teams goes to overtime"),
+         x = NULL,
+         y = NULL,
+         caption = paste("Shaded region indicates 90% credible interval",
+                         "based on 10,000 MCMC samples",
+                         sep = "<br>")) +
+    theme_rieke()
+  
+}
+
+```
+
+::: {.panel-tabset}
+
+#### Men's
+
+```{r overtime mens}
+plot_overtime("mens")
+```
+
+#### Women's
+
+```{r overtime womens}
+plot_overtime("womens")
+```
+
+:::
+
+In addition to running daily, the season model is unique in that it records the correlation structure alongside the team parameter estimates. Preserving the correlation structure is important when it comes time to generate predictions. Team defensive PPM adjustments are effectively independent of offensive and home advantage adjustments, but there's a noticeable negative correlation between the offensive and home advantage adjustments!
+
+```{r correlated parameters function}
 plot_correlated_parameters <- function(league) {
   
   league_int <- league
@@ -351,83 +402,40 @@ plot_correlated_parameters <- function(league) {
 
 #### Men's
 
-```{r}
+```{r correlated parameters mens}
 plot_correlated_parameters("mens")
 ```
 
 #### Women's
 
-```{r}
+```{r correlated parameters womens}
 plot_correlated_parameters("womens")
-```
-
-:::
-
-```{r}
-global_parameters <- read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/global_parameters.rds")
-
-plot_overtime <- function(league) {
-  
-  league_int <- league
-  possessive <- str_replace(league, "s", "'s")
-  
-  global_parameters %>%
-  filter(date < mdy("3/16/25")) %>%
-  filter(league == league_int,
-         parameter == "0") %>%
-  mutate(sims = pmap(list(Mu, Sigma), ~MASS::mvrnorm(1e4, ..1, ..2)[,2]),
-         median = map_dbl(sims, ~quantile(.x, probs = 0.5)),
-         q5 = map_dbl(sims, ~quantile(.x, probs = 0.05)),
-         q95 = map_dbl(sims, ~quantile(.x, probs = 0.95)),
-         across(c(median, q5, q95), ~1 - expit(.x))) %>%
-  ggplot(aes(x = date,
-             y = median,
-             ymin = q5,
-             ymax = q95)) + 
-  geom_ribbon(fill = pal[1],
-              alpha = 0.25) + 
-  geom_line(color = pal[1]) + 
-  scale_y_percent() + 
-  theme_rieke() +
-  labs(title = "**Overtime over time**",
-         subtitle = glue::glue("Probability that a game between two evenly-matched {possessive} teams goes to overtime"),
-         x = NULL,
-         y = NULL,
-         caption = paste("Shaded region indicates 90% credible interval",
-                         "based on 10,000 MCMC samples",
-                         sep = "<br>")) +
-    theme_rieke()
-  
-}
-
-```
-
-::: {.panel-tabset}
-
-#### Men's
-
-```{r}
-plot_overtime("mens")
-```
-
-#### Women's
-
-```{r}
-plot_overtime("womens")
 ```
 
 :::
 
 ### Predictions in retrograde
 
-```{r prediction functions}
-read_lines("~/Desktop/Personal/repos/2025-march-madness/stan/prediction.stan") %>%
-  str_c(collapse = "\n") %>%
-  write_lines("prediction.stan")
+* prediction
+  * tulsa mens/womens vs oru mens/womens blobs as of 3/16
+  * same as the training, but in reverse!
+  * does the game go to overtime?
+  * does how many overtimes are played?
+  * rate of scoring for each team given number of minutes
+  * estimate mixed scoring distribution(s)
 
-read_lines("~/Desktop/Personal/repos/2025-march-madness/stan/functions.stan") %>%
-  str_c(collapse = "\n") %>%
-  write_lines("functions.stan")
+```{r prediction functions}
+if (!file.exists("prediction.stan")) {
+  
+  read_lines(paste0(url, "stan/prediction.stan")) %>%
+    str_c(collapse = "\n") %>%
+    write_lines("prediction.stan")
+  
+  read_lines(paste0("stan/functions.stan")) %>%
+    str_c(collapse = "\n") %>%
+    write_lines("functions.stan")
+  
+}
 
 run_prediction_model <- function(league) {
   
@@ -449,7 +457,7 @@ run_prediction_model <- function(league) {
   
   # set team parameters
   team_parameters <- 
-    read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/team_parameters.rds") %>%
+    read_rds(paste0(url, "out/update/team_parameters.rds")) %>%
     filter(date < mdy("3/16/25")) %>%
     filter(league == league_int,
            team_name %in% c("Tulsa", "Oral Roberts"),
@@ -474,14 +482,14 @@ run_prediction_model <- function(league) {
   
   # overdispersion scale
   log_sigma_i <- 
-    arrow::read_parquet("~/Desktop/Personal/repos/2025-march-madness/out/update/log_sigma_i.parquet") %>%
+    arrow::read_parquet(paste0(url, "out/update/log_sigma_i.parquet")) %>%
     filter(date < mdy("3/16/25")) %>%
     filter(league == league_int,
            date == max(date))
   
   # overtime hurdle/poisson params
   overtime_params <- 
-    read_rds("~/Desktop/Personal/repos/2025-march-madness/out/update/global_parameters.rds") %>%
+    read_rds(paste0(url, "out/update/global_parameters.rds")) %>%
     filter(date < mdy("3/16/25")) %>%
     filter(date == max(date),
            league == league_int)
@@ -630,13 +638,6 @@ plot_predictions(womens_predictions, "womens")
 
 :::
 
-* prediction
-  * tulsa mens/womens vs oru mens/womens blobs as of 3/16
-  * same as the training, but in reverse!
-  * does the game go to overtime?
-  * does how many overtimes are played?
-  * rate of scoring for each team given number of minutes
-  * estimate mixed scoring distribution(s)
   
 In the regular season, MADHATTRS can estimate the outcome of individual games. During the playoffs, it considers the strength of *potential* schedules each team could face when projecting each team's probability of advancing. 
   
