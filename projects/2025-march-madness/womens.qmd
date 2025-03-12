@@ -25,6 +25,7 @@ paste0(c("<style>", readr::read_lines("styles.css"), "</style>")) |>
 # `r sub("s", "'s", stringr::str_to_title(params$league))` March Madness Predictions {.centered}
 
 <p class="smalltext">Chances of each team advancing through the tournament, updated every game-day</p>
+<p class="smalltext">[How this works](../../posts/2025-03-16-march-madness/index.qmd)</p>
 
 ```{r dropdown}
 #| results: asis
