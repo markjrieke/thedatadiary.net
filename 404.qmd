@@ -1,3 +1,6 @@
+---
+pagetitle: "404"
+---
 ![](static/img/404.png)
 
 Looks like you're in some difficult-to-explore geometry --- need to go back to the [homepage](index.qmd)?

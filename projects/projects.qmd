@@ -15,6 +15,7 @@ repo-actions: [source, issue]
 
 ## Forecasts
 
+* **2025 March Madness**: A Bayesian forecast of the 2025 men's and women's March Madness tournaments ([men's forecast ](2025-march-madness/mens.qmd) | [women's forecast](2025-march-madness/womens.qmd) | [repo](https://github.com/markjrieke/2025-march-madness))
 * **2024 President**: A dynamic Bayesian forecast of the 2024 presidential election ([forecast](2024-potus/National.qmd) | [repo](https://github.com/markjrieke/2024-potus)). 
 * **2022 Senate**: A simulation-based forecast of the 2022 Senate elections ([forecast](2022-midterms/senate.qmd) | [repo](https://github.com/markjrieke/2022-midterm-forecasts)).
 * **2022 House**: A simulation-based forecast of the 2022 House elections ([forecast](2022-midterms/house.qmd) | [repo](https://github.com/markjrieke/2022-midterm-forecasts)).

@@ -40,6 +40,7 @@ params:
 
 <p class="timer", id="demo"></p>
 <p style="text-align:center">Check here after the [first four](https://www.ncaa.com/news/basketball-women/article/2025-03-16/2025-march-madness-womens-ncaa-tournament-schedule-dates-times) have played to see predictions!</p>
+<p style="text-align:center">In the meantime, you can read about [the forecast methodology](../../posts/2025-03-16-march-madness/index.qmd).</p>
 
 <script>
 // Set the date we're counting down to
