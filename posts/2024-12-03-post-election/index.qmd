@@ -8,7 +8,7 @@ image: img/header.png
 
 It's a little less than month out from election day, 2024. Votes are still being tallied to determine the final results,^[Looking at you, [CA-13](https://www.nbcnews.com/politics/2024-elections/california-us-house-district-13-results).] but the topline result has been clear for some time: Donald Trump has been re-elected to the presidency and Republicans have won control of both the House and Senate. 
 
-Candidly, this is not the result I was hoping for. Presidential models (including [my own](../../2024-potus/National.qmd)) showed a highly uncertain race that either candidate could win. I had hoped that, in what was a coin toss election, Kamala Harris and the Democratic Party would emerge victorious. The fact that this didn't happen kept me from engaging in political endeavors for a bit.^[For example, I had originally planned to write this article a week or so after election day.]
+Candidly, this is not the result I was hoping for. Presidential models (including [my own](../../projects/2024-potus/National.qmd)) showed a highly uncertain race that either candidate could win. I had hoped that, in what was a coin toss election, Kamala Harris and the Democratic Party would emerge victorious. The fact that this didn't happen kept me from engaging in political endeavors for a bit.^[For example, I had originally planned to write this article a week or so after election day.]
 
 Still, it's important to divorce the outcome I wanted from a retrospective analysis of the successes and failures of the model as a large scale project. Here, I describe what went well, what could be improved, and broader thoughts about the political modeling landscape writ large.
 
@@ -81,7 +81,7 @@ My thinking with this parameterization was the following:
 * $\beta_s$ captures how wrong the prior is on average, based on state-level polls, and
 * $\beta_{s,d}$ captures changes in voter preference over time.
 
-This was reasonable, but in hindsight flawed, thinking. $\beta_s$ updates to match the state-level average voteshare as polls come in. This means that the model could see large jumps when a state gets its first few polls --- when the first poll comes in, $\beta_s$ rushes to match the average! This resulted in some flatly ridiculous behavior. Take, for example, the projected voteshare in [North Dakota](../../2024-potus/North Dakota.qmd):
+This was reasonable, but in hindsight flawed, thinking. $\beta_s$ updates to match the state-level average voteshare as polls come in. This means that the model could see large jumps when a state gets its first few polls --- when the first poll comes in, $\beta_s$ rushes to match the average! This resulted in some flatly ridiculous behavior. Take, for example, the projected voteshare in [North Dakota](../../projects/2024-potus/North Dakota.qmd):
 
 ::: {.column-page-inset}
 
