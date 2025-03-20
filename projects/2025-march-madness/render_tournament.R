@@ -1,6 +1,6 @@
 # setup ------------------------------------------------------------------------
 
-leagues <- c("mens", "womens")
+leagues <- c("mens")
 
 for (league in leagues) {
   

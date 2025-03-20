@@ -11,64 +11,78 @@ params:
   league: "mens"
 ---
 
-```{r}
-
+```{r utils}
+source("utils.R")
 ```
 
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Doto:wght@100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Micro+5&display=swap');
+```{r styles}
+#| results: asis
+paste0(c("<style>", readr::read_lines("styles.css"), "</style>")) |>
+  stringr::str_c(collapse = "\n") |>
+  cat()
+```
 
-.timer {
-  text-align: center;
-  font-size: 60px;
-  font-weight: 800;
-  font-family: "Doto";
-  margin-top: 0px;
-  color: #838cf1;
+# `r sub("s", "'s", stringr::str_to_title(params$league))` March Madness Predictions {.centered}
+
+<p class="smalltext">Chances of each team advancing through the tournament, updated every game-day</p>
+<p class="smalltext">[How this works](../../posts/2025-03-16-march-madness/index.qmd)</p>
+
+```{r dropdown}
+#| results: asis
+
+# container for the dropdown
+intro <- "<select id='tourneyState' class='cbx' tabindex='50' name='role'>"
+outro <- "</select>"
+
+# get set of reference files for the specified league
+files <- list.files("~/Desktop/Personal/repos/2025-march-madness/site/plot/")
+files <- files[substr(files, 1, nchar(params$league)) == params$league]
+
+# extract set of days from files
+days <- sub(paste0(params$league, "-"), "", files)
+days <- unique(sub(".html", "", days))
+days <- lubridate::ymd(days)
+days <- sort(days, decreasing = TRUE)
+
+# set option values
+values <- paste("option", 1:length(days), sep = "-")
+
+# set display text
+numbers <- scales::label_date("%d")(days)
+numbers <- scales::label_ordinal()(readr::parse_number(numbers))
+display <- paste(scales::label_date("%B")(days), numbers)
+
+# create option elements
+options <- as.character(glue::glue("<option value='{values}'>{display}</option>"))
+
+# coalesce into a dropdown
+c(intro, options, outro) |>
+  stringr::str_c(collapse = "\n") |>
+  cat()
+```
+
+```{r main}
+#| results: asis
+for (day in 1:length(days)) {
+  render_child(
+    option = values[day],
+    league = params$league,
+    date = days[day]
+  )
 }
+```
 
-.dots {
-  font-family: "IBM Plex Sans";
-  font-size: 60px;
-  font-weight: 400;
-}
 
-</style>
-</head>
-<body>
+```{r js}
+#| results: asis
 
-<p class="timer", id="demo"></p>
-<p style="text-align:center">Check here after the [first four](https://www.ncaa.com/news/basketball-men/article/2025-03-16/2025-march-madness-mens-ncaa-tournament-schedule-dates) have played to see predictions!</p>
-<p style="text-align:center">In the meantime, you can read about [the forecast methodology](../../posts/2025-03-16-march-madness/index.qmd).</p>
+# convert values to javascript ids
+ids <- paste0("\"", values, "\"")
+ids <- stringr::str_c(ids, collapse = ", ")
+ids <- paste0("var ids=[", ids, "];")
 
-<script>
-// Set the date we're counting down to
-var countDownDate = new Date("Mar 20, 2025 12:00:00").getTime();
-
-// Update the count down every 1 second
-var x = setInterval(function() {
-
-  // Get today's date and time
-  var now = new Date().getTime();
-    
-  // Find the distance between now and the count down date
-  var distance = countDownDate - now;
-    
-  // Time calculations for days, hours, minutes and seconds
-  var hours = Math.floor(distance / (1000 * 60 * 60));
-  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-    
-  // Output the result in an element with id="demo"
-  document.getElementById("demo").innerHTML = String(hours).padStart(2, '0') + 
-  "<span class='dots'>:</span>" + String(minutes).padStart(2, '0') + "<span class='dots'>:</span>" + String(seconds).padStart(2, '0');
-    
-  // If the count down is over, write some text 
-  if (distance < 0) {
-    clearInterval(x);
-    document.getElementById("demo").innerHTML = "EXPIRED";
-  }
-}, 1000);
-</script>
+c("<script>", ids, readr::read_lines("options.js"), "</script>") |>
+  stringr::str_c(collapse = "\n") |>
+  cat()
+```
 
