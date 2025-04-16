@@ -1,0 +1,86 @@
+---
+title: "Opinionated Python Setup"
+date: '2025-04-16'
+categories: [python]
+description: "Writing this down to keep future me sane"
+image: header.png
+execute: 
+  eval: false
+format: 
+  html: 
+    code-fold: false
+---
+
+There are innumerable ways to setup python environments. The steps below coalesce several disparate setup procedures found online and walk through an opinionated setup for:
+
+-   Installing packages to a local virtual environment with poetry
+-   Setting up VSCode to allow for python code to be run interactively
+-   Setting up external software not managed by poetry (i.e., cmdstan)
+
+## Install Command Line Tools
+
+The following command line tools are required to replicate the opinionated setup. Instructions are given under the assumption that the user is installing from a macOS for the first time. Each item in the list contains a link to its respective setup instructions.
+
+-   [homebrew](https://brew.sh/): Package manager for macOS
+-   [pipx](https://pipx.pypa.io/stable/installation/): Python application installer
+-   [poetry](https://python-poetry.org/docs/#installation): Python package and dependency manager
+-   [pyenv](https://github.com/pyenv/pyenv?tab=readme-ov-file#installation): Python version manager
+
+## Setup Virtual Environment
+
+Open up the project folder in VSCode. In existing projects, you should be in the same directory that includes the `pyproject.toml` file. If starting a new project, follow [poetry's instructions](https://python-poetry.org/docs/basic-usage/) on creating a new project. Install the project's version of python (if not already installed) and point the terminal to use it when in the directory by running the following:
+
+```{default}
+pyenv install 3.12.9
+pyenv local 3.12.9
+```
+
+Next, create a local virtual environment within the project. You can confirm that the correct version of python is being used by inspecting the version of the python executable in `.venv/vin/`. If it's not the correct version, you can delete the `.venv/` folder, set the correct python version, then re-create.
+
+```{default}
+pyenv exec python -m venv .venv
+```
+
+![](venv.png)
+
+::: callout-note
+It's typically a good idea to create virtual environments *within* each project's directory rather than the default location in some esoteric corner of your computer's system folders. This makes it easy to find the virtual environment so you can browse package source code, check implied dependencies, and easily nuke the virtual environment if need be.
+:::
+
+To run in both scripted and interactive settings, you'll need to activate the virtual environment in the terminal and point VSCode to the correct interpreter. Activate the virtual environment in the terminal with the following command:
+
+```{default}
+source .venv/bin/activate
+```
+
+To point VSCode to the same virtual environment, use the keyboard shortcut ⌘⇧P and search for "Select Interpreter." Select "Enter Interpreter path..." and enter the path to the python executable in the local virtual environment.
+
+![](interpreter.png)
+
+By default, poetry will install packages in a difficult-to-find virtual environment. You can change the default behavior to install into the selected project environment by modifying poetry's config settings (if you do not want to change these settings globally, you can append the command with the `--local` flag):
+
+```{default}
+poetry config virtualenvs.in-project true
+```
+
+## Install Packages
+
+To install the required dependencies to the local environment, navigate ot the directory containing the `pyproject.toml` file and run `poetry install`:
+
+```{default}
+poetry install
+```
+
+This installs the required python packages. To run Stan, however, you'll also need to [install cmdstan](https://mc-stan.org/cmdstanpy/installation.html#cmdstan-installation) and the associated C++ toolchain requirements. On macOS, cmdstan requires Xcode command line tools. Install them from the terminal with:
+
+```{default}
+xcode-select --install
+```
+
+To install cmdstan from cmdstanpy, open a new python script and run:
+
+```{python}
+#| eval: false
+import cmdstanpy
+cmdstanpy.install_cmdstan()
+```
