@@ -35,7 +35,7 @@ pyenv install 3.12.9
 pyenv local 3.12.9
 ```
 
-Next, create a local virtual environment within the project. You can confirm that the correct version of python is being used by inspecting the version of the python executable in `.venv/vin/`. If it's not the correct version, you can delete the `.venv/` folder, set the correct python version, then re-create.
+Next, create a local virtual environment within the project. You can confirm that the correct version of python is being used by inspecting the version of the python executable in `.venv/bin/`. If it's not the correct version, you can delete the `.venv/` folder, set the correct python version, then re-create.
 
 ```{default}
 pyenv exec python -m venv .venv
