@@ -5,6 +5,7 @@
 .httr-oauth
 *.DS_Store
 *exe/
+*.quarto_ipynb
 
 /.quarto/
 /_site/
