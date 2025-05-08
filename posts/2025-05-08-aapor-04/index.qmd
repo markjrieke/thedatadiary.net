@@ -1,0 +1,134 @@
+---
+title: "Weighting and Its Consequences"
+date: '2025-05-08'
+categories: [politics]
+description: "Part 4: "
+image: header.png
+---
+
+::: {.callout-note}
+This is the fourth entry in a multi-part series of posts on weighting surveys. You can read the previous entries at the links below.
+
+* [Part 1: The Abstract](../2025-02-15-aapor-01/index.qmd)
+* [Part 2: A Free Lunch](../2025-04-20-aapor-02/index.qmd)
+* [Part 3: Binary Surprises](../2025-05-04-aapor-03/index.qmd)
+:::
+
+```{r}
+library(tidyverse)
+```
+
+
+* what did I do in the previous post
+* what was the cliffhanger (ooh what about forecasters)
+
+* let's simulate a population with four groups of equal size
+* there are two strata with two variables each
+* Groups are highly correlated with the response
+
+```{r}
+groups <- read_csv("data/groups.csv")
+pollsters <- read_csv("data/pollsters.csv")
+polls <- read_rds("data/polls.rds")
+
+groups %>%
+  select(strata_1, strata_2, group, group_mean) %>%
+  knitr::kable()
+```
+
+* let's also simulate a set of pollsters
+* pollsters will have different weighting strategies
+* as well as different (logit scale) biases
+
+```{r}
+pollsters %>%
+  select(pollster, strategy, bias) %>%
+  knitr::kable()
+```
+
+
+* those with the "cross" strategy will weight on all variables, including variables highly correlated with the outcome
+* those with the "single" strategy will only weight responses by strata_1
+
+```{r}
+groups %>%
+  group_by(strata_2) %>%
+  summarise(strata_mean = mean(group_mean)) %>%
+  knitr::kable()
+```
+
+* We get data that looks like this
+
+```{r}
+polls %>%
+  slice_head(n = 10) %>%
+  transmute(day = day,
+            pollster = pollster,
+            sample_size = map_int(data, ~sum(.x$K)),
+            mean = mean,
+            err = pmap_dbl(list(mean, sd), ~(qnorm(0.975, ..1, ..2) - ..1))) %>%
+  mutate(across(c(mean, err), ~scales::label_percent(accuracy = 0.1)(.x)),
+         err = paste0("+/-", err)) %>%
+  knitr::kable()
+```
+
+
+* how might we fit a model to this?
+* Reasonable approach is Linzer (2013)
+* We estimate the number of responses in favor as mean * sample size
+* Then model as a binomial
+
+```{r}
+polls %>%
+  slice_head(n = 10) %>%
+  transmute(day = day,
+            pollster = pollster,
+            sample_size = map_int(data, ~sum(.x$K)),
+            mean = mean,
+            err = pmap_dbl(list(mean, sd), ~(qnorm(0.975, ..1, ..2) - ..1))) %>%
+  mutate(err = scales::label_percent(accuracy = 0.1)(err),
+         err = paste0("+/-", err),
+         Y = round(mean * sample_size),
+         K = sample_size,
+         mean = scales::label_percent(accuracy = 0.1)(mean)) %>%
+  knitr::kable()
+```
+
+* Here, we model the latent mean with a timevarying parameter, $\beta_d$
+* Don't worry about this for now, I'm modeling it using a guassian random walk
+* We also model the pollster biases as hierarchically distributed
+
+$$
+\begin{align*}
+\text{Y}_{d,p} &\sim \text{Binomial}(\text{K}_{d,p}, \theta_{d,p}) \\
+\text{logit}(\theta_{d,p}) &= \alpha + \beta_d + \beta_p \\
+\beta_p &= \eta_p \sigma_\beta
+\end{align*}
+$$
+
+* Gives a reasonable fit
+
+![](img/binomial_voteshare.png)
+
+* And a reasonable recovery of the parameter estimates
+
+![](img/binomial_parameters.png)
+
+* But this approach throws away important information
+* What if we instead model the variance directly *given* each poll's reported margin of error?
+* Here, we redefine $Y$ to be the observed mean of the poll and $\sigma$ to be the observed sd
+* We can then rewrite the likelihood statement to be
+
+$$
+\text{Y}_{d,g} \sim \text{Normal}(\theta_{d,g}, \sigma_{d,g})
+$$
+
+* We still get a good looking fit
+
+![](img/normal_voteshare.png)
+
+* But now our parameter estimates are more precise *among those pollsters who weight on highly correlated variables*
+
+![](img/normal_parameters.png)
+
+

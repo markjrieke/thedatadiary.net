@@ -1,0 +1,5 @@
+strata_1,strata_2,group,group_mean,population,p_respond,p_sampled
+A,1,A1,0.97,0.25,0.05,0.25
+A,2,A2,0.9,0.25,0.05,0.25
+B,1,B1,0.1,0.25,0.05,0.25
+B,2,B2,0.03,0.25,0.05,0.25
