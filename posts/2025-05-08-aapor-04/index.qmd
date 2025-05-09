@@ -2,7 +2,7 @@
 title: "Weighting and Its Consequences"
 date: '2025-05-08'
 categories: [politics]
-description: "Part 4: "
+description: "Part 4: Adjustments for Aggregators"
 image: header.png
 ---
 
@@ -18,13 +18,9 @@ This is the fourth entry in a multi-part series of posts on weighting surveys. Y
 library(tidyverse)
 ```
 
+In this series of posts thus far, I've explored how weighting survey responses affects (and, importantly, can reduce) the bias and variance of the population mean estimate for both continuous and discrete outcomes. While this is pedagogically interesting for both producers and consumers of individual poll results, I am personally more interested in how this affects models estimating public opinion from multiple polls. In this post, I'll demonstrate that aggregators, forecasters, and researchers can improve the precision of parameter estimates by modeling each poll's variance directly.
 
-* what did I do in the previous post
-* what was the cliffhanger (ooh what about forecasters)
-
-* let's simulate a population with four groups of equal size
-* there are two strata with two variables each
-* Groups are highly correlated with the response
+To get started, let's consider a population with two variables that we can stratify by, with two classes within each strata, for a total of four groups in the population. For simplicity's sake, we'll assume that the groups are of equal size. We'll be simulating pre-election poll responses as a binary choice between the democratic and republican candidate from this population and enforce the fact that group membership is highly correlated with candidate preference.
 
 ```{r}
 groups <- read_csv("data/groups.csv")
@@ -36,9 +32,7 @@ groups %>%
   knitr::kable()
 ```
 
-* let's also simulate a set of pollsters
-* pollsters will have different weighting strategies
-* as well as different (logit scale) biases
+Let's also simulate a set of pollsters who will be conducting these simulated polls. These pollsters will have different statistical biases^[As measured on the logit scale.] that we'll want to incorporate as a part of the model. Further, each pollster will employ one of two possible weighting strategies: "single" or "cross."
 
 ```{r}
 pollsters %>%
@@ -46,9 +40,7 @@ pollsters %>%
   knitr::kable()
 ```
 
-
-* those with the "cross" strategy will weight on all variables, including variables highly correlated with the outcome
-* those with the "single" strategy will only weight responses by strata_1
+Pollsters that use the "cross" strategy will estimate the population mean by weighting on all variables (i.e., the cross of `strata_1` and `strata_2`) whereas pollsters that use the "single" strategy will only weight responses by `strata_2`. Effectively, this means that pollsters using the "single" strategy will weight on variables that are not highly correlated with the outcome.
 
 ```{r}
 groups %>%
@@ -57,7 +49,7 @@ groups %>%
   knitr::kable()
 ```
 
-* We get data that looks like this
+If we simulate a set of polls under these assumptions, however, we won't have access to the underlying group response data. Instead, the dataset that will feed into the model will include topline information per poll. Here, pollsters are reporting the mean estimate for support for the democratic candidate along with the sample size and margin of error.
 
 ```{r}
 polls %>%
@@ -72,11 +64,7 @@ polls %>%
   knitr::kable()
 ```
 
-
-* how might we fit a model to this?
-* Reasonable approach is Linzer (2013)
-* We estimate the number of responses in favor as mean * sample size
-* Then model as a binomial
+A reasonable approach would be to follow the approach described in Drew Linzer's 2013 paper, [Dynamic Bayesian Forecasting of Presidential Elections in the States](https://votamatic.org/wp-content/uploads/2013/07/Linzer-JASA13.pdf).^[Notably, variations of this approach have been used used by [Pierre Kemp in 2016](https://www.slate.com/features/pkremp_forecast/report.html), the [Economist in 2020](https://projects.economist.com/us-2020-forecast/president), and [myself in 2024](https://www.thedatadiary.net/projects/2024-potus/national).] Here, the number of responses supporting the democratic candidate in each poll is estimated as `round(mean * sample_size)`, after which a binomial likelihood is used to estimate the model. So our dataset prepped for modeling will look something like this:
 
 ```{r}
 polls %>%
@@ -94,41 +82,45 @@ polls %>%
   knitr::kable()
 ```
 
-* Here, we model the latent mean with a timevarying parameter, $\beta_d$
-* Don't worry about this for now, I'm modeling it using a guassian random walk
-* We also model the pollster biases as hierarchically distributed
+For a poll observed on day $d$ conducted by pollster $p$, I model the number of poll respondents supporting the democratic candidate, $\text{Y}_{d,p}$, as binomially distributed given the poll's sample size, $\text{K}_{d,p}$, and the poll-specific probability of support, $\theta_{d,p}$.
 
 $$
 \begin{align*}
-\text{Y}_{d,p} &\sim \text{Binomial}(\text{K}_{d,p}, \theta_{d,p}) \\
+\text{Y}_{d,p} &\sim \text{Binomial}(\text{K}_{d,p}, \theta_{d,p})
+\end{align*}
+$$
+
+I model the latent support per poll with parameters measuring change in candidate support over time, $\beta_d$,^[This is modeled as a gaussian random walk, but I've affixed this to be unchaning over time.] and parameters measuring the statistical bias per pollster, $\beta_p$. $\beta_p$ is modeled as hierarchically distributed with a standard distribution of $\sigma_\beta$.
+
+$$
+\begin{align*}
 \text{logit}(\theta_{d,p}) &= \alpha + \beta_d + \beta_p \\
 \beta_p &= \eta_p \sigma_\beta
 \end{align*}
 $$
 
-* Gives a reasonable fit
+The estimated true latent support is simply the daily fit excluding any pollster biases. I.e., $\text{logit}(\theta_d) = \alpha + \beta_d$. The model samples efficiently and captures the latent trend well enough.
 
 ![](img/binomial_voteshare.png)
 
-* And a reasonable recovery of the parameter estimates
+Similarly, the fitted model recovers the true parameters measuring pollster bias across pollsters using either weighting strategy.
 
 ![](img/binomial_parameters.png)
 
-* But this approach throws away important information
-* What if we instead model the variance directly *given* each poll's reported margin of error?
-* Here, we redefine $Y$ to be the observed mean of the poll and $\sigma$ to be the observed sd
-* We can then rewrite the likelihood statement to be
+This is all well and good, but can potentially be better! This approach discards some important information: the reported margin of error from each poll is ignored. The model implicitly infers a margin of error given the sample size. But as discussed in [previous posts](../2025-04-20-aapor-02/index.qmd), weighting on variables highly correlated with the outcome can *reduce* the variance of the estimated mean! We can do better by modeling the variance of each poll directly, given each poll's reported margin of error.
+
+To do so, we only need to make a small change to the likelihood. Here, we redefine $\text{Y}_{d,g}$ to be the observed mean of each poll and $\sigma_{d,g}$ to be the standard deviation of each poll (inferred from the margin of error). We can then simply swap the binomial likelihood for a normal likelihood and leave the rest of the model the same.
 
 $$
 \text{Y}_{d,g} \sim \text{Normal}(\theta_{d,g}, \sigma_{d,g})
 $$
 
-* We still get a good looking fit
+Under this formulation, the model still samples efficiently^[In this particular case, it samples *more* efficiently.] and captures the latent trend well --- the posterior estimates for $\theta_d$ are close-to-unchanged from the binomial model.
 
 ![](img/normal_voteshare.png)
 
-* But now our parameter estimates are more precise *among those pollsters who weight on highly correlated variables*
+The parameters measuring pollster bias, however, are *more precise* among pollsters who weight responses on variables highly correlated with the outcome, while still recovering the true parameters. The posterior bias parameters among pollsters who use the "single" weighting strategy have about the same level of precision as in the previous model.
 
 ![](img/normal_parameters.png)
 
-
+Other parameterizations, such as using the mean-variance formulation of the beta distribution for the likelihood, also see this benefit. Regardless of the specific likelihood used, the point here is that modeling the reported uncertainty in each poll, rather than using a binomial likelihood, can improve the precision of parameter estimates.

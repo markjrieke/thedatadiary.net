@@ -434,3 +434,6 @@ groups %>%
 
 pollsters %>%
   write_csv("posts/2025-05-08-aapor-04/data/pollsters.csv")
+
+polls %>%
+  write_rds("posts/2025-05-08-aapor-04/data/polls.rds")
