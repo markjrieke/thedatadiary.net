@@ -64,7 +64,7 @@ polls %>%
   knitr::kable()
 ```
 
-A reasonable approach would be to follow the approach described in Drew Linzer's 2013 paper, [Dynamic Bayesian Forecasting of Presidential Elections in the States](https://votamatic.org/wp-content/uploads/2013/07/Linzer-JASA13.pdf).^[Notably, variations of this approach have been used used by [Pierre Kemp in 2016](https://www.slate.com/features/pkremp_forecast/report.html), the [Economist in 2020](https://projects.economist.com/us-2020-forecast/president), and [myself in 2024](https://www.thedatadiary.net/projects/2024-potus/national).] Here, the number of responses supporting the democratic candidate in each poll is estimated as `round(mean * sample_size)`, after which a binomial likelihood is used to estimate the model. So our dataset prepped for modeling will look something like this:
+How might we model the underlying support the democratic candidate given this data? A reasonable approach would be to follow the approach described in Drew Linzer's 2013 paper, [Dynamic Bayesian Forecasting of Presidential Elections in the States](https://votamatic.org/wp-content/uploads/2013/07/Linzer-JASA13.pdf).^[Notably, variations of this approach have been used used by [Pierre Kemp in 2016](https://www.slate.com/features/pkremp_forecast/report.html), the [Economist in 2020](https://projects.economist.com/us-2020-forecast/president), and [myself in 2024](https://www.thedatadiary.net/projects/2024-potus/national).] Here, the number of responses supporting the democratic candidate in each poll is estimated as `round(mean * sample_size)`, after which a binomial likelihood is used to estimate the model. So our dataset prepped for modeling will look something like this:
 
 ```{r}
 polls %>%
@@ -90,7 +90,7 @@ $$
 \end{align*}
 $$
 
-I model the latent support per poll with parameters measuring change in candidate support over time, $\beta_d$,^[This is modeled as a gaussian random walk, but I've affixed this to be unchaning over time.] and parameters measuring the statistical bias per pollster, $\beta_p$. $\beta_p$ is modeled as hierarchically distributed with a standard distribution of $\sigma_\beta$.
+I model the latent support per poll with parameters measuring change in candidate support over time, $\beta_d$,^[This is modeled as a gaussian random walk, but I've affixed this to be unchanging over time.] and parameters measuring the statistical bias per pollster, $\beta_p$. $\beta_p$ is modeled as hierarchically distributed with a standard distribution of $\sigma_\beta$.
 
 $$
 \begin{align*}
