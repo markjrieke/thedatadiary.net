@@ -109,10 +109,10 @@ Similarly, the fitted model recovers the true parameters measuring pollster bias
 
 This is all well and good, but can potentially be better! This approach discards some important information: the reported margin of error from each poll is ignored. The model implicitly infers a margin of error given the sample size. But as discussed in [previous posts](../2025-04-20-aapor-02/index.qmd), weighting on variables highly correlated with the outcome can *reduce* the variance of the estimated mean! We can do better by modeling the variance of each poll directly, given each poll's reported margin of error.
 
-To do so, we only need to make a small change to the likelihood. Here, we redefine $\text{Y}_{d,g}$ to be the observed mean of each poll and $\sigma_{d,g}$ to be the standard deviation of each poll (inferred from the margin of error). We can then simply swap the binomial likelihood for a normal likelihood and leave the rest of the model the same.
+To do so, we only need to make a small change to the likelihood. Here, we redefine $\text{Y}_{d,p}$ to be the observed mean of each poll and $\sigma_{d,p}$ to be the standard deviation of each poll (inferred from the margin of error). We can then simply swap the binomial likelihood for a normal likelihood and leave the rest of the model the same.
 
 $$
-\text{Y}_{d,g} \sim \text{Normal}(\theta_{d,g}, \sigma_{d,g})
+\text{Y}_{d,p} \sim \text{Normal}(\theta_{d,p}, \sigma_{d,p})
 $$
 
 Under this formulation, the model still samples efficiently^[In this particular case, it samples *more* efficiently.] and captures the latent trend well --- the posterior estimates for $\theta_d$ are close-to-unchanged from the binomial model.
