@@ -23,6 +23,7 @@ repo-actions: [source, issue]
 
 ## Talks, Presentations, etc.
 
+* **2025 AAPOR**: Weighting and Its Consequences: Variance Reduction in Discrete Outcomes and Its Implications for Survey Aggregation ([slides](https://markjrieke.github.io/2025-aapor/) | [repo](https://github.com/markjrieke/2025-aapor) | companion blog [part 1](../posts/2025-02-15-aapor-01/index.qmd), [part 2](../posts/2025-04-20-aapor-02/index.qmd), [part 3](../posts/2025-05-04-aapor-03/index.qmd), [part 4](../posts/2025-05-08-aapor-04/index.qmd)).
 * **2024 Corporate Retreat**: Machine go brrrrr: Statistics is easy if you let the computer do all the work ([slides](https://markjrieke.github.io/2024-corporate-retreat/statistics-is-fun.html) | [repo](https://github.com/markjrieke/2024-corporate-retreat)).
 * **Kudzu Vine Radio Show**: Mark Rieke of the Data Diary discusses his election forecasting model ([recording](https://www.blogtalkradio.com/kudzu/2024/09/29/mark-rieke-of-the-data-diary)).
 * **Data Humans Podcast**: Meet Mark Rieke: career transition from mechanical engineering, craving more technical work, and how we all belong in data ([recording](https://open.spotify.com/episode/3WYo7Fmiv03ujIJHUs8sYh)).
