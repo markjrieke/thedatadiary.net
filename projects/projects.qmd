@@ -21,6 +21,10 @@ repo-actions: [source, issue]
 * **2022 House**: A simulation-based forecast of the 2022 House elections ([forecast](2022-midterms/house.qmd) | [repo](https://github.com/markjrieke/2022-midterm-forecasts)).
 * **2022 Governor**: A simulation-based forecast of the 2022 Governor elections ([forecast](2022-midterms/governor.qmd) | [repo](https://github.com/markjrieke/2022-midterm-forecasts)).
 
+## Guest Articles
+
+* **Game Data Pros**: Optimizing Across the Free-to-Play Marketing Mix with Bandit Algorithms ([article](https://gamedatapros.com/optimizing-across-the-free-to-play-marketing-mix-with-bandit-algorithms/))
+
 ## Talks, Presentations, etc.
 
 * **2025 AAPOR**: Weighting and Its Consequences: Variance Reduction in Discrete Outcomes and Its Implications for Survey Aggregation ([slides](https://markjrieke.github.io/2025-aapor/) | [repo](https://github.com/markjrieke/2025-aapor) | companion blog [part 1](../posts/2025-02-15-aapor-01/index.qmd), [part 2](../posts/2025-04-20-aapor-02/index.qmd), [part 3](../posts/2025-05-04-aapor-03/index.qmd), [part 4](../posts/2025-05-08-aapor-04/index.qmd)).
