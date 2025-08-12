@@ -23,6 +23,7 @@ repo-actions: [source, issue]
 
 ## Guest Articles
 
+* **Strength In Numbers**: The U.S. House candidates who moved the needle in 2024 ([article](https://www.gelliottmorris.com/p/and-the-most-skilled-us-house-representatives))
 * **Game Data Pros**: Optimizing Across the Free-to-Play Marketing Mix with Bandit Algorithms ([article](https://gamedatapros.com/optimizing-across-the-free-to-play-marketing-mix-with-bandit-algorithms/))
 
 ## Talks, Presentations, etc.
