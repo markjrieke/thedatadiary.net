@@ -8,7 +8,7 @@ about:
       text: Github
       aria-label: Github
       href: https://github.com/markjrieke
-    - icon: brightness-alt-high-fill
+    - icon: bluesky
       text: BlueSky
       aria-label: bluesky
       href: https://bsky.app/profile/markjrieke.bsky.social
