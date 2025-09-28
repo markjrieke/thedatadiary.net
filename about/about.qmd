@@ -28,9 +28,7 @@ smalltext {
 
 </style>
 
-My name is Mark Rieke and I am a data scientist at [Game Data Pros, Inc.](https://gamedatapros.com/) where I help design experiments and analyze test results from a Bayesian perspective. In my free time, you can find me doing improv with *Knot Occult* at the [Jackalope Theater](https://www.jackalopetheater.com/).
-
-I earned my bachelor's degree in Mechanical Engineering from the [University of Tulsa](https://utulsa.edu/) in 2018. I worked with [Siemens Energy](https://www.siemens-energy.com/us/en.html) for three years desiging mobile gas-turbine power plants before more moving into a more data-centric role at [Memorial Hermann Health System](https://www.memorialhermann.org/), where I worked with survey data to measure and improve patient satisfaction. I currently use [R](https://www.r-project.org/), [Stan](https://mc-stan.org/), and [Python](https://www.python.org/) to build systems for running and analyzing experiments on player behavior. In my spare time, I love analyzing public political datasets. You can find my work on [GitHub](https://github.com/markjrieke) and my unedited stream of consciousness on [BlueSky](https://bsky.app/profile/markjrieke.bsky.social). 
+I am a data scientist, Bayesian statistician, ML engineer, or whatever the flavor-of-the-day title might be. I currently work as a Senior Data Scientist at [Fortis Games](https://www.fortisgames.com/en-us/) where I build models and systems for optimizing revenue, analyzing experiments, and improving the player experience. In my free time, you can find me doing improv with *Knot Occult* at the [Jackalope Theater](https://www.jackalopetheater.com/).
 
 I live in Tulsa, OK, with my wife and three obnoxious yet lovable pets.
 
