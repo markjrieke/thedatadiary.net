@@ -4,17 +4,4 @@ repo-url: https://github.com/markjrieke/thedatadiary.net
 repo-actions: [source, issue]
 ---
 
-I am available in a private capacity to provide statistical consulting services. I specialize in Bayesian inference, survey analysis, and statistical computing in R/python. You can hire me to assist with any of the following:
-
-* Statistical modeling
-* Communicating results to non-expert audiences
-* Wrangling and cleaning data for modeling
-* Developing internal packages for statistical analysis
-* Computationally reproducible reporting
-
-I am further available for industry-specific work for healthcare clients:
-
-* Survey analysis for patient experience (HCAHPS, OASCAHPS, voluntary surveys via Press Ganey, Qualtrics, Medallia, etc.).
-* Preparation for submitting applications for ANCC Magnet designation.
-
-You can schedule a free 30-minute initial consult to discuss project requirements and scope of work by emailing me at [markjrieke@gmail.com](mailto:markjrieke@gmail.com?subject=Statisitcal Consulting - Initial Consult), after which I will send an estimated cost for the work.
+I not currently taking on new consulting clients. Check back here in the future.
