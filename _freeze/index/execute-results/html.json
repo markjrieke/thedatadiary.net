@@ -2,7 +2,7 @@
   "hash": "6db1e68cc5a01401c96589f015355992",
   "result": {
     "engine": "knitr",
-    "markdown": "---\ntitle: the data diary\nsubtitle: A scratchpad for statistics, politics, and other odd lots\nlisting:\n  feed: true\n  contents: posts\n  sort: \"date desc\"\n  type: grid\n  grid-columns: 3\n  image-height: 250px\n  page-size: 100\n  categories: true\npage-layout: full\ntitle-block-banner: true\ncode-tools: false\n---\n\n\n\n### Stay in touch\n\n\n\n::: {.cell}\n::: {.cell-output-display}\n\n```{=html}\n<iframe src=\"https://embeds.beehiiv.com/4ad5cd9b-6f4f-4da2-ab26-951cfd67ddb7?slim=true\" data-test-id=\"beehiiv-embed\" frameborder=\"0\" scrolling=\"no\" style=\"margin: 0; border-radius: 0px !important; height: 65px; background-color: transparent;\"></iframe>\n```\n\n:::\n:::\n",
+    "markdown": "---\ntitle: the data diary\nsubtitle: A scratchpad for statistics, politics, and other odd lots\nlisting:\n  feed: true\n  contents: posts\n  sort: \"date desc\"\n  type: grid\n  grid-columns: 3\n  image-height: 250px\n  page-size: 100\n  categories: true\npage-layout: full\ntitle-block-banner: true\ncode-tools: false\n---\n\n### Stay in touch\n\n\n::: {.cell}\n::: {.cell-output-display}\n\n```{=html}\n<iframe src=\"https://embeds.beehiiv.com/4ad5cd9b-6f4f-4da2-ab26-951cfd67ddb7?slim=true\" data-test-id=\"beehiiv-embed\" frameborder=\"0\" scrolling=\"no\" style=\"margin: 0; border-radius: 0px !important; height: 65px; background-color: transparent;\"></iframe>\n```\n\n:::\n:::\n\n\n\n\n\n",
     "supporting": [],
     "filters": [
       "rmarkdown/pagebreak.lua"
