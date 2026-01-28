@@ -38,5 +38,5 @@ I live in Tulsa, OK, with my wife and three obnoxious yet lovable pets.
 
 <centered><smalltext>All content on this site is [Brainmade](https://brainmade.org/) --- unless otherwise stated, all code, text, and images are made by me without the use of large language models.</smalltext></centered>
 
-![](https://raw.githubusercontent.com/0atman/BrainMade-org/refs/heads/main/docs/black-logo.svg){fig-align="center"}
+![](https://brainmade.org/black-logo.svg){fig-align="center"}
 
