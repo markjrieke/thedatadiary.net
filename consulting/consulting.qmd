@@ -4,4 +4,4 @@ repo-url: https://github.com/markjrieke/thedatadiary.net
 repo-actions: [source, issue]
 ---
 
-I not currently taking on new consulting clients. Check back here in the future.
+I am currently not open to taking on new consulting clients. Check back here in the future.
