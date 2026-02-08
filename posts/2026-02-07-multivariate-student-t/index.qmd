@@ -1,0 +1,128 @@
+---
+title: "What's the tea, sis?"
+date: '2026-02-07'
+categories: [stan]
+description: "A reparameterization of the multivariate student-t distribution in Stan"
+image: header.png
+---
+
+A few years ago, a colleague and I were working on implementing the [multivariate student-t](https://en.wikipedia.org/wiki/Multivariate_t-distribution) distribution as a part of a new model. We were looking to implement the [non-centered](https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#reparameterization.section) parameterization. Luckily enough, Andre Pfeuffer had [shared the following solution on the Stan forums](https://discourse.mc-stan.org/t/non-centered-parameterization-of-the-multivariate-student-t-distribution/4176/8) that rewrites the multivariate student-t in terms of inverse Chi-Square distribution:
+
+```stan
+data {
+  int<lower=1> p;
+  vector[p] mu;
+  cholesky_factor_cov[p,p] L;
+  real<lower=0> nu;
+}
+parameters {
+  vector[p] z;
+  real<lower=0> u;
+}
+transformed parameters {
+  vector[p] x;
+  x = mu + sqrt(nu / u) * (L * z); // distributed multi_student_t
+}
+model {
+  target += normal_lpdf(z | 0, 1);
+  target += chi_square_lpdf(u | nu);
+}
+```
+
+This works well! But! This parameterization requires that you pass in the degrees of freedom, $\nu$, as data.^[You could technically simply model $\nu$ as a parameter with this specification, but then you end up with a centered prior over $u$, which defeats the purpose of implementing a non-centered parameterization.] If you instead want to estimate $\nu$ as a part of fitting the model, you'll need an alternative parameterization.
+
+Luckily enough for you, dear reader, I've done this work for you. If you want to skip the derivation and get straight to estimating, you can plop this function into your Stan model. What follows below is the derivation [that I shared with the Stan forums.](https://discourse.mc-stan.org/t/non-centered-parameterization-of-the-multivariate-student-t-distribution/4176/9)
+
+```stan
+real multivariate_t_scale_lpdf(vector x,
+                               real nu) {
+    int N = size(x);
+    vector[N] xx = nu/(x^2);
+    real lp = 0.0;
+    for (n in 1:N) {
+        lp += log(2) + log(nu) + chi_square_lpdf(xx[n] | nu) - 3*log(x[n]);
+    }
+    return lp;
+}
+```
+
+## Deriving a multivariate student-t
+
+The goal is to replace `sqrt(nu / u)` in Andre's original solution with a new scale parameter, $x$, and derive some density function for $x$ that takes $\nu$ as an input. From some tinkering, I found that the quantile function for the outcome of interest is
+
+$$
+x = \sqrt{\frac{\nu}{\mathcal{Q}(1-p,\nu)}}
+$$
+
+where $\mathcal{Q}$ is the quantile function of the Chi-Square distribution. 
+
+I didn't exactly derive this quantile function robustly --- it was a game of "guess and check." If I simulate the outcome of interest, then compare the **`r riekelib::color_text("quantile distribution of the simulated values", "royalblue")`** against my **derived quantile distribution**, the results line up well enough for me to say that this is the right function.
+
+```{r}
+library(tidyverse)
+library(riekelib)
+
+# simulate outcome w/df = 7
+nu <- 7
+raw <- sqrt(nu/rchisq(1e4, nu))
+
+# quantiles for checking simulated results against empirical
+sim <- 
+  tibble(p = seq(from = 0, to = 1, length.out = 100),
+         q = quantile(raw, probs = seq(from = 0, to = 1, length.out = 100)))
+
+# check the quantile function
+tibble(p = seq(from = 0, to = 1, length.out = 1000)) %>%
+  mutate(q = sqrt(nu/qchisq(1 - p, nu))) %>%
+  ggplot(aes(x = p,
+             y = q)) + 
+  geom_line() +
+  geom_point(data = sim,
+             color = "royalblue") +
+  theme_rieke()
+```
+
+We want to get $p$ on its own so that we can eventually derive a density, $d$. Some rearranging yields the following:
+
+$$
+\mathcal{Q}(1-p,\nu) = \frac{\nu}{x^2}
+$$
+
+Setting $a=\frac{\nu}{x^2}$ and recalling that the quantile and cumulative functions are inverses lets us solve for $p$ explicitly. Here, $\mathcal{C}$ is the cumulative distribution function for the Chi-Square distribution --- this gives us a cumulative distribution function for $x$.
+
+$$
+\begin{align*}
+\mathcal{C}(a,\nu) &= 1-p \\
+p &= 1 - \mathcal{C}(a,\nu)
+\end{align*}
+$$
+
+The density function is just the derivative of the CDF, so by virtue of the chain rule, we get the following if we take the derivative of our CDF with respect to $x$:
+
+$$
+d = -\mathcal{D}(a,\nu) \times a'
+$$
+
+where $\mathcal{D}$ is the density function of the Chi-Square distribution and $a'$ is the derivative of $a$ with respect to $x$.
+
+Sub in $\frac{\nu}{x^2}$ for our temporary variable, $a$, finish out the derivative, do some simplification, and voila! A density function for the multivariate student-t scale drops out!
+
+$$
+d = \mathcal{D}\left(\frac{\nu}{x^2},\nu\right)\left(\frac{\nu}{x^3}\right)
+$$
+Comparing the **`r riekelib::color_text("empirical density of the simulated values", "royalblue")`** against the **derived density function** again yields an overlap that is, to me, good enough to call correct.
+
+```{r}
+# simulate outcome w/df = 7
+nu <- 7
+raw <- sqrt(nu/rchisq(1e4, nu))
+
+tibble(x = seq(from = 0, to = 6, length.out = 1000)) %>%
+  mutate(d = dchisq(nu/(x^2), nu) * (2*nu)/(x^3)) %>%
+  ggplot(aes(x = x)) + 
+  geom_line(aes(y = d)) +
+  geom_density(data = tibble(x = raw),
+               color = "royalblue") +
+  theme_rieke()
+```
+
