@@ -108,7 +108,7 @@ where $\mathcal{D}$ is the density function of the Chi-Square distribution and $
 Sub in $\frac{\nu}{x^2}$ for our temporary variable, $a$, finish out the derivative, do some simplification, and voila! A density function for the multivariate student-t scale drops out!
 
 $$
-d = \mathcal{D}\left(\frac{\nu}{x^2},\nu\right)\left(\frac{\nu}{x^3}\right)
+d = \mathcal{D}\left(\frac{\nu}{x^2},\nu\right)\left(\frac{2\nu}{x^3}\right)
 $$
 Comparing the **`r riekelib::color_text("empirical density of the simulated values", "royalblue")`** against the **derived density function** again yields an overlap that is, to me, good enough to call correct.
 
