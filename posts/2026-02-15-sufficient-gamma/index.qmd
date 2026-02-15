@@ -1,0 +1,299 @@
+---
+title: "Sufficiency go brrrrrr"
+date: '2026-02-15'
+categories: [stan]
+description: "One of the many ways to parameterize a sufficient Gamma"
+image: header.png
+filters:
+  - add-code-files
+---
+
+```{r}
+library(tidyverse)
+library(cmdstanr)
+library(ggdist)
+library(riekelib)
+
+# Setup a color palette to be used for groups A/B
+pal <- NatParksPalettes::NatParksPalettes$Acadia[[1]][c(2,8)]
+```
+
+Say you're modeling some time-to-event data with a wide range of possible outcomes. Some events occur quickly (<2s) and some take a while (>35s). Events can't occur after negative seconds, so you reach for a [gamma](https://en.wikipedia.org/wiki/Gamma_distribution) likelihood. In [Stan](https://mc-stan.org/docs/functions-reference/positive_continuous_distributions.html#gamma-distribution) and [PyMC](https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.Gamma.html), the built-in gamma density functions only consider individual observations. This is probably fine for a relatively small number of observations but doesn't scale well. For better scaling, you'll need to roll your own [sufficient](https://en.wikipedia.org/wiki/Sufficient_statistic) formulation of the gamma distribution.
+
+If you want to skip the derivation that follows in the rest of the article, this sufficient gamma density function that can just be dropped into a function block at the top of a Stan model. Note that the gamma distribution has, like, a thousand different parameterizations. This, and other gamma distributions throughout this article, make use of the shape ($\alpha$) / scale ($\theta$) parameterization.
+
+```stan
+real sufficient_gamma_lpdf(
+  real Xsum,
+  real Xlogsum,
+  real n,
+  real alpha,
+  real theta
+) {
+  real lp = 0.0;
+  lp += -n * (lgamma(alpha) + alpha * log(theta));
+  lp += (alpha - 1) * Xlogsum;
+  lp += -Xsum / theta;
+  return lp;
+}
+```
+
+## Individual Inference
+
+To demonstrate the benefits of the sufficient gamma, I'll fit two models to the same dataset --- first using Stan's default gamma density function and then using our custom sufficient density function. I'll simulate 5,000 observations from two different gamma-distributed groups for a total of 10,000 observations in the dataset.
+
+```{r}
+# Simulate two groups with a mean of 16
+set.seed(2026)
+gamma_data <-
+  tibble(group = c("A", "B"),
+         alpha = c(4, 2),
+         theta = c(4, 8)) %>%
+  mutate(y = pmap(list(alpha, theta), ~rgamma(5000, shape = ..1, scale = ..2)))
+
+gamma_data %>%
+  unnest(y) %>%
+  ggplot(aes(x = y,
+             y = group,
+             fill = group)) +
+  stat_histinterval(breaks = 60,
+                    slab_alpha = 0.75) +
+  scale_fill_manual(values = pal) +
+  theme_rieke()
+```
+
+We'll fit a simple gamma likelihood to these observations where each group, $g$, has separate shape and scale parameters.
+
+$$
+\begin{align*}
+y_i &\sim \text{Gamma}(\alpha_g, \theta_g) \\
+\alpha_g &\sim \text{Gamma}(1, 5) \\
+\theta_g &\sim \text{Gamma}(1, 5)
+\end{align*}
+$$
+
+```{r}
+#| add-from: individual-gamma.stan
+#| source-lang: stan
+#| code-summary: Stan Model
+
+# comment
+```
+
+```{r}
+#| output: false
+individual_model <- cmdstan_model("individual-gamma.stan")
+
+model_data <-
+  gamma_data %>%
+  mutate(gid = rank(group)) %>%
+  unnest(y)
+
+# Stan makes use of the shape/rate parameterization
+# So the scale prior of 5 is converted to a rate prior of 1/5
+stan_data <-
+  list(
+    N = nrow(model_data),
+    Y = model_data$y,
+    G = max(model_data$gid),
+    gid = model_data$gid,
+    alpha_alpha = 1,
+    beta_alpha = 0.2,
+    alpha_theta = 1,
+    beta_theta = 0.2
+  )
+
+start_time <- Sys.time()
+individual_fit <-
+  individual_model$sample(
+    data = stan_data,
+    seed = 1234,
+    iter_warmup = 1000,
+    iter_sampling = 1000,
+    chains = 10,
+    parallel_chains = 10
+  )
+run_time_individual <- as.numeric(Sys.time() - start_time)
+```
+
+This model recovers the parameters as expected and we end up with a nice-looking posterior.
+
+```{r}
+plot_posterior <- function(fit) {
+  
+  # Get the true parameters used in simulation
+  truth <-
+    gamma_data %>%
+    select(group, alpha, theta) %>%
+    pivot_longer(-group,
+                 names_to = "parameter",
+                 values_to = "draw") %>%
+    mutate(parameter = if_else(parameter == "alpha", "\u03b1", "\u03b8"))
+  
+  fit$draws(c("alpha", "theta"), format = "df") %>%
+    as_tibble() %>%
+    select(starts_with("alpha"), starts_with("theta")) %>%
+    pivot_longer(everything(),
+                 names_to = "parameter",
+                 values_to = "draw") %>%
+    nest(data = -parameter) %>%
+    separate(parameter, c("parameter", "group"), "\\[") %>%
+    mutate(group = str_remove(group, "\\]"),
+           group = if_else(group == "1", "A", "B"),
+           parameter = if_else(parameter == "alpha", "\u03b1", "\u03b8")) %>%
+    unnest(data) %>%
+    ggplot(aes(x = draw,
+               y = parameter,
+               fill = group)) +
+    stat_histinterval(breaks = 60,
+                      slab_alpha = 0.75) +
+    geom_point(data = truth,
+               color = "red") +
+    scale_fill_manual(values = pal) +
+    theme_rieke()
+  
+}
+
+plot_posterior(individual_fit) +
+  labs(title = "**Fit against individual observations**",
+       subtitle = "Can be used as a baseline for evaluating the sufficient formulation",
+       x = NULL,
+       y = NULL)
+```
+
+But! It takes **`r color_text(paste(scales::label_number(accuracy=0.1)(run_time_individual), "seconds"), "royalblue")`** to fit this model. This is because the model evaluates the gamma likelihood 10,000 times, separately --- once for each observation in the dataset. We can speed up our model by exploiting sufficiency!
+
+## Density Derivations
+
+The $\text{Gamma}(\alpha, \theta)$ sampling statement from the individual model is just a function for computing the probability density. For a single observation, that density is:
+
+$$
+\Pr(y_i) = \frac{1}{\Gamma(\alpha)\theta^\alpha}y_i^{\alpha-1}e^{-y_i/\theta}
+$$
+
+When fitting a model, we multiply the probability density for each individual observation to get a total proability density for the entire set of observations.
+
+$$
+\begin{align*}
+\Pr(y_1, y_2, \dots, y_n) &= \Pr(y_1)\Pr(y_2)\dots\Pr(y_n) \\
+\Pr(y) &= \prod_i^N\Pr(y_i)
+\end{align*}
+$$
+
+Stan (and other probabilistic programming languages) evaluate the model's density on the log scale. Log-scale math is a bit easier and we can think in terms of sums instead of products.
+
+$$
+\log(\Pr(y)) = \sum_i^N\log(\Pr(y_i))
+$$
+
+If we take the log of the gamma density function from above, the log probability of an individual observation is this:
+
+$$
+\log(\Pr(y_i|\alpha,\theta)) = -\log(\Gamma(\alpha)) - \alpha\log(\theta) + (\alpha-1)\log(y_i) - y_i/\theta
+$$
+
+If we think about a case where $y$ is a vector with two observations, we can just add these two log probabilities together to get the total log probability.
+
+$$
+\begin{align*}
+\log(\Pr(y_1,y_2|\alpha,\theta)) = &-\log(\Gamma(\alpha)) - \alpha\log(\theta) + (\alpha-1)\log(y_1) - y_1/\theta \\
+&-\log(\Gamma(\alpha)) - \alpha\log(\theta) + (\alpha-1)\log(y_2) - y_2/\theta
+\end{align*}
+$$
+
+Already, we can see how doing this repeatedly for additional observations is ripe for combining. $\Gamma(\alpha)$ and $\alpha\log(\theta)$ are added for each observation in $y$, so in the aggregate can just be multiplied by the total number of observations, $n$. $(\alpha-1)$ is multiplied by each $\log(y_i)$ and can be factored out. Similarly, each new observation adds an additional $y_i/\theta$ term, which can just be replaced with a sum.
+
+$$
+\log(\Pr(y,n|\alpha,\theta)) = -n\left(\Gamma(\alpha)+\alpha\log(\theta)\right) + (\alpha-1)\sum\log(y) - \sum y/\theta
+$$
+
+The log probability function is what actually gets used to estimate the model, but we can also un-log to show the natural probability density function. In summary, the probability density of a set of gamma distributed observations, $y$, has the following sufficient formulation given the product, sum, and count of observations in $y$.
+
+$$
+\Pr\left(\prod y, \sum y, n | \alpha, \theta\right) = \frac{1}{\Gamma(\alpha)^n\theta^{n\alpha}}\left(\prod y\right)^{\alpha-1}e^{-\sum y/\theta}
+$$
+
+## Sufficient Speedups
+
+With this new sufficient formulation, we can reduce the size of the dataset passed to the model from 10,000 rows to just 2, _without losing information about the full distribution_.
+
+```{r}
+sufficient_model <- cmdstan_model("sufficient-gamma.stan")
+
+model_data <-
+  gamma_data %>%
+  mutate(gid = rank(group),
+         n = map_int(y, length),
+         Ysum = map_dbl(y, sum),
+         Ylogsum = map_dbl(y, ~sum(log(.x))))
+
+model_data
+```
+
+The model itself stays largely the same, we just swap out the likelihood function and pass in the pre-computed summary information.
+
+$$
+\begin{align*}
+\prod y, \sum y, n &\sim \text{Sufficient-Gamma}(\alpha_g, \theta_g) \\
+\alpha_g &\sim \text{Gamma}(1, 5) \\
+\theta_g &\sim \text{Gamma}(1, 5)
+\end{align*}
+$$
+
+```{r}
+#| add-from: sufficient-gamma.stan
+#| source-lang: stan
+#| code-summary: Stan Model
+
+# comment
+```
+
+```{r}
+#| output: false
+stan_data <-
+  list(
+    N = nrow(model_data),
+    Ysum = model_data$Ysum,
+    Ylogsum = model_data$Ylogsum,
+    n_obs = model_data$n,
+    G = max(model_data$gid),
+    gid = model_data$gid,
+    alpha_alpha = 1,
+    beta_alpha = 0.2,
+    alpha_theta = 1,
+    beta_theta = 0.2
+  )
+
+start_time <- Sys.time()
+sufficient_fit <-
+  sufficient_model$sample(
+    data = stan_data,
+    seed = 1234,
+    iter_warmup = 1000,
+    iter_sampling = 1000,
+    chains = 10,
+    parallel_chains = 10
+  )
+run_time_sufficient <- as.numeric(Sys.time() - start_time)
+```
+
+But this parameterization is _much faster_. Fitting the sufficient formulation to the same dataset only takes **`r color_text(paste(scales::label_number(accuracy=0.1)(run_time_sufficient), "seconds"), "royalblue")`**, a **`r color_text(paste0(scales::label_number(accuracy=0.1)(run_time_individual/run_time_sufficient), "x"), "royalblue")`** speedup compared to the fit against individual observations. And we recover the same posterior that would've resulted from the individual fit!
+
+```{r}
+plot_posterior(sufficient_fit)  +
+  labs(title = "**Fit using the sufficient gamma**",
+       subtitle = "Recovers the same posterior from the fit to individual observations!",
+       x = NULL,
+       y = NULL)
+```
+
+TL;DR, exploit sufficiency, go zoom zoom.
+
+```{r}
+#| include: false
+# cleanup executables
+file.remove("sufficient-gamma")
+file.remove("individual-gamma")
+```
+
+

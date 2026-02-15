@@ -1,0 +1,15 @@
+{
+  "hash": "1e9d40b26aca6a6e3ccc781537fad5da",
+  "result": {
+    "engine": "knitr",
+    "markdown": "---\ntitle: \"O\"\ndate: '2026-02-15'\ncategories: [stan]\ndescription: \"One of many ways to parameterize a sufficient Gamma\"\nimage: header.png\n---\n\n\n::: {.cell}\n\n```{.r .cell-code}\nlibrary(tidyverse)\nlibrary(cmdstanr)\nlibrary(riekelib)\n```\n:::\n\n\n\n::: {.cell}\n\n```{.r .cell-code}\n# Simulate two groups with a mean of 16\nset.seed(2026)\ngamma_data <-\n  tibble(group = c(\"A\", \"B\"),\n         alpha = c(4, 8),\n         theta = c(4, 2)) %>%\n  mutate(y = pmap(list(alpha, theta), ~rgamma(5000, shape = ..1, scale = ..2)))\n```\n:::\n\n\n\n$$\n\\Pr(x) = \\frac{1}{\\Gamma(\\alpha)\\theta^\\alpha}x^{\\alpha-1}e^{-x/\\theta}\n$$\n\n$$\n\\Pr\\left(\\prod x, \\sum x, n | \\alpha, \\theta\\right) = \\frac{1}{\\Gamma(\\alpha)^n\\theta^{n\\alpha}}\\left(\\prod x\\right)^{\\alpha-1}e^{-\\sum x/\\theta}\n$$",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {},
+    "preserve": {},
+    "postProcess": true
+  }
+}
