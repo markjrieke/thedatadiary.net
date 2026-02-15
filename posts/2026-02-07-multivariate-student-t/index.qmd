@@ -54,7 +54,7 @@ $$
 x = \sqrt{\frac{\nu}{\mathcal{Q}(1-p,\nu)}}
 $$
 
-where $\mathcal{Q}$ is the quantile function of the Chi-Square distribution. 
+where $\mathcal{Q}$ is the quantile function of the Chi-Square distribution.
 
 I didn't exactly derive this quantile function robustly --- it was a game of "guess and check." If I simulate the outcome of interest, then compare the **`r riekelib::color_text("quantile distribution of the simulated values", "royalblue")`** against my **derived quantile distribution**, the results line up well enough for me to say that this is the right function.
 
