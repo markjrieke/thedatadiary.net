@@ -1,7 +1,7 @@
 ---
 title: "Sufficiency go brrrrrr"
 date: '2026-02-15'
-categories: [stan]
+categories: [stan, sufficiency]
 description: "One of the many ways to parameterize a sufficient Gamma"
 image: header.png
 filters:
@@ -20,7 +20,7 @@ pal <- NatParksPalettes::NatParksPalettes$Acadia[[1]][c(2,8)]
 
 Say you're modeling some time-to-event data with a wide range of possible outcomes. Some events occur quickly (<2s) and some take a while (>35s). Events can't occur after negative seconds, so you reach for a [gamma](https://en.wikipedia.org/wiki/Gamma_distribution) likelihood. In [Stan](https://mc-stan.org/docs/functions-reference/positive_continuous_distributions.html#gamma-distribution) and [PyMC](https://www.pymc.io/projects/docs/en/latest/api/distributions/generated/pymc.Gamma.html), the built-in gamma density functions only consider individual observations. This is probably fine for a relatively small number of observations but doesn't scale well. For better scaling, you'll need to roll your own [sufficient](https://en.wikipedia.org/wiki/Sufficient_statistic) formulation of the gamma distribution.
 
-If you want to skip the derivation that follows in the rest of the article, this sufficient gamma density function that can just be dropped into a function block at the top of a Stan model. Note that the gamma distribution has, like, a thousand different parameterizations. This, and other gamma distributions throughout this article, make use of the shape ($\alpha$) / scale ($\theta$) parameterization.
+If you want to skip the derivation that follows in the rest of the article, this sufficient gamma density function can just be dropped into a function block at the top of a Stan model. Note that the gamma distribution has, like, a thousand different parameterizations. This, and other gamma distributions throughout this article, make use of the shape ($\alpha$) / scale ($\theta$) parameterization.
 
 ```stan
 real sufficient_gamma_lpdf(
@@ -204,7 +204,7 @@ $$
 Already, we can see how doing this repeatedly for additional observations is ripe for combining. $\Gamma(\alpha)$ and $\alpha\log(\theta)$ are added for each observation in $y$, so in the aggregate can just be multiplied by the total number of observations, $n$. $(\alpha-1)$ is multiplied by each $\log(y_i)$ and can be factored out. Similarly, each new observation adds an additional $y_i/\theta$ term, which can just be replaced with a sum.
 
 $$
-\log(\Pr(y,n|\alpha,\theta)) = -n\left(\Gamma(\alpha)+\alpha\log(\theta)\right) + (\alpha-1)\sum\log(y) - \sum y/\theta
+\log(\Pr(y,n|\alpha,\theta)) = -n\left(\log(\Gamma(\alpha))+\alpha\log(\theta)\right) + (\alpha-1)\sum\log(y) - \sum y/\theta
 $$
 
 The log probability function is what actually gets used to estimate the model, but we can also un-log to show the natural probability density function. In summary, the probability density of a set of gamma distributed observations, $y$, has the following sufficient formulation given the product, sum, and count of observations in $y$.
