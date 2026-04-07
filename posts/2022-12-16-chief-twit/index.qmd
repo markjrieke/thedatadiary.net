@@ -24,7 +24,7 @@ ggplot2::theme_set(
 
 Umm... twitter is a weird place right now. Since [Elon Musk's $44 billion deal to take over twitter closed in late October](https://www.nytimes.com/2022/10/27/technology/elon-musk-twitter-deal-complete.html), there have been [mass layoffs](https://www.nytimes.com/2022/11/03/technology/twitter-layoffs-elon-musk.html), a [floodgate of advertisers leaving the platform](https://www.washingtonpost.com/technology/2022/11/22/twitter-advertiser-exodus-musk/), and a [near-daily deluge of disasters](https://www.platformer.news/p/inside-the-twitter-meltdown) (for in depth coverage, I recommend visiting [Platformer](https://www.platformer.news/)). It feels like the ship is going down, but it's been pretty funny to watch everything unfold.
 
-{{< tweet callmekitto 1589407148462964736 >}}
+![](https://images.squarespace-cdn.com/content/v1/5189811be4b01dba4e695740/937ffc68-aedf-4f98-b11a-526da6fbab7e/mad+iceberg.jpeg)
 
 Folks who are invested in Tesla may find the situation somewhat less humorous --- Tesla's stock price has dropped 18% over the past month. That's a lot to lose, but can it really be causally linked to Musk's antics on twitter?
 
