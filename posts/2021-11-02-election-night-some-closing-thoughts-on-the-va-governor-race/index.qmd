@@ -19,7 +19,6 @@ However, as of election day, the race had significantly tightened to effectively
 
 As I mention in the above tweet, the win probability isn't a true forecast, just the portion of each candidate's election day distribution *above 50%*. That being said, actual forecasts similarly had the race down to a near 50-50 split as of this morning:
 
-{{< tweet gelliottmorris 1454130028149620737 >}}
 {{< tweet jhkersting 1455545666999042056 >}}
 
 Even the model most confident in McAuliffe built by [Lakshya Jain](https://twitter.com/lxeagle17) and [Thorongil](https://twitter.com/Thorongil16) had dropped McAuliffe's win probability from ~85% to 67% over the course of a few weeks:
