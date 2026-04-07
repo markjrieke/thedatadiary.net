@@ -20,7 +20,7 @@ jobs:
       - name: Set up Quarto
         uses: quarto-dev/quarto-actions/setup@v2
         with:
-          version: 1.8.24
+          version: 1.9.36
 
       - name: Set up R
         uses: r-lib/actions/setup-r@v2
