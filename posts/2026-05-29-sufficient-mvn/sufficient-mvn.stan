@@ -1,9 +1,11 @@
 functions {
-  real multi_normal_sufficient_lpdf(matrix xxts,
-                                    row_vector xts,
-                                    real n,
-                                    vector mu,
-                                    matrix Sigma) {
+  real multi_normal_sufficient_lpdf(
+    matrix xxts,
+    row_vector xts,
+    real n,
+    vector mu,
+    matrix Sigma
+  ) {
     int K = size(mu);
     matrix[K,K] invs = inverse(Sigma);
     real lp = 0.0;
